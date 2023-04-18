@@ -1,12 +1,15 @@
 ::ng-deep .v-actions {
-    flex-direction: row;
     box-sizing: border-box;
     display: flex;
     place-content: center space-between;
     align-items: center;
     flex: 1 1 100%;
     max-width: 100%;
-    justify-content: center;
+
+    flex-direction: row;
+    @media screen and (max-width: 959px) {
+        flex-direction: column;
+    }
 
     & > *:first-child:not(:last-child) {
         margin-right: auto !important;

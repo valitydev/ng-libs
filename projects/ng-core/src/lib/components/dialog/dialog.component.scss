@@ -38,11 +38,13 @@ $max-height-desktop: 90vh;
         }
 
         &-close {
-            cursor: pointer;
-            font-size: 24px;
+            &#{&} {
+                cursor: pointer;
+                font-size: 24px;
 
-            &:hover {
-                opacity: 0.5;
+                &:hover {
+                    opacity: 0.5;
+                }
             }
         }
     }
