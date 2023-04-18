@@ -5,7 +5,9 @@
     "@angular/cdk": "~15.2.7",
     "@angular/common": "^15.2.0",
     "@angular/core": "^15.2.0",
-    "@angular/material": "~15.2.7"
+    "@angular/material": "~15.2.7",
+    "coerce-property": "^0.3.2",
+    "utility-types": "^3.10.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
