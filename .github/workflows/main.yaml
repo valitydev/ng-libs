@@ -18,3 +18,4 @@ jobs:
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./dist/ng-core
+          version-up: 'false'
