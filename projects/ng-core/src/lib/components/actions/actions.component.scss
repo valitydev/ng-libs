@@ -1,0 +1,26 @@
+::ng-deep .v-actions {
+    box-sizing: border-box;
+    display: flex;
+    place-content: center space-between;
+    align-items: center;
+    flex: 1 1 100%;
+    max-width: 100%;
+
+    flex-direction: row;
+    @media screen and (max-width: 959px) {
+        flex-direction: column;
+    }
+
+    & > *:first-child:not(:last-child) {
+        margin-right: auto !important;
+        @media screen and (max-width: 959px) {
+            margin-right: initial !important;
+        }
+    }
+    & > *:first-child:last-child {
+        margin-left: auto !important;
+        @media screen and (max-width: 959px) {
+            margin-left: initial !important;
+        }
+    }
+}
