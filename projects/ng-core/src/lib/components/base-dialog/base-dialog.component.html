@@ -1,6 +1,6 @@
 <div class="base-dialog">
     <div class="base-dialog-title">
-        <div class="cc-headline">{{ title }}</div>
+        <div class="v-headline">{{ title }}</div>
         <mat-icon
             [matDialogClose]="cancelData"
             class="base-dialog-title-close"
@@ -20,7 +20,7 @@
     <ng-container *ngIf="!noActions">
         <mat-divider *ngIf="hasDivider"></mat-divider>
         <div class="base-dialog-actions">
-            <ng-content select="cc-base-dialog-actions"></ng-content>
+            <ng-content select="v-base-dialog-actions"></ng-content>
         </div>
     </ng-container>
 

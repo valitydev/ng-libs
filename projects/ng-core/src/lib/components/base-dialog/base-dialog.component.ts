@@ -4,7 +4,7 @@ import { coerceBoolean } from 'coerce-property';
 import { BaseDialogResponseStatus } from './types/base-dialog-response-status';
 
 @Component({
-    selector: 'cc-base-dialog',
+    selector: 'v-base-dialog',
     templateUrl: 'base-dialog.component.html',
     styleUrls: ['base-dialog.component.scss'],
 })
