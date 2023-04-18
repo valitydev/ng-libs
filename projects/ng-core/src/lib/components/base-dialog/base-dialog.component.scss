@@ -10,6 +10,10 @@ $max-height-desktop: 90vh;
 }
 
 .base-dialog {
+    flex-direction: column;
+    box-sizing: border-box;
+    display: flex;
+    flex: 1 1 100%;
     max-height: calc(#{$max-height-desktop} - #{$base-padding * 2}) !important;
 
     @media screen and (max-width: 959px) {
@@ -17,6 +21,11 @@ $max-height-desktop: 90vh;
     }
 
     &-title {
+        flex-direction: row;
+        box-sizing: border-box;
+        display: flex;
+        place-content: center space-between;
+        align-items: center;
         padding: $base-padding;
 
         &-close {

@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
@@ -16,7 +15,6 @@ const SHARED_DECLARATIONS = [BaseDialogComponent, BaseDialogActionsComponent];
 @NgModule({
     imports: [
         CommonModule,
-        FlexLayoutModule,
         MatDividerModule,
         MatButtonModule,
         ActionsModule,
