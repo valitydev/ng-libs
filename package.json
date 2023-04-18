@@ -6,7 +6,9 @@
     "start": "npm run watch",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "format": "prettier * --write --loglevel warn",
+    "format:check": "prettier * --list-different"
   },
   "private": true,
   "workspaces": [
@@ -37,6 +39,8 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "ng-packagr": "^15.2.2",
+    "prettier": "^2.8.7",
+    "prettier-plugin-organize-attributes": "^0.0.5",
     "typescript": "~4.9.4"
   }
 }
