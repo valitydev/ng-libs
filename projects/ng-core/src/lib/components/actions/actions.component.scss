@@ -6,6 +6,7 @@
     align-items: center;
     flex: 1 1 100%;
     max-width: 100%;
+    justify-content: center;
 
     & > *:first-child:not(:last-child) {
         margin-right: auto !important;

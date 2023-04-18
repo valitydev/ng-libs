@@ -28,6 +28,15 @@ $max-height-desktop: 90vh;
         align-items: center;
         padding: $base-padding;
 
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0;
+        }
+
         &-close {
             cursor: pointer;
             font-size: 24px;
