@@ -1,4 +1,4 @@
-export enum BaseDialogResponseStatus {
+export enum DialogResponseStatus {
     Success = 'success',
     Error = 'error',
     Cancelled = 'canceled',

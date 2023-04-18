@@ -2,16 +2,16 @@ import { Directive, Injector } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { DEFAULT_DIALOG_CONFIG } from '../tokens';
-import { BaseDialogResponse } from '../types/base-dialog-response';
-import { BaseDialogResponseStatus } from '../types/base-dialog-response-status';
+import { DialogResponse as TDialogResponse } from '../types/dialog-response';
+import { DialogResponseStatus } from '../types/dialog-response-status';
 
 @Directive()
-export class BaseDialogSuperclass<
+export class DialogSuperclass<
     DialogComponent,
     DialogData = void,
     DialogResponseData = void,
     DialogResponseStatus = void,
-    DialogResponse = BaseDialogResponse<DialogResponseData, DialogResponseStatus>
+    DialogResponse = TDialogResponse<DialogResponseData, DialogResponseStatus>
 > {
     static defaultDialogConfig = DEFAULT_DIALOG_CONFIG.medium;
 
@@ -22,21 +22,21 @@ export class BaseDialogSuperclass<
 
     closeWithCancellation(data?: DialogResponseData) {
         this.dialogRef.close({
-            status: BaseDialogResponseStatus.Cancelled,
+            status: DialogResponseStatus.Cancelled,
             data,
         } as never);
     }
 
     closeWithSuccess(data?: DialogResponseData) {
         this.dialogRef.close({
-            status: BaseDialogResponseStatus.Success,
+            status: DialogResponseStatus.Success,
             data,
         } as never);
     }
 
     closeWithError(data?: DialogResponseData) {
         this.dialogRef.close({
-            status: BaseDialogResponseStatus.Error,
+            status: DialogResponseStatus.Error,
             data,
         } as never);
     }

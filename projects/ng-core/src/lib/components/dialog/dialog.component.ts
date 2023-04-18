@@ -1,14 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { coerceBoolean } from 'coerce-property';
 
-import { BaseDialogResponseStatus } from './types/base-dialog-response-status';
+import { DialogResponseStatus } from './types/dialog-response-status';
 
 @Component({
-    selector: 'v-base-dialog',
-    templateUrl: 'base-dialog.component.html',
-    styleUrls: ['base-dialog.component.scss'],
+    selector: 'v-dialog',
+    templateUrl: 'dialog.component.html',
+    styleUrls: ['dialog.component.scss'],
 })
-export class BaseDialogComponent {
+export class DialogComponent {
     @Input() title!: string;
 
     @coerceBoolean @Input() disabled = false;
@@ -23,7 +23,7 @@ export class BaseDialogComponent {
     @Output() cancel = new EventEmitter<void>();
 
     cancelData = {
-        status: BaseDialogResponseStatus.Cancelled,
+        status: DialogResponseStatus.Cancelled,
     };
 
     cancelDialog(): void {

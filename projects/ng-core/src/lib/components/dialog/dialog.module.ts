@@ -7,11 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { ActionsModule } from '../actions';
-import { BaseDialogComponent } from './base-dialog.component';
-import { BaseDialogActionsComponent } from './components/base-dialog-actions/base-dialog-actions.component';
-import { BaseDialogService } from './services/base-dialog.service';
+import { DialogComponent } from './dialog.component';
+import { DialogActionsComponent } from './components/dialog-actions/dialog-actions.component';
+import { DialogService } from './services/dialog.service';
 
-const SHARED_DECLARATIONS = [BaseDialogComponent, BaseDialogActionsComponent];
+const SHARED_DECLARATIONS = [DialogComponent, DialogActionsComponent];
 
 @NgModule({
     imports: [
@@ -23,8 +23,8 @@ const SHARED_DECLARATIONS = [BaseDialogComponent, BaseDialogActionsComponent];
         MatProgressBarModule,
         MatDialogModule,
     ],
-    providers: [BaseDialogService],
+    providers: [DialogService],
     declarations: SHARED_DECLARATIONS,
     exports: SHARED_DECLARATIONS,
 })
-export class BaseDialogModule {}
+export class DialogModule {}

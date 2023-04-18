@@ -1,2 +1,2 @@
-export * from './base-dialog';
+export * from './dialog';
 export * from './actions';
