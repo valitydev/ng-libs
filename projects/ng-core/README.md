@@ -1,1 +1,1 @@
-# NgCore
+# Angular Core
