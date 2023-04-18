@@ -15,12 +15,19 @@ export class NotificationErrorService implements ErrorService {
         const name = String((error as { name: unknown })?.name ?? '');
         const message = String((error as { message: unknown })?.message ?? '');
         const result = clientMessage || message || name || 'Unknown error';
+        const other =
+            error && typeof error === 'object'
+                ? Object.fromEntries(
+                      Object.entries(error).filter(([k, v]) => k !== 'name' && k !== 'message' && v)
+                  )
+                : {};
 
         console.warn(
             [
-                `⚠️ Caught error: ${clientMessage || 'Unknown error'}.`,
+                `Caught error: ${clientMessage || 'Unknown error'}.`,
                 name && `Name: ${name}.`,
                 message && `Message: ${message}.`,
+                Object.keys(other) && JSON.stringify(other, null, 2),
             ]
                 .filter(Boolean)
                 .join('\n')
