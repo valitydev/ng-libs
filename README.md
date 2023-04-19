@@ -29,7 +29,7 @@
 To do this, you can use the version published in the NPM (with the `pr` tag) from your PR to the library:
 
 ```sh
-npm i @vality/ng-core@pr
+npm i --save-exact @vality/ng-core@pr
 ```
 
 _The latest version with the tag can also be [viewed in NPM](https://www.npmjs.com/package/@vality/ng-core?activeTab=versions)_
