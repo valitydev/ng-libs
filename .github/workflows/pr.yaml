@@ -16,12 +16,9 @@ jobs:
         run: npm run format:check
       - name: Build
         run: npm run build
-      - name: Get current PR
-        uses: 8BitJonny/gh-get-current-pr@2.2.0
-        id: PR
       - name: Version up
         working-directory: ./dist/ng-core
-        run: npm version prerelease --preid pr-${{steps.PR.outputs.number}}-${GITHUB_SHA::7} --no-git-tag-version
+        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA::7} --no-git-tag-version
       - name: Publish
         working-directory: ./dist/ng-core
         run: npm publish
