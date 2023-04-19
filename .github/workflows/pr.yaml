@@ -18,7 +18,7 @@ jobs:
         run: npm run build
       - name: Version up
         working-directory: ./dist/ng-core
-        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA::7} --no-git-tag-version
+        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA::7} --no-git-tag-version --tag pr
       - name: Publish
         working-directory: ./dist/ng-core
         run: npm publish
