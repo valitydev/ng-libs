@@ -14,8 +14,8 @@ jobs:
       # - run: npm ci
       # - name: Format
       #   run: npm run format:check
-      # - name: Build
-      #   run: npm run build
+      - name: Build
+        run: npm run build
       # - uses: 8BitJonny/gh-get-current-pr@2.2.0
       #   id: PR
       - name: Publish
