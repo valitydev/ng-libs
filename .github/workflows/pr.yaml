@@ -19,7 +19,7 @@ jobs:
       - uses: 8BitJonny/gh-get-current-pr@2.2.0
         id: PR
       - name: Publish
-        run: npm version prerelease --preid pr-${steps.PR.outputs.number}-${GITHUB_SHA::7} --no-git-tag-version && npm publish
         working-directory: ./dist/ng-core
+        run: npm version prerelease --preid pr-${steps.PR.outputs.number}-${GITHUB_SHA::7} --no-git-tag-version && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
