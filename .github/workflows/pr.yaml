@@ -16,10 +16,11 @@ jobs:
       #   run: npm run format:check
       - name: Build
         run: npm run build
-      # - uses: 8BitJonny/gh-get-current-pr@2.2.0
-      #   id: PR
+      - name: Get current PR
+        uses: 8BitJonny/gh-get-current-pr@2.2.0
+        id: PR
       - name: Publish
-        # working-directory: ./dist/ng-core
-        run: npm version prerelease --preid pr-${GITHUB_SHA::7} --no-git-tag-version
+        working-directory: ./dist/ng-core
+        run: npm version prerelease --preid pr-${steps.PR.outputs.number}-${GITHUB_SHA::7} --no-git-tag-version
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
