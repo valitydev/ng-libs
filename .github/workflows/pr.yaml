@@ -16,3 +16,8 @@ jobs:
         run: npm run format:check
       - name: Build
         run: npm run build
+      - name: Publish
+        run: npm version prerelease --preid pr-${jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH"}-${GITHUB_SHA::7} --no-git-tag-version && npm publish
+        working-directory: ./dist/ng-core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
