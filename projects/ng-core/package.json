@@ -10,10 +10,14 @@
     "@angular/core": ">=15.0.0",
     "@angular/material": ">=15.0.0",
     "coerce-property": ">=0.3.2",
+    "lodash-es": "^4.0.0",
     "utility-types": ">=3.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.7"
+  }
 }
