@@ -18,3 +18,7 @@ jobs:
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./dist/ng-core
+      - uses: valitydev/action-frontend/publish@v0.1
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          directory: ./projects/eslint-config
