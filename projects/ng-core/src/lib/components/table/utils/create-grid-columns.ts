@@ -29,7 +29,7 @@ export function createGridColumn<T>(col: Column<T>) {
     };
 }
 
-export function createGridColumns<T>(columns: Column<T>[]): MtxGridColumn[] {
+export function createGridColumns<T>(columns: Column<T>[]): MtxGridColumn<T>[] {
     return columns.map((col) => createGridColumn(col));
 }
 
@@ -57,6 +57,6 @@ export function createDatetimeFormattedColumn<T>(field: string): MtxGridColumn {
     return {
         field,
         formatter: (data: T) =>
-            formatDate(String(data[field as keyof T]), 'dd.MM.yyyy HH:mm:ss', 'en'),
+            formatDate(data[field as keyof T] as never, 'dd.MM.yyyy HH:mm:ss', 'en'),
     };
 }

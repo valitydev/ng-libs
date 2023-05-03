@@ -22,20 +22,36 @@
                     </button>
                 </mat-menu>
             </ng-container>
+            <ng-container>
+                <button [matMenuTriggerFor]="columnMenu.menuPanel" mat-button>Columns</button>
+                <mtx-grid-column-menu
+                    #columnMenu
+                    [columns]="renderedColumns"
+                    buttonText="test"
+                    style="display: none"
+                    (columnChange)="updateColumns($event)"
+                ></mtx-grid-column-menu>
+            </ng-container>
+            <button mat-button style="min-width: 36px">Reset</button>
         </v-actions>
         <ng-content select="v-table-actions"></ng-content>
     </v-actions>
 
     <mat-card class="table-card">
         <mtx-grid
+            *ngIf="renderedColumns"
             [cellSelectable]="false"
             [cellTemplate]="cellTemplate"
+            [columnHideable]="true"
+            [columnPinnable]="true"
+            [columnResizable]="true"
             [columns]="renderedColumns"
             [data]="data"
             [loading]="inProgress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="rowSelectable"
             [trackBy]="trackBy"
+            columnHideableChecked="show"
             (rowSelectionChange)="rowSelectionChange.emit($event)"
         ></mtx-grid>
         <ng-template #footerTpl>

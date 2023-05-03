@@ -1,4 +1,14 @@
-import { Component, Input, Output, EventEmitter, OnInit, ContentChild } from '@angular/core';
+import {
+    Component,
+    Input,
+    Output,
+    EventEmitter,
+    OnInit,
+    ContentChild,
+    OnChanges,
+    ChangeDetectorRef,
+} from '@angular/core';
+import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
@@ -8,6 +18,7 @@ import { TableActionsComponent } from './components/table-actions.component';
 import { Column } from './types/column';
 import { createGridColumns } from './utils/create-grid-columns';
 import { Progressable } from '../../types/progressable';
+import { ComponentChanges } from '../../utils';
 
 @UntilDestroy()
 @Component({
@@ -15,7 +26,7 @@ import { Progressable } from '../../types/progressable';
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
 })
-export class TableComponent<T> implements OnInit, Progressable {
+export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
@@ -34,6 +45,9 @@ export class TableComponent<T> implements OnInit, Progressable {
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
     size$ = new BehaviorSubject<undefined | number>(25);
+    renderedColumns!: MtxGridColumn<T>[];
+
+    constructor(private cdr: ChangeDetectorRef) {}
 
     get hasUpdate() {
         return this.update.observed;
@@ -57,15 +71,20 @@ export class TableComponent<T> implements OnInit, Progressable {
         return [25, 50, 100];
     }
 
-    get renderedColumns() {
-        return createGridColumns(this.columns);
-    }
-
     get inProgress() {
         return !!this.progress;
     }
 
     ngOnInit() {
         this.size$.pipe(untilDestroyed(this)).subscribe((v) => this.sizeChange.emit(v));
+    }
+
+    ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
+        if (changes.columns) this.renderedColumns = createGridColumns(this.columns);
+    }
+
+    updateColumns(columns: MtxGridColumn<T>[]) {
+        this.renderedColumns = columns.slice();
+        this.renderedColumns.forEach((c) => (c.hide = !c.show));
     }
 }
