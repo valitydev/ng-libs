@@ -16,23 +16,26 @@ jobs:
         run: npm run check
       - name: Build
         run: npm run build
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Publish Angular Core
         working-directory: ./dist/ng-core
-        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA | cut -c 1-7} --no-git-tag-version && npm publish --tag pr
+        run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish ESLint Config
         working-directory: ./projects/eslint-config
-        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA | cut -c 1-7} --no-git-tag-version && npm publish --tag pr
+        run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish CSpell Config
         working-directory: ./projects/cspell-config
-        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA | cut -c 1-7} --no-git-tag-version && npm publish --tag pr
+        run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish Prettier Config
         working-directory: ./projects/prettier-config
-        run: npm version prerelease --preid pr-${{github.event.number}}-${GITHUB_SHA | cut -c 1-7} --no-git-tag-version && npm publish --tag pr
+        run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
