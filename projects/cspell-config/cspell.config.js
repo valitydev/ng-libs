@@ -16,5 +16,6 @@ module.exports = {
         'vhosts',
         'fesm',
         'packagr',
+        'ngneat',
     ],
 };

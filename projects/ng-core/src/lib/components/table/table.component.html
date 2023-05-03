@@ -1,0 +1,51 @@
+<div class="table">
+    <v-actions *ngIf="hasToolbar">
+        <v-actions *ngIf="hasUpdate">
+            <button
+                [disabled]="loading"
+                mat-stroked-button
+                (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
+            >
+                UPDATE
+            </button>
+            <ng-container *ngIf="hasSizes">
+                <button [disabled]="loading" [matMenuTriggerFor]="menu" mat-button>
+                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    <button *ngFor="let size of sizesList" mat-menu-item (click)="size$.next(size)">
+                        {{ size }}
+                    </button>
+                </mat-menu>
+            </ng-container>
+        </v-actions>
+        <ng-content select="v-table-actions"></ng-content>
+    </v-actions>
+
+    <mat-card class="table-card">
+        <mtx-grid
+            [cellSelectable]="false"
+            [cellTemplate]="cellTemplate"
+            [columns]="columns"
+            [data]="data"
+            [loading]="loading || !columns"
+            [paginationTemplate]="footerTpl"
+            [rowSelectable]="rowSelectable"
+            [trackBy]="trackBy"
+            (rowSelectionChange)="rowSelectionChange.emit($event)"
+        ></mtx-grid>
+        <ng-template #footerTpl>
+            <button
+                *ngIf="hasMore"
+                [disabled]="loading"
+                class="show-more"
+                fxFlex="100"
+                mat-button
+                style="width: 100%"
+                (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
+            >
+                {{ loading ? 'LOADING...' : 'SHOW MORE' }}
+            </button>
+        </ng-template>
+    </mat-card>
+</div>

@@ -1,0 +1,33 @@
+.table {
+    flex-direction: column;
+    box-sizing: border-box;
+    display: flex;
+
+    & > * {
+        margin-top: 32px;
+    }
+    & > *:first-child {
+        margin: 0;
+    }
+
+    .header {
+        flex-direction: row;
+        box-sizing: border-box;
+        display: flex;
+        place-content: stretch space-between;
+        align-items: stretch;
+    }
+
+    .table-card {
+        width: 100%;
+        overflow: hidden;
+
+        & > * {
+            border: none;
+        }
+    }
+
+    .show-more {
+        padding: 16px;
+    }
+}
