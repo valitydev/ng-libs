@@ -1,7 +1,16 @@
 module.exports = {
     root: true,
     globals: {},
-    ignorePatterns: ['**/*.json', '**/*.md', '**/*.?css', '**/*.js', 'dist'],
+    ignorePatterns: [
+        '**/*.json',
+        '**/*.md',
+        '**/*.?css',
+        '**/*.js',
+        '**/*.conf',
+        '**/*.ico',
+        'Dockerfile',
+        'dist',
+    ],
     parser: '@typescript-eslint/parser',
     parserOptions: {
         project: ['tsconfig.json'],
