@@ -2,11 +2,6 @@ module.exports = {
     root: true,
     globals: {},
     ignorePatterns: ['**/*.json', '**/*.md', '**/*.?css', '**/*.js', 'dist'],
-    settings: {
-        'import/resolver': {
-            typescript: true,
-        },
-    },
     parserOptions: {
         project: ['tsconfig.json'],
         createDefaultProgram: true,
@@ -96,29 +91,6 @@ module.exports = {
                     },
                 ],
                 'import/no-unresolved': 'off',
-                'import/order': [
-                    'error',
-                    {
-                        groups: [
-                            ['builtin', 'external'],
-                            'internal',
-                            ['parent', 'sibling', 'index'],
-                            'object',
-                        ],
-                        pathGroups: [
-                            {
-                                pattern: '@app/**',
-                                group: 'internal',
-                            },
-                        ],
-                        pathGroupsExcludedImportTypes: ['builtin'],
-                        'newlines-between': 'always',
-                        alphabetize: {
-                            order: 'asc',
-                            caseInsensitive: true,
-                        },
-                    },
-                ],
                 '@typescript-eslint/no-unused-vars': 'off',
                 'unused-imports/no-unused-imports': 'error',
                 'unused-imports/no-unused-vars': [
@@ -132,5 +104,6 @@ module.exports = {
                 ],
             },
         },
+        ...require('./configs/import-order')().overrides,
     ],
 };
