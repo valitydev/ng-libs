@@ -16,11 +16,7 @@ jobs:
       #   run: npm run check
       # - name: Build
       #   run: npm run build
-      - uses: benjlevesque/short-sha@v2.2
-        id: short-sha
-        with:
-          length: 6
-      - run: echo ${{ steps.short-sha.outputs.sha }}
+      - run: echo ${{ git rev-parse --short HEAD }}
       # - name: Publish Angular Core
       #   working-directory: ./dist/ng-core
       #   run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
