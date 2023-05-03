@@ -2,6 +2,7 @@ module.exports = {
     root: true,
     globals: {},
     ignorePatterns: ['**/*.json', '**/*.md', '**/*.?css', '**/*.js', 'dist'],
+    parser: '@typescript-eslint/parser',
     parserOptions: {
         project: ['tsconfig.json'],
         createDefaultProgram: true,
