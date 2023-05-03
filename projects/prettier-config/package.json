@@ -4,5 +4,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "index.json"
+  "main": "index.json",
+  "peerDependencies": {
+    "prettier": "^2.0.0"
+  }
 }

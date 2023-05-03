@@ -7,8 +7,14 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "format": "prettier * --write --loglevel warn",
-    "format:check": "prettier * --list-different"
+    "format": "prettier * --list-different",
+    "format:fix": "prettier * --write --loglevel warn",
+    "lint": "eslint ** --max-warnings=0",
+    "lint:fix": "eslint ** --fix",
+    "spell": "cspell --no-progress **",
+    "spell:fix": "cspell --no-progress --show-suggestions --show-context **",
+    "check": "npm run format && npm run lint && npm run spell",
+    "fix": "npm run format:fix && npm run lint:fix && npm run spell:fix"
   },
   "private": true,
   "workspaces": [
@@ -32,6 +38,8 @@
     "@angular/cli": "~15.2.5",
     "@angular/compiler-cli": "^15.2.0",
     "@types/jasmine": "~4.3.0",
+    "cspell": "^6.31.1",
+    "eslint": "^8.39.0",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -39,7 +47,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "ng-packagr": "^15.2.2",
-    "prettier": "^2.8.7",
+    "prettier": "^2.8.8",
     "prettier-plugin-organize-attributes": "^0.0.5",
     "typescript": "~4.9.4"
   }

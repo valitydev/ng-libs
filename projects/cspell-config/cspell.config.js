@@ -14,5 +14,7 @@ module.exports = {
         'vality',
         'valitydev',
         'vhosts',
+        'fesm',
+        'packagr',
     ],
 };
