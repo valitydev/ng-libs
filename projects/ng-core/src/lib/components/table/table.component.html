@@ -32,7 +32,7 @@
                     (columnChange)="updateColumns($event)"
                 ></mtx-grid-column-menu>
             </ng-container>
-            <button mat-button style="min-width: 36px">Reset</button>
+            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>
         </v-actions>
         <ng-content select="v-table-actions"></ng-content>
     </v-actions>

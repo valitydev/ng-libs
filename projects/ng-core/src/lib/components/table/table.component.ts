@@ -6,7 +6,6 @@ import {
     OnInit,
     ContentChild,
     OnChanges,
-    ChangeDetectorRef,
 } from '@angular/core';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
@@ -46,8 +45,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     size$ = new BehaviorSubject<undefined | number>(25);
     renderedColumns!: MtxGridColumn<T>[];
-
-    constructor(private cdr: ChangeDetectorRef) {}
+    hasReset = false;
 
     get hasUpdate() {
         return this.update.observed;
@@ -86,5 +84,11 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     updateColumns(columns: MtxGridColumn<T>[]) {
         this.renderedColumns = columns.slice();
         this.renderedColumns.forEach((c) => (c.hide = !c.show));
+        this.hasReset = true;
+    }
+
+    reset() {
+        this.renderedColumns = createGridColumns(this.columns);
+        this.hasReset = false;
     }
 }
