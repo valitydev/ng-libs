@@ -2,14 +2,14 @@
     <v-actions *ngIf="hasToolbar">
         <v-actions *ngIf="hasUpdate">
             <button
-                [disabled]="loading"
+                [disabled]="inProgress"
                 mat-stroked-button
                 (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
             >
-                UPDATE
+                Update
             </button>
             <ng-container *ngIf="hasSizes">
-                <button [disabled]="loading" [matMenuTriggerFor]="menu" mat-button>
+                <button [disabled]="inProgress" [matMenuTriggerFor]="menu" mat-button>
                     {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
@@ -32,7 +32,7 @@
             [cellTemplate]="cellTemplate"
             [columns]="renderedColumns"
             [data]="data"
-            [loading]="loading || !columns"
+            [loading]="inProgress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="rowSelectable"
             [trackBy]="trackBy"
@@ -41,12 +41,12 @@
         <ng-template #footerTpl>
             <button
                 *ngIf="hasMore"
-                [disabled]="loading"
+                [disabled]="inProgress"
                 mat-button
                 style="width: 100%"
                 (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
             >
-                {{ loading ? 'LOADING...' : 'SHOW MORE' }}
+                {{ inProgress ? 'Loading...' : 'Show more' }}
             </button>
         </ng-template>
     </mat-card>

@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 
-export type Column<ObjectType> =
+// eslint-disable-next-line unused-imports/no-unused-vars
+export type Column<T> =
     | {
           field: string;
           header?: string | Observable<string>;

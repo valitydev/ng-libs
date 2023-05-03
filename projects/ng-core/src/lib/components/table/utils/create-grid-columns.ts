@@ -3,6 +3,7 @@ import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import isObject from 'lodash-es/isObject';
 import startCase from 'lodash-es/startCase';
 import { Overwrite } from 'utility-types';
+
 import { Column } from '../types/column';
 
 export type GridColumn<T> =
@@ -12,7 +13,7 @@ export type GridColumn<T> =
               formatter?: (rowData: T, colDef?: MtxGridColumn) => string;
           }
       > & {
-          _data?: any;
+          _data?: unknown;
       })
     | keyof T
     | string;

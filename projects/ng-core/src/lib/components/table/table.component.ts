@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column } from './types/column';
 import { createGridColumns } from './utils/create-grid-columns';
+import { Progressable } from '../../types/progressable';
 
 @UntilDestroy()
 @Component({
@@ -14,12 +15,12 @@ import { createGridColumns } from './utils/create-grid-columns';
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
 })
-export class TableComponent<T> implements OnInit {
+export class TableComponent<T> implements OnInit, Progressable {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
-    @Input() @coerceBoolean loading = false;
+    @Input() progress?: boolean | number | null = false;
 
     @Input() @coerceBoolean rowSelectable = false;
     @Output() rowSelectionChange = new EventEmitter<T[]>();
@@ -58,6 +59,10 @@ export class TableComponent<T> implements OnInit {
 
     get renderedColumns() {
         return createGridColumns(this.columns);
+    }
+
+    get inProgress() {
+        return !!this.progress;
     }
 
     ngOnInit() {
