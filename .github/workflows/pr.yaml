@@ -8,6 +8,8 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    env:
+      SHORT_SHA: ${{ github.event.pull_request.head.sha }} | cut -c1-7
     steps:
       # - uses: actions/checkout@v3
       # - uses: valitydev/action-frontend/setup@v0.1
@@ -16,9 +18,7 @@ jobs:
       #   run: npm run check
       # - name: Build
       #   run: npm run build
-      - name: Set Vars
-        id: vars
-        run: echo "sha_short=$(${{ github.event.pull_request.head.sha | cut -c1-7}})" >> $GITHUB_OUTPUT
+      - run: echo ${{ env.SHORT_SHA }}
       # - name: Publish Angular Core
       #   working-directory: ./dist/ng-core
       #   run: npm version prerelease --preid pr-${{github.event.number}}-${{steps.vars.outputs.sha_short}} --no-git-tag-version && npm publish --tag pr
