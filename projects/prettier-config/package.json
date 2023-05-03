@@ -7,5 +7,8 @@
   "main": "index.json",
   "peerDependencies": {
     "prettier": "^2.0.0"
+  },
+  "dependencies": {
+    "prettier-plugin-organize-attributes": "^0.0.5"
   }
 }
