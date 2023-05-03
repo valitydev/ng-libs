@@ -5,9 +5,8 @@
     "access": "public"
   },
   "exports": {
-    ".": {
-      "default": "./index.js"
-    }
+    ".": "./index.js",
+    "./configs": "./configs/index.js"
   },
   "peerDependencies": {
     "eslint": ">= 8"
