@@ -13,7 +13,11 @@
                     {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                    <button *ngFor="let size of sizesList" mat-menu-item (click)="size$.next(size)">
+                    <button
+                        *ngFor="let size of renderedSizes"
+                        mat-menu-item
+                        (click)="size$.next(size)"
+                    >
                         {{ size }}
                     </button>
                 </mat-menu>
@@ -26,7 +30,7 @@
         <mtx-grid
             [cellSelectable]="false"
             [cellTemplate]="cellTemplate"
-            [columns]="columns"
+            [columns]="renderedColumns"
             [data]="data"
             [loading]="loading || !columns"
             [paginationTemplate]="footerTpl"
@@ -38,8 +42,6 @@
             <button
                 *ngIf="hasMore"
                 [disabled]="loading"
-                class="show-more"
-                fxFlex="100"
                 mat-button
                 style="width: 100%"
                 (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"

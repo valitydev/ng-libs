@@ -3,6 +3,7 @@ import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import isObject from 'lodash-es/isObject';
 import startCase from 'lodash-es/startCase';
 import { Overwrite } from 'utility-types';
+import { Column } from '../types/column';
 
 export type GridColumn<T> =
     | (Overwrite<
@@ -16,18 +17,18 @@ export type GridColumn<T> =
     | keyof T
     | string;
 
-export function createGridColumn<T>(col: GridColumn<T>) {
+export function createGridColumn<T>(col: Column<T>) {
     if (!isObject(col))
         col = {
             field: col as string,
         };
-    if (!col.header) col.header = startCase(String(col.field).toLowerCase());
+    if (!col.header) col.header = startCase(String(col.field.split('.').at(-1)));
     return {
         ...col,
     };
 }
 
-export function createGridColumns<T>(columns: GridColumn<T>[]): MtxGridColumn[] {
+export function createGridColumns<T>(columns: Column<T>[]): MtxGridColumn[] {
     return columns.map((col) => createGridColumn(col));
 }
 

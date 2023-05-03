@@ -1,6 +1,7 @@
 import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
 
 import { createGridColumn, GridColumn } from '../utils/create-grid-columns';
+import { Column } from '../types/column';
 
 @Component({
     selector: 'v-table-tooltip-cell-template',
@@ -34,6 +35,6 @@ export class TableTooltipCellTemplateComponent {
     }
 }
 
-export function createTooltipTemplateGridColumn<T>(col: GridColumn<T>, tooltip: (data: T) => any) {
+export function createTooltipTemplateGridColumn<T>(col: Column<T>, tooltip: (data: T) => any) {
     return { ...createGridColumn(col), _data: { tooltip } };
 }

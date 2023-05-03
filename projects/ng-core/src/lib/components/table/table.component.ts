@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit, ContentChild } from '@angular/core';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { BehaviorSubject } from 'rxjs';
 
 import { TableActionsComponent } from './components/table-actions.component';
+import { Column } from './types/column';
+import { createGridColumns } from './utils/create-grid-columns';
 
 @UntilDestroy()
 @Component({
@@ -15,7 +16,7 @@ import { TableActionsComponent } from './components/table-actions.component';
 })
 export class TableComponent<T> implements OnInit {
     @Input() data!: T[];
-    @Input() columns!: MtxGridColumn<T>[];
+    @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() @coerceBoolean loading = false;
@@ -23,7 +24,7 @@ export class TableComponent<T> implements OnInit {
     @Input() @coerceBoolean rowSelectable = false;
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
-    @Input() sizes: boolean | number[] = false;
+    @Input() sizes: boolean | number[] | string = false;
 
     @Output() sizeChange = new EventEmitter<number>();
     @Output() update = new EventEmitter<{ size?: number }>();
@@ -46,13 +47,17 @@ export class TableComponent<T> implements OnInit {
     }
 
     get hasSizes() {
-        return this.sizesList.length;
+        return this.renderedSizes.length;
     }
 
-    get sizesList() {
+    get renderedSizes() {
         if (Array.isArray(this.sizes)) return this.sizes;
         if (typeof this.sizes !== 'string' && !this.sizeChange.observed) return [];
         return [25, 50, 100];
+    }
+
+    get renderedColumns() {
+        return createGridColumns(this.columns);
     }
 
     ngOnInit() {
