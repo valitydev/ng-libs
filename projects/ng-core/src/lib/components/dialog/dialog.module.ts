@@ -11,8 +11,6 @@ import { DialogComponent } from './dialog.component';
 import { DialogService } from './services/dialog.service';
 import { ActionsModule } from '../actions';
 
-const SHARED_DECLARATIONS = [DialogComponent, DialogActionsComponent];
-
 @NgModule({
     imports: [
         CommonModule,
@@ -24,7 +22,7 @@ const SHARED_DECLARATIONS = [DialogComponent, DialogActionsComponent];
         MatDialogModule,
     ],
     providers: [DialogService],
-    declarations: SHARED_DECLARATIONS,
-    exports: SHARED_DECLARATIONS,
+    declarations: [DialogComponent, DialogActionsComponent],
+    exports: [DialogComponent, DialogActionsComponent],
 })
 export class DialogModule {}

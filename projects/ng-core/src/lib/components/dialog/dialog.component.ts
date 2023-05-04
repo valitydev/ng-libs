@@ -11,14 +11,15 @@ import { DialogResponseStatus } from './types/dialog-response-status';
 export class DialogComponent {
     @Input() title!: string;
 
-    @coerceBoolean @Input() disabled = false;
-    @coerceBoolean @Input() inProgress = false;
+    @coerceBoolean @Input() disabled: boolean | string = false;
+    @coerceBoolean @Input() inProgress: boolean | string = false;
     @Input() progress?: number;
 
-    @coerceBoolean @Input() hasDivider = true;
+    @coerceBoolean @Input() hasDivider: boolean | string = true;
 
-    @coerceBoolean @Input() noContent = false;
-    @coerceBoolean @Input() noActions = false;
+    @coerceBoolean @Input() noContent: boolean | string = false;
+    @coerceBoolean @Input() noActions: boolean | string = false;
+    @coerceBoolean @Input() noCloseButton: boolean | string = false;
 
     @Output() cancel = new EventEmitter<void>();
 
