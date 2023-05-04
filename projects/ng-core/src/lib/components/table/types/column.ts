@@ -1,10 +1,3 @@
-import { Observable } from 'rxjs';
+import { MtxGridColumn } from '@ng-matero/extensions/grid';
 
-export type Column<T> =
-    | {
-          field: string;
-          header?: string | Observable<string>;
-          hide?: boolean;
-          formatter?: (data: T) => string;
-      }
-    | string;
+export type Column<T> = MtxGridColumn<T> | string;
