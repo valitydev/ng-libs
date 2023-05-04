@@ -19,18 +19,30 @@ export class DialogService {
         if (!dialogConfig) this.dialogConfig = DEFAULT_DIALOG_CONFIG;
     }
 
-    open<C, D, R, S>(
-        dialogComponent: ComponentType<DialogSuperclass<C, D, R, S>>,
+    open<TDialogComponent, TDialogData, TDialogResponseData, TDialogResponseStatus>(
+        dialogComponent: ComponentType<
+            DialogSuperclass<
+                TDialogComponent,
+                TDialogData,
+                TDialogResponseData,
+                TDialogResponseStatus
+            >
+        >,
         /**
          *  Workaround when both conditions for the 'data' argument must be true:
          *  - typing did not require passing when it is optional (for example: {param: number} | void)
          *  - typing required to pass when it is required (for example: {param: number})
          */
-        ...[data, configOrConfigName]: D extends void
+        ...[data, configOrConfigName]: TDialogData extends void
             ? []
-            : [data: D, configOrConfigName?: Omit<MatDialogConfig<D>, 'data'> | keyof DialogConfig]
-    ): MatDialogRef<C, DialogResponse<R, S>> {
-        let config: Partial<MatDialogConfig<D>>;
+            : [
+                  data: TDialogData,
+                  configOrConfigName?:
+                      | Omit<MatDialogConfig<TDialogData>, 'data'>
+                      | keyof DialogConfig
+              ]
+    ): MatDialogRef<TDialogComponent, DialogResponse<TDialogResponseData, TDialogResponseStatus>> {
+        let config: Partial<MatDialogConfig<TDialogData>>;
         if (!configOrConfigName) config = {};
         else if (typeof configOrConfigName === 'string')
             config = this.dialogConfig[configOrConfigName];
