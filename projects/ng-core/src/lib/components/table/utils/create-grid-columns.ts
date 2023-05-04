@@ -1,22 +1,17 @@
 import { formatDate } from '@angular/common';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
+import isNil from 'lodash-es/isNil';
 import isObject from 'lodash-es/isObject';
 import startCase from 'lodash-es/startCase';
 
-import { Column } from '../types/column';
+import { Column, ObjectColumn } from '../types/column';
 
-export function createGridColumn<T>(col: Column<T>) {
-    if (!isObject(col))
-        col = {
-            field: col as string,
-        };
-    if (!col.header) col.header = startCase(String(col.field.split('.').at(-1)));
-    return {
-        ...col,
-    };
+export function createGridColumn<T>(col: Column<T>): ObjectColumn<T> {
+    const resCol: ObjectColumn<T> = isObject(col) ? col : { field: col };
+    if (isNil(resCol.header)) resCol.header = startCase(String(resCol.field.split('.').at(-1)));
+    return resCol;
 }
 
-export function createGridColumns<T>(columns: Column<T>[]): MtxGridColumn<T>[] {
+export function createGridColumns<T>(columns: Column<T>[]): ObjectColumn<T>[] {
     return columns.map((col) => createGridColumn(col));
 }
 
@@ -24,7 +19,7 @@ export function createDescriptionFormatterColumn<T>(
     field: string,
     getDescriptionOrDescriptionField: ((data: T) => string) | string,
     getValue?: (data: T) => string
-): MtxGridColumn {
+): ObjectColumn<T> {
     return {
         field,
         formatter: (data: T) => {
@@ -51,7 +46,7 @@ export const createDatetimeFormatter =
             'en'
         );
 
-export function createDatetimeFormatterColumn<T>(field: string): MtxGridColumn {
+export function createDatetimeFormatterColumn<T>(field: string): ObjectColumn<T> {
     return {
         field,
         formatter: createDatetimeFormatter<T>(field as keyof T),

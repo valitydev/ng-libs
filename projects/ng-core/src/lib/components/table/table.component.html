@@ -41,7 +41,7 @@
         <mtx-grid
             *ngIf="renderedColumns"
             [cellSelectable]="false"
-            [cellTemplate]="cellTemplate"
+            [cellTemplate]="renderedCellTemplate"
             [columnHideable]="true"
             [columnPinnable]="true"
             [columnResizable]="true"
@@ -54,6 +54,9 @@
             columnHideableChecked="show"
             (rowSelectionChange)="rowSelectionChange.emit($event)"
         ></mtx-grid>
+        <v-table-menu-cell-template
+            (templateChange)="menuCellTpl = $event"
+        ></v-table-menu-cell-template>
         <ng-template #footerTpl>
             <button
                 *ngIf="hasMore"

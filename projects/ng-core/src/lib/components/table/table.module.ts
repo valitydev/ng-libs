@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MtxGridModule } from '@ng-matero/extensions/grid';
 
 import { TableActionsComponent } from './components/table-actions.component';
+import { TableMenuCellTemplateComponent } from './components/table-menu-cell-template.component';
 import { TableTooltipCellTemplateComponent } from './components/table-tooltip-cell-template.component';
 import { TableComponent } from './table.component';
 import { ActionsModule } from '../actions';
@@ -31,7 +32,12 @@ import { ActionsModule } from '../actions';
         MatTooltipModule,
         MtxGridModule,
     ],
-    declarations: [TableComponent, TableActionsComponent, TableTooltipCellTemplateComponent],
+    declarations: [
+        TableComponent,
+        TableActionsComponent,
+        TableTooltipCellTemplateComponent,
+        TableMenuCellTemplateComponent,
+    ],
     exports: [TableComponent, TableActionsComponent, TableTooltipCellTemplateComponent],
 })
 export class TableModule {}

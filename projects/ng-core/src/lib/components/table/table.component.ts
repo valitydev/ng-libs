@@ -7,6 +7,7 @@ import {
     ContentChild,
     OnChanges,
     ChangeDetectorRef,
+    TemplateRef,
 } from '@angular/core';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
@@ -48,7 +49,18 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
+    menuCellTpl!: TemplateRef<unknown>;
+
     constructor(private cdr: ChangeDetectorRef) {}
+
+    get renderedCellTemplate(): MtxGrid['cellTemplate'] {
+        if (this.cellTemplate instanceof TemplateRef) return this.cellTemplate;
+        return Object.fromEntries(
+            this.renderedColumns
+                .filter((c) => c.type === ('menu' as string))
+                .map((c) => [c.field, this.menuCellTpl])
+        );
+    }
 
     get hasUpdate() {
         return this.update.observed;
@@ -81,7 +93,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
-        if (changes.columns) this.renderedColumns = createGridColumns(this.columns);
+        if (changes.columns) this.renderedColumns = createGridColumns(this.columns) as never;
     }
 
     updateColumns(columns: MtxGridColumn<T>[]) {
@@ -91,7 +103,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     }
 
     reset() {
-        this.renderedColumns = createGridColumns(this.columns);
+        this.renderedColumns = createGridColumns(this.columns) as never;
         this.hasReset = false;
         // TODO: Hack, problem with pinned columns rerender in mtx-grid
         this.renderedColumns.push({ field: ' ' });
