@@ -51,7 +51,7 @@ module.exports = {
                     'error',
                     {
                         selector: 'default',
-                        format: ['strictCamelCase'],
+                        format: ['camelCase'],
                         leadingUnderscore: 'allow',
                     },
                     {
@@ -61,7 +61,7 @@ module.exports = {
                     },
                     {
                         selector: 'typeLike',
-                        format: ['StrictPascalCase'],
+                        format: ['PascalCase'],
                     },
                     {
                         selector: 'variable',
@@ -73,15 +73,15 @@ module.exports = {
                         modifiers: ['const', 'global'],
                         // Objects are functions too
                         types: ['function'],
-                        format: ['UPPER_CASE', 'strictCamelCase'],
+                        format: ['UPPER_CASE', 'camelCase'],
                     },
                     {
                         selector: 'enumMember',
-                        format: ['StrictPascalCase'],
+                        format: ['PascalCase'],
                     },
                     {
                         selector: ['objectLiteralProperty', 'typeProperty'],
-                        format: ['strictCamelCase', 'snake_case'],
+                        format: ['camelCase', 'snake_case'],
                         leadingUnderscore: 'allow',
                         trailingUnderscore: 'allow',
                     },
@@ -112,6 +112,7 @@ module.exports = {
                         argsIgnorePattern: '^_',
                     },
                 ],
+                '@typescript-eslint/no-inferrable-types': 'off',
             },
         },
         ...require('./configs/import-order')().overrides,
