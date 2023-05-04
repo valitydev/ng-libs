@@ -28,8 +28,8 @@
     </ng-container>
 
     <mat-progress-bar
-        *ngIf="inProgress || progress"
-        [mode]="inProgress ? 'indeterminate' : 'determinate'"
-        [value]="progress"
+        *ngIf="progress && progress !== 100"
+        [mode]="progressMode"
+        [value]="progressValue"
     ></mat-progress-bar>
 </div>
