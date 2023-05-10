@@ -1,0 +1,78 @@
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { capitalize } from 'lodash-es';
+
+import { LogError } from './log-error';
+import { Operation } from './types/operation';
+
+const DEFAULT_DURATION_MS = 3000;
+const DEFAULT_ERROR_DURATION_MS = 6000;
+
+@Injectable({ providedIn: 'root' })
+export class NotifyLogService {
+    constructor(private snackBar: MatSnackBar) {}
+
+    success(message: string = 'Completed successfully'): void {
+        this.notify(message);
+    }
+
+    error(error: unknown, message?: string) {
+        const logError = new LogError(error);
+        message = message || logError.message || logError.name;
+        console.warn(
+            [
+                `Caught error: ${message}.`,
+                logError.name && `Name: ${logError.name}.`,
+                logError.message && `Message: ${logError.message}.`,
+                Object.keys(logError.details).length && JSON.stringify(logError.details, null, 2),
+            ]
+                .filter(Boolean)
+                .join('\n')
+        );
+        this.notify(message, DEFAULT_ERROR_DURATION_MS);
+    }
+
+    successOperation(operation: Operation, objectName: string): void {
+        let message!: string;
+        switch (operation) {
+            case 'create':
+                message = `${capitalize(objectName)} created successfully`;
+                break;
+            case 'receive':
+                message = `${capitalize(objectName)} received successfully`;
+                break;
+            case 'update':
+                message = `${capitalize(objectName)} updated successfully`;
+                break;
+            case 'delete':
+                message = `${capitalize(objectName)} deleted successfully`;
+                break;
+        }
+        this.success(message);
+    }
+
+    errorOperation(error: unknown, operation: Operation, objectName: string) {
+        let message!: string;
+        switch (operation) {
+            case 'create':
+                message = `Error creating ${objectName}`;
+                break;
+            case 'receive':
+                message = `Error retrieving ${objectName}`;
+                break;
+            case 'update':
+                message = `Error updating ${objectName}`;
+                break;
+            case 'delete':
+                message = `Error deleting ${objectName}`;
+                break;
+        }
+        this.error(error, message);
+    }
+
+    private notify(message: string, duration = DEFAULT_DURATION_MS) {
+        return this.snackBar.open(message, 'OK', {
+            duration,
+        });
+    }
+}

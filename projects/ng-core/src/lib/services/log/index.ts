@@ -1,2 +1,2 @@
 export * from './log.module';
-export * from './log.service';
+export * from './notify-log.service';

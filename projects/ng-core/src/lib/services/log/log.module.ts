@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { LogService } from './log.service';
+import { NotifyLogService } from './notify-log.service';
 
 @NgModule({
     imports: [MatSnackBarModule],
-    providers: [LogService],
+    providers: [NotifyLogService],
 })
 export class LogModule {}
