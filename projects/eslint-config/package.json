@@ -1,0 +1,24 @@
+{
+  "name": "@vality/eslint-config",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./configs": "./configs/index.js"
+  },
+  "peerDependencies": {
+    "eslint": ">= 8"
+  },
+  "dependencies": {
+    "@angular-eslint/eslint-plugin": "^15.2.1",
+    "@angular-eslint/eslint-plugin-template": "^15.2.1",
+    "@angular-eslint/template-parser": "^15.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-unused-imports": "^2.0.0"
+  }
+}

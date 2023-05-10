@@ -6,12 +6,10 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
-import { ActionsModule } from '../actions';
-import { DialogComponent } from './dialog.component';
 import { DialogActionsComponent } from './components/dialog-actions/dialog-actions.component';
+import { DialogComponent } from './dialog.component';
 import { DialogService } from './services/dialog.service';
-
-const SHARED_DECLARATIONS = [DialogComponent, DialogActionsComponent];
+import { ActionsModule } from '../actions';
 
 @NgModule({
     imports: [
@@ -24,7 +22,7 @@ const SHARED_DECLARATIONS = [DialogComponent, DialogActionsComponent];
         MatDialogModule,
     ],
     providers: [DialogService],
-    declarations: SHARED_DECLARATIONS,
-    exports: SHARED_DECLARATIONS,
+    declarations: [DialogComponent, DialogActionsComponent],
+    exports: [DialogComponent, DialogActionsComponent],
 })
 export class DialogModule {}

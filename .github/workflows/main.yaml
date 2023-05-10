@@ -14,7 +14,23 @@ jobs:
       - run: npm ci
       - name: Build
         run: npm run build
-      - uses: valitydev/action-frontend/publish@v0.1
+      - name: Publish Angular Core
+        uses: valitydev/action-frontend/publish@v0.1
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./dist/ng-core
+      - name: Publish ESLint Config
+        uses: valitydev/action-frontend/publish@v0.1
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          directory: ./projects/eslint-config
+      - name: Publish CSpell Config
+        uses: valitydev/action-frontend/publish@v0.1
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          directory: ./projects/cspell-config
+      - name: Publish Prettier Config
+        uses: valitydev/action-frontend/publish@v0.1
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          directory: ./projects/prettier-config

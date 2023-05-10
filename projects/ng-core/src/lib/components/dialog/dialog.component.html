@@ -4,6 +4,7 @@
             <h2 class="mat-h2">{{ title }}</h2>
         </div>
         <mat-icon
+            *ngIf="!noCloseButton"
             [matDialogClose]="cancelData"
             class="dialog-title-close"
             inline
@@ -27,8 +28,8 @@
     </ng-container>
 
     <mat-progress-bar
-        *ngIf="inProgress || progress"
-        [mode]="inProgress ? 'indeterminate' : 'determinate'"
-        [value]="progress"
+        *ngIf="progress && progress !== 100"
+        [mode]="progressMode"
+        [value]="progressValue"
     ></mat-progress-bar>
 </div>

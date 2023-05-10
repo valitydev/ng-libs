@@ -1,0 +1,73 @@
+<div class="table">
+    <v-actions *ngIf="hasToolbar">
+        <v-actions *ngIf="hasUpdate">
+            <button
+                [disabled]="inProgress"
+                mat-stroked-button
+                (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
+            >
+                Update
+            </button>
+            <ng-container *ngIf="hasSizes">
+                <button [disabled]="inProgress" [matMenuTriggerFor]="menu" mat-button>
+                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    <button
+                        *ngFor="let size of renderedSizes"
+                        mat-menu-item
+                        (click)="size$.next(size)"
+                    >
+                        {{ size }}
+                    </button>
+                </mat-menu>
+            </ng-container>
+            <ng-container>
+                <button [matMenuTriggerFor]="columnMenu.menuPanel" mat-button>Columns</button>
+                <mtx-grid-column-menu
+                    #columnMenu
+                    [columns]="renderedColumns"
+                    buttonText="test"
+                    style="display: none"
+                    (columnChange)="updateColumns($event)"
+                ></mtx-grid-column-menu>
+            </ng-container>
+            <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
+            <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
+        </v-actions>
+        <ng-content select="v-table-actions"></ng-content>
+    </v-actions>
+
+    <mat-card class="table-card">
+        <mtx-grid
+            *ngIf="renderedColumns"
+            [cellSelectable]="false"
+            [cellTemplate]="renderedCellTemplate"
+            [columnHideable]="true"
+            [columnPinnable]="true"
+            [columnResizable]="true"
+            [columns]="renderedColumns"
+            [data]="data"
+            [loading]="inProgress || !columns"
+            [paginationTemplate]="footerTpl"
+            [rowSelectable]="rowSelectable"
+            [trackBy]="trackBy"
+            columnHideableChecked="show"
+            (rowSelectionChange)="rowSelectionChange.emit($event)"
+        ></mtx-grid>
+        <v-table-menu-cell-template
+            (templateChange)="menuCellTpl = $event"
+        ></v-table-menu-cell-template>
+        <ng-template #footerTpl>
+            <button
+                *ngIf="hasMore"
+                [disabled]="inProgress"
+                mat-button
+                style="width: 100%"
+                (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
+            >
+                {{ inProgress ? 'Loading...' : 'Show more' }}
+            </button>
+        </ng-template>
+    </mat-card>
+</div>
