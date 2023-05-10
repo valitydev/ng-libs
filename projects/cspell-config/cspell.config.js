@@ -17,5 +17,9 @@ module.exports = {
         'fesm',
         'packagr',
         'ngneat',
+        'progressable',
+        'hideable',
+        'pinnable',
+        'datetime',
     ],
 };
