@@ -32,7 +32,8 @@
                     (columnChange)="updateColumns($event)"
                 ></mtx-grid-column-menu>
             </ng-container>
-            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>
+            <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
+            <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
         </v-actions>
         <ng-content select="v-table-actions"></ng-content>
     </v-actions>
