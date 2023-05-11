@@ -12,7 +12,7 @@ export function createGridColumn<T>(col: Column<T>): ObjectColumn<T> {
 }
 
 export function createGridColumns<T>(columns: Column<T>[]): ObjectColumn<T>[] {
-    return columns.map((col) => createGridColumn(col));
+    return columns?.map((col) => createGridColumn(col)) || [];
 }
 
 export function createDescriptionFormatterColumn<T>(

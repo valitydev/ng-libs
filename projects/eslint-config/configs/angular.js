@@ -28,7 +28,9 @@ module.exports = (prefix = 'app') => ({
         {
             files: ['*.html'],
             extends: ['plugin:@angular-eslint/template/recommended'],
-            rules: {},
+            rules: {
+                '@angular-eslint/template/no-negated-async': 'off',
+            },
         },
     ],
 });

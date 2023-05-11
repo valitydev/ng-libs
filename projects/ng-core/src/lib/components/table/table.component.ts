@@ -34,14 +34,17 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() progress?: boolean | number | null = false;
 
-    @Input() @coerceBoolean rowSelectable = false;
+    @Input() @coerceBoolean rowSelectable: boolean = false;
+    @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
 
+    @Input() @coerceBoolean hasMore?: boolean | string = false;
+    @Output() more = new EventEmitter<{ size?: number }>();
+
     @Output() sizeChange = new EventEmitter<number>();
     @Output() update = new EventEmitter<{ size?: number }>();
-    @Output() more = new EventEmitter<{ size?: number }>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
@@ -66,14 +69,6 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
         return this.update.observed;
     }
 
-    get hasMore() {
-        return this.more.observed && this.columns;
-    }
-
-    get hasToolbar() {
-        return this.hasUpdate || this.actions;
-    }
-
     get hasSizes() {
         return this.renderedSizes.length;
     }
@@ -81,7 +76,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     get renderedSizes() {
         if (Array.isArray(this.sizes)) return this.sizes;
         if (typeof this.sizes !== 'string' && !this.sizeChange.observed) return [];
-        return [25, 50, 100];
+        return [25, 100, 1000];
     }
 
     get inProgress() {
