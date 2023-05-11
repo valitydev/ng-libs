@@ -2,6 +2,7 @@ module.exports = {
     $schema: 'https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json',
     version: '0.2',
     ignorePaths: ['node_modules', '**/*.svg'],
+    import: '@cspell/dict-ru_ru/cspell-ext.json',
     useGitignore: true,
     language: 'en,ru',
     words: [
