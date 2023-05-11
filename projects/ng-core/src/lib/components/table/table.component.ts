@@ -34,7 +34,8 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() progress?: boolean | number | null = false;
 
-    @Input() @coerceBoolean rowSelectable = false;
+    @Input() @coerceBoolean rowSelectable: boolean = false;
+    @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
