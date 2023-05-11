@@ -28,14 +28,16 @@
                     #columnMenu
                     [columns]="renderedColumns"
                     buttonText="test"
-                    style="display: none"
+                    class="column-menu"
                     (columnChange)="updateColumns($event)"
                 ></mtx-grid-column-menu>
             </ng-container>
             <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
             <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
         </v-actions>
-        <ng-content select="v-table-actions"></ng-content>
+        <div>
+            <ng-content select="v-table-actions"></ng-content>
+        </div>
     </v-actions>
 
     <mat-card class="table-card">
@@ -47,7 +49,7 @@
             [columnPinnable]="true"
             [columnResizable]="true"
             [columns]="renderedColumns"
-            [data]="data"
+            [data]="data || []"
             [loading]="inProgress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="rowSelectable"
@@ -59,15 +61,16 @@
             (templateChange)="menuCellTpl = $event"
         ></v-table-menu-cell-template>
         <ng-template #footerTpl>
-            <button
-                *ngIf="hasMore"
-                [disabled]="inProgress"
-                mat-button
-                style="width: 100%"
-                (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
-            >
-                {{ inProgress ? 'Loading...' : 'Show more' }}
-            </button>
+            <div *ngIf="hasMore" class="show-more-wrapper">
+                <button
+                    [disabled]="inProgress"
+                    class="show-more"
+                    mat-button
+                    (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
+                >
+                    {{ inProgress ? 'Loading...' : 'Show more' }}
+                </button>
+            </div>
         </ng-template>
     </mat-card>
 </div>

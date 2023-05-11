@@ -39,9 +39,11 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     @Input() sizes: boolean | number[] | string = false;
 
+    @Input() @coerceBoolean hasMore?: boolean | string = false;
+    @Output() more = new EventEmitter<{ size?: number }>();
+
     @Output() sizeChange = new EventEmitter<number>();
     @Output() update = new EventEmitter<{ size?: number }>();
-    @Output() more = new EventEmitter<{ size?: number }>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
@@ -64,10 +66,6 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     get hasUpdate() {
         return this.update.observed;
-    }
-
-    get hasMore() {
-        return this.more.observed && this.columns;
     }
 
     get hasToolbar() {

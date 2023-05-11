@@ -27,7 +27,15 @@
         }
     }
 
-    .show-more {
+    .column-menu {
+        display: none
+    }
+
+    .show-more-wrapper {
         padding: 16px;
+
+        .show-more {
+            width: 100%
+        }
     }
 }
