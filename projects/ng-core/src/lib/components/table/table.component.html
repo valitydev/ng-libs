@@ -1,13 +1,15 @@
 <div class="table">
-    <v-actions *ngIf="hasToolbar">
-        <v-actions *ngIf="hasUpdate">
-            <button
-                [disabled]="inProgress"
-                mat-stroked-button
-                (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
-            >
-                Update
-            </button>
+    <v-actions>
+        <v-actions>
+            <ng-container *ngIf="hasUpdate">
+                <button
+                    [disabled]="inProgress"
+                    mat-stroked-button
+                    (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
+                >
+                    Update
+                </button>
+            </ng-container>
             <ng-container *ngIf="hasSizes">
                 <button [disabled]="inProgress" [matMenuTriggerFor]="menu" mat-button>
                     {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
