@@ -9,6 +9,7 @@ import {
     ChangeDetectorRef,
     TemplateRef,
 } from '@angular/core';
+import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
@@ -34,17 +35,21 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() progress?: boolean | number | null = false;
 
-    @Input() @coerceBoolean rowSelectable: boolean = false;
+    @Input() @coerceBoolean rowSelectable: boolean | '' = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
 
-    @Input() @coerceBoolean hasMore?: boolean | string = false;
+    @Input() @coerceBoolean hasMore?: boolean | '' = false;
     @Output() more = new EventEmitter<{ size?: number }>();
 
     @Output() sizeChange = new EventEmitter<number>();
     @Output() update = new EventEmitter<{ size?: number }>();
+
+    @Input() sortActive?: string;
+    @Input() sortDirection?: SortDirection;
+    @Output() sortChange = new EventEmitter<Sort>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 

@@ -7,7 +7,7 @@ export type DialogConfig = Record<'small' | 'medium' | 'large', MatDialogConfig<
 export const DIALOG_CONFIG = new InjectionToken<DialogConfig>('dialogConfig');
 
 export const BASE_CONFIG: ValuesType<DialogConfig> = {
-    maxHeight: '90vh',
+    maxHeight: '100vh',
     disableClose: true,
     autoFocus: false,
     width: '552px',
