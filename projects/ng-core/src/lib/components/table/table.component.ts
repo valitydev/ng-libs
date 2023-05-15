@@ -53,11 +53,13 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
-    size$ = new BehaviorSubject<undefined | number>(25);
+    size$ = new BehaviorSubject<undefined | number>(undefined);
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
     menuCellTpl!: TemplateRef<unknown>;
+
+    renderedSizes: number[] = [];
 
     constructor(private cdr: ChangeDetectorRef) {}
 
@@ -81,12 +83,6 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
         return this.renderedSizes.length;
     }
 
-    get renderedSizes() {
-        if (Array.isArray(this.sizes)) return this.sizes;
-        if (typeof this.sizes !== 'string' && !this.sizeChange.observed) return [];
-        return [25, 100, 1000];
-    }
-
     get inProgress() {
         return !!this.progress;
     }
@@ -96,7 +92,19 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
-        if (changes.columns) this.renderedColumns = createGridColumns(this.columns) as never;
+        if (changes.columns) {
+            this.renderedColumns = createGridColumns(this.columns) as never;
+        }
+        if (changes.sizes) {
+            if (Array.isArray(this.sizes)) {
+                this.renderedSizes = this.sizes;
+            } else if (typeof this.sizes !== 'string' && !this.sizeChange.observed) {
+                this.renderedSizes = [];
+            } else {
+                this.renderedSizes = [25, 100, 1000];
+            }
+            this.size$.next(this.renderedSizes[0]);
+        }
     }
 
     updateColumns(columns: MtxGridColumn<T>[]) {
