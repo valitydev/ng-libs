@@ -63,11 +63,14 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     get renderedCellTemplate(): MtxGrid['cellTemplate'] {
         if (this.cellTemplate instanceof TemplateRef) return this.cellTemplate;
-        return Object.fromEntries(
-            this.renderedColumns
-                .filter((c) => c.type === ('menu' as string))
-                .map((c) => [c.field, this.menuCellTpl])
-        );
+        return {
+            ...Object.fromEntries(
+                this.renderedColumns
+                    .filter((c) => c.type === ('menu' as string))
+                    .map((c) => [c.field, this.menuCellTpl])
+            ),
+            ...(this.cellTemplate || {}),
+        };
     }
 
     get hasUpdate() {
