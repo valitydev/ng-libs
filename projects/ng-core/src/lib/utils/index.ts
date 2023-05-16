@@ -3,8 +3,9 @@ export * from './string';
 export * from './operators';
 export * from './component';
 export * from './form';
+export * from './date';
 
 export * from './clean';
 export * from './is-empty';
 export * from './compare-different-types';
-export { isEmptyPrimitive } from './is-empty-primitive';
+export * from './is-empty-primitive';
