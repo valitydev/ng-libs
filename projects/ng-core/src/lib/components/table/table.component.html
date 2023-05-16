@@ -12,12 +12,12 @@
             </ng-container>
             <ng-container *ngIf="hasUpdate">
                 <button
+                    *ngIf="rowSelectable"
                     [disabled]="inProgress || !hasMore"
                     mat-button
-                    mat-stroked-button
                     (click)="more.emit()"
                 >
-                    Load more
+                    Get more
                 </button>
             </ng-container>
             <ng-container *ngIf="hasSizes">
