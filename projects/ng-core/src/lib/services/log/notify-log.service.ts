@@ -6,7 +6,7 @@ import { LogError } from './log-error';
 import { Operation } from './types/operation';
 
 const DEFAULT_DURATION_MS = 3000;
-const DEFAULT_ERROR_DURATION_MS = 6000;
+const DEFAULT_ERROR_DURATION_MS = 10000;
 
 @Injectable({ providedIn: 'root' })
 export class NotifyLogService {

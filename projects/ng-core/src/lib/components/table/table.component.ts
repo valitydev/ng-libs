@@ -40,8 +40,11 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
+    @Input() set size(size: number | undefined) {
+        if (size) this.size$.next(size);
+    }
 
-    @Input() @coerceBoolean hasMore?: boolean | '' = false;
+    @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
     @Output() more = new EventEmitter<{ size?: number }>();
 
     @Output() sizeChange = new EventEmitter<number>();

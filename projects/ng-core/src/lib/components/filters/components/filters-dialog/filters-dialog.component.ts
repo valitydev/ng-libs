@@ -1,6 +1,7 @@
-import { Component, TemplateRef } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { DialogSuperclass } from '../../../dialog';
+import { FiltersComponent } from '../../filters.component';
 
 @Component({
     selector: 'v-filters-dialog',
@@ -9,5 +10,5 @@ import { DialogSuperclass } from '../../../dialog';
 })
 export class FiltersDialogComponent extends DialogSuperclass<
     FiltersDialogComponent,
-    { filters: TemplateRef<unknown> }
+    { filters: FiltersComponent }
 > {}

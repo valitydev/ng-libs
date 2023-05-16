@@ -35,17 +35,23 @@ export interface Accumulator<TResultItem, TParams, TContinuationToken> {
 }
 
 export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuationToken = string> {
-    result$: Observable<TResultItem[]> = defer(() =>
-        this.fetch$.pipe(skipWhile((r) => r.type !== 'load'))
-    ).pipe(
+    result$ = defer(() => this.state$).pipe(map(({ result }) => result));
+    hasMore$ = defer(() => this.state$).pipe(map(({ continuationToken }) => !!continuationToken));
+    isLoading$ = inProgressFrom(
+        () => this.progress$,
+        () => this.state$
+    );
+
+    private fetch$ = new ReplaySubject<Action<TParams>>(1);
+    private progress$ = new BehaviorSubject(0);
+    private state$ = defer(() => this.fetch$.pipe(skipWhile((r) => r.type !== 'load'))).pipe(
         mergeScan<Action<TParams>, Accumulator<TResultItem, TParams, TContinuationToken>>(
             (acc, action) => {
-                const params = (action.params ?? acc.params) as TParams;
+                const params = (action.type === 'load' ? action.params : acc.params) as TParams;
                 const size = action.size ?? acc.size;
-                return this.fetch(params, {
-                    size: size ?? acc.size,
-                    continuationToken: acc.continuationToken,
-                }).pipe(
+                const continuationToken =
+                    action.type === 'more' ? acc.continuationToken : undefined;
+                return this.fetch(params, { size, continuationToken }).pipe(
                     map(({ result, continuationToken }) => ({
                         params,
                         result:
@@ -62,13 +68,8 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
             },
             1
         ),
-        map((acc) => acc.result),
         shareReplay({ bufferSize: 1, refCount: true })
     );
-    isLoading$ = inProgressFrom(() => this.progress$, this.result$);
-
-    private fetch$ = new ReplaySubject<Action<TParams>>(1);
-    private progress$ = new BehaviorSubject(0);
 
     load(params: TParams, options: { size?: number } = {}): void {
         this.fetch$.next({ type: 'load', params, size: options.size });

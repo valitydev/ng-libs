@@ -1,8 +1,5 @@
-<v-dialog title="Filters">
-    <div class="filters">
-        <ng-container *ngTemplateOutlet="dialogData.filters"></ng-container>
+<v-dialog noActions title="Filters">
+    <div [ngClass]="['v-filters-dialog-cols-' + (dialogData.filters.repeat$ | async), 'filters']">
+        <ng-container *ngTemplateOutlet="dialogData.filters.contentTemplate"></ng-container>
     </div>
-    <v-dialog-actions>
-        <button color="primary" mat-button>Filter</button>
-    </v-dialog-actions>
 </v-dialog>

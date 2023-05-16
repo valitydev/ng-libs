@@ -1,5 +1,14 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, ContentChild, TemplateRef } from '@angular/core';
+import {
+    Component,
+    ContentChild,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    TemplateRef,
+    ViewChild,
+} from '@angular/core';
 import { map } from 'rxjs/operators';
 
 import { FiltersDialogComponent } from './components/filters-dialog/filters-dialog.component';
@@ -11,7 +20,12 @@ import { DialogService } from '../dialog';
     styleUrls: ['./filters.component.scss'],
 })
 export class FiltersComponent {
+    @Input() active = 0;
+    @Output() clear = new EventEmitter<void>();
+
     @ContentChild(TemplateRef, { static: true }) contentTemplate!: TemplateRef<unknown>;
+    @ViewChild('content') content!: ElementRef<HTMLElement>;
+
     repeat$ = this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
         map((b) => {
             if (b.breakpoints[Breakpoints.XLarge]) return 5;
@@ -22,9 +36,15 @@ export class FiltersComponent {
         })
     );
 
+    displayedFiltersCount$ = this.repeat$.pipe(map((r) => r * 2));
+
+    get filtersCount() {
+        return this.content?.nativeElement?.children?.length;
+    }
+
     constructor(private dialog: DialogService, private breakpointObserver: BreakpointObserver) {}
 
     open() {
-        this.dialog.open(FiltersDialogComponent, { filters: this.contentTemplate });
+        this.dialog.open(FiltersDialogComponent, { filters: this });
     }
 }

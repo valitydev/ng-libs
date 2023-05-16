@@ -1,15 +1,7 @@
-import isEmpty from 'lodash-es/isEmpty';
-import isNil from 'lodash-es/isNil';
 import isObject from 'lodash-es/isObject';
 import { ValuesType } from 'utility-types';
 
-function isEmptyPrimitive(value: unknown): boolean {
-    return isNil(value) || value === '';
-}
-
-function isEmptyObjectOrPrimitive(value: unknown): boolean {
-    return isObject(value) ? isEmpty(value) : isEmptyPrimitive(value);
-}
+import { isEmpty, isEmptyPrimitive } from './is-empty';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function clean<
@@ -19,7 +11,7 @@ export function clean<
     value: T,
     allowRootRemoval: TAllowRootRemoval = false as TAllowRootRemoval,
     isNotDeep = false,
-    filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmptyObjectOrPrimitive(v)
+    filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmpty(v)
 ): TAllowRootRemoval extends true ? T | null : T {
     if (!isObject(value) || (value.constructor !== Object && !Array.isArray(value))) return value;
     if (allowRootRemoval && !filterPredicate(value as never)) return null as never;
