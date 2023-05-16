@@ -1,7 +1,8 @@
 import isObject from 'lodash-es/isObject';
 import { ValuesType } from 'utility-types';
 
-import { isEmpty, isEmptyPrimitive } from './is-empty';
+import { isEmpty } from './is-empty';
+import { isEmptyPrimitive } from './is-empty-primitive';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function clean<

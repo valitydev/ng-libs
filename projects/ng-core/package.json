@@ -3,6 +3,10 @@
   "version": "0.5.0",
   "sideEffects": false,
   "dependencies": {
+    "@s-libs/js-core": "^15.2.0",
+    "@s-libs/micro-dash": "^15.2.0",
+    "@s-libs/ng-core": "^15.2.0",
+    "@s-libs/rxjs-core": "^15.2.0",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
@@ -15,8 +19,8 @@
     "@types/lodash-es": "^4.0.0",
     "coerce-property": ">=15.0.0",
     "lodash-es": "^4.0.0",
-    "utility-types": ">=3.0.0",
-    "rxjs": ">=7.0.0"
+    "rxjs": ">=7.0.0",
+    "utility-types": ">=3.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -3,5 +3,6 @@
     "dest": "../../dist/ng-core",
     "lib": {
         "entryFile": "src/public-api.ts"
-    }
+    },
+    "allowedNonPeerDependencies": ["@s-libs/*"]
 }
