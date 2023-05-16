@@ -10,6 +10,16 @@
                     Update
                 </button>
             </ng-container>
+            <ng-container *ngIf="hasUpdate">
+                <button
+                    [disabled]="inProgress || !hasMore"
+                    mat-button
+                    mat-stroked-button
+                    (click)="more.emit()"
+                >
+                    Load more
+                </button>
+            </ng-container>
             <ng-container *ngIf="hasSizes">
                 <button [disabled]="inProgress" [matMenuTriggerFor]="menu" mat-button>
                     {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
@@ -24,16 +34,6 @@
                     </button>
                 </mat-menu>
             </ng-container>
-            <ng-container>
-                <button [matMenuTriggerFor]="columnMenu.menuPanel" mat-button>Columns</button>
-                <mtx-grid-column-menu
-                    #columnMenu
-                    [columns]="renderedColumns"
-                    buttonText="test"
-                    class="column-menu"
-                    (columnChange)="updateColumns($event)"
-                ></mtx-grid-column-menu>
-            </ng-container>
             <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
             <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
         </v-actions>
@@ -41,7 +41,22 @@
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
-
+    <div class="details">
+        <div>
+            Quantity: {{ data?.length ?? 0
+            }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0) }}
+        </div>
+        <ng-container>
+            <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
+            <mtx-grid-column-menu
+                #columnMenu
+                [columns]="renderedColumns"
+                buttonText="test"
+                class="column-menu"
+                (columnChange)="updateColumns($event)"
+            ></mtx-grid-column-menu>
+        </ng-container>
+    </div>
     <mat-card class="table-card">
         <mtx-grid
             *ngIf="renderedColumns"

@@ -55,11 +55,11 @@ export function createOperationMenuColumn<T>(
 ): ExtColumn<T> {
     const menuCol = createGridColumn(column);
     return {
-        header: '',
         type: 'menu',
         pinned: 'right',
         width: '0',
         ...menuCol,
+        header: typeof column === 'string' ? '' : menuCol.header,
         data: {
             ...((menuCol as MenuColumn<T>).data || {}),
             items,

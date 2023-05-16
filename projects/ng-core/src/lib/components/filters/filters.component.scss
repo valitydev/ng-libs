@@ -11,7 +11,7 @@ $max-columns: 5;
     ::ng-deep .v-filters-cols-#{$i} {
         grid-template-columns: repeat($i, 1fr);
 
-        *:nth-child(n + #{($i * 2) + 1}) {
+        & > *:nth-child(n + #{($i * 2) + 1}) {
             display: none;
         }
     }
