@@ -12,14 +12,17 @@ function isEmptyObjectOrPrimitive(value: unknown): boolean {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function clean<T extends ReadonlyArray<any> | ArrayLike<any> | Record<any, any>>(
+export function clean<
+    T extends ReadonlyArray<any> | ArrayLike<any> | Record<any, any>,
+    TAllowRootRemoval extends boolean = false
+>(
     value: T,
-    allowRootRemoval = false,
+    allowRootRemoval: TAllowRootRemoval = false as TAllowRootRemoval,
     isNotDeep = false,
     filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmptyObjectOrPrimitive(v)
-): T | null {
+): TAllowRootRemoval extends true ? T | null : T {
     if (!isObject(value) || (value.constructor !== Object && !Array.isArray(value))) return value;
-    if (allowRootRemoval && !filterPredicate(value as never)) return null;
+    if (allowRootRemoval && !filterPredicate(value as never)) return null as never;
     let result: unknown;
     const cleanChild = (v: unknown) =>
         isNotDeep ? v : clean(v as never, allowRootRemoval, isNotDeep, filterPredicate);
@@ -34,7 +37,7 @@ export function clean<T extends ReadonlyArray<any> | ArrayLike<any> | Record<any
                 .map(([k, v]) => [k, cleanChild(v)] as const)
                 .filter(([k, v]) => filterPredicate(v, k))
         );
-    return allowRootRemoval && !filterPredicate(result) ? null : (result as never);
+    return allowRootRemoval && !filterPredicate(result) ? (null as never) : (result as never);
 }
 
 export function cleanPrimitiveProps<T extends object>(
