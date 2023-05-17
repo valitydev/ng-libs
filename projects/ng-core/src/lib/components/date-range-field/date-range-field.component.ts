@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { NonNullableFormBuilder } from '@angular/forms';
-import { WrappedControlSuperclass } from '@s-libs/ng-core';
-
-import { provideValueAccessor } from '../../utils';
+import { provideValueAccessor, WrappedControlSuperclass } from '@s-libs/ng-core';
 
 export interface DateRange {
     start?: Date;
@@ -13,7 +11,7 @@ export interface DateRange {
     selector: 'v-date-range-field',
     templateUrl: './date-range-field.component.html',
     styleUrls: ['./date-range-field.component.scss'],
-    providers: [provideValueAccessor(() => DateRangeFieldComponent)],
+    providers: [provideValueAccessor(DateRangeFieldComponent)],
 })
 export class DateRangeFieldComponent extends WrappedControlSuperclass<DateRange> {
     control = this.fb.group({

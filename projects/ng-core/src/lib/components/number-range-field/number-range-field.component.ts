@@ -1,9 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NonNullableFormBuilder } from '@angular/forms';
-import { WrappedControlSuperclass } from '@s-libs/ng-core';
-
-import { NumberRangeFieldModule } from './number-range-field.module';
-import { provideValueAccessor } from '../../utils';
+import { provideValueAccessor, WrappedControlSuperclass } from '@s-libs/ng-core';
 
 export type NumberRange = {
     start?: number;
@@ -14,7 +11,7 @@ export type NumberRange = {
     selector: 'v-number-range-field',
     templateUrl: './number-range-field.component.html',
     styleUrls: ['./number-range-field.component.scss'],
-    providers: [provideValueAccessor(() => NumberRangeFieldModule)],
+    providers: [provideValueAccessor(NumberRangeFieldComponent)],
 })
 export class NumberRangeFieldComponent extends WrappedControlSuperclass<NumberRange> {
     @Input() label!: string;
