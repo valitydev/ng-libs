@@ -114,8 +114,8 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     updateColumns(columns?: MtxGridColumn<T>[]) {
         if (columns) {
-            this.renderedColumns = columns.slice();
-            this.renderedColumns.forEach((c) => (c.hide = c.hide ?? !c.show));
+            this.renderedColumns = columns;
+            this.renderedColumns.forEach((c) => (c.hide = !c.show));
             this.hasReset = true;
         } else {
             this.renderedColumns = createGridColumns(this.columns) as never;
