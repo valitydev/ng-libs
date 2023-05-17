@@ -40,10 +40,11 @@
         </div>
     </v-actions>
     <div class="details">
-        <div>
+        <div *ngIf="data?.length">
             Quantity: {{ data?.length ?? 0
             }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0) }}
         </div>
+        <div></div>
         <ng-container>
             <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
             <mtx-grid-column-menu
