@@ -1,0 +1,11 @@
+@use '@angular/material' as mat;
+
+@mixin theme($theme) {
+    $foreground: map-get($theme, foreground);
+
+    .v-table-description-cell-template {
+        .description {
+            color: mat.get-color-from-palette($foreground, secondary-text) !important;
+        }
+    }
+}

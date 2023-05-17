@@ -1,0 +1,5 @@
+@use '../components/table/table-theme';
+
+@mixin all-component-themes($theme-or-color-config) {
+    @include table-theme.theme($theme-or-color-config);
+}

@@ -10,14 +10,14 @@ import {
     TemplateRef,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
+import { MtxGridColumn, MtxGridCellTemplate } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { BehaviorSubject } from 'rxjs';
 
 import { TableActionsComponent } from './components/table-actions.component';
-import { Column } from './types/column';
+import { Column, ExtColumn } from './types/column';
 import { createGridColumns } from './utils/create-grid-columns';
 import { Progressable } from '../../types/progressable';
 import { ComponentChanges } from '../../utils';
@@ -40,9 +40,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
-    @Input() set size(size: number | undefined) {
-        if (size) this.size$.next(size);
-    }
+    @Input() size?: number;
 
     @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
     @Output() more = new EventEmitter<{ size?: number }>();
@@ -61,22 +59,12 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     hasReset = false;
 
     menuCellTpl!: TemplateRef<unknown>;
+    descriptionCellTpl!: TemplateRef<unknown>;
 
     renderedSizes: number[] = [];
+    renderedCellTemplate!: MtxGrid['cellTemplate'];
 
     constructor(private cdr: ChangeDetectorRef) {}
-
-    get renderedCellTemplate(): MtxGrid['cellTemplate'] {
-        if (this.cellTemplate instanceof TemplateRef) return this.cellTemplate;
-        return {
-            ...Object.fromEntries(
-                this.renderedColumns
-                    .filter((c) => c.type === ('menu' as string))
-                    .map((c) => [c.field, this.menuCellTpl])
-            ),
-            ...(this.cellTemplate || {}),
-        };
-    }
 
     get hasUpdate() {
         return this.update.observed;
@@ -96,7 +84,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
         if (changes.columns) {
-            this.renderedColumns = createGridColumns(this.columns) as never;
+            this.updateColumns();
         }
         if (changes.sizes) {
             if (Array.isArray(this.sizes)) {
@@ -108,20 +96,49 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
             }
             this.size$.next(this.renderedSizes[0]);
         }
-    }
-
-    updateColumns(columns: MtxGridColumn<T>[]) {
-        this.renderedColumns = columns.slice();
-        this.renderedColumns.forEach((c) => (c.hide = !c.show));
-        this.hasReset = true;
+        if (changes.size && this.size) {
+            this.size$.next(this.size);
+        }
+        if (changes.cellTemplate) {
+            this.updateCellTemplate();
+        }
     }
 
     reset() {
-        this.renderedColumns = createGridColumns(this.columns) as never;
-        this.hasReset = false;
+        this.updateColumns();
         // TODO: Hack, problem with pinned columns rerender in mtx-grid
         this.renderedColumns.push({ field: ' ' });
         this.cdr.detectChanges();
         this.renderedColumns.pop();
+    }
+
+    updateColumns(columns?: MtxGridColumn<T>[]) {
+        if (columns) {
+            this.renderedColumns = columns.slice();
+            this.renderedColumns.forEach((c) => (c.hide = c.hide ?? !c.show));
+            this.hasReset = true;
+        } else {
+            this.renderedColumns = createGridColumns(this.columns) as never;
+            this.hasReset = false;
+        }
+        this.updateCellTemplate();
+    }
+
+    private updateCellTemplate() {
+        if (this.cellTemplate instanceof TemplateRef) this.renderedCellTemplate = this.cellTemplate;
+        this.renderedCellTemplate = {
+            ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
+                switch (c.type) {
+                    case 'menu':
+                        acc[c.field] = this.menuCellTpl;
+                        break;
+                    case 'description':
+                        acc[c.field] = this.descriptionCellTpl;
+                        break;
+                }
+                return acc;
+            }, {} as MtxGridCellTemplate),
+            ...(this.cellTemplate || {}),
+        } as MtxGridCellTemplate;
     }
 }
