@@ -26,7 +26,7 @@ export class FiltersComponent {
 
     @ContentChild(TemplateRef, { static: true }) contentTemplate!: TemplateRef<unknown>;
     @ViewChild('content') set content(content: ElementRef<HTMLElement>) {
-        this.filtersCount$.next(this.content?.nativeElement?.children?.length ?? 0);
+        this.filtersCount$.next(content?.nativeElement?.children?.length ?? 0);
     }
 
     repeat$ = this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
