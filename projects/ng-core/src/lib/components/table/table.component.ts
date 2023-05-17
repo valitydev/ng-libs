@@ -9,6 +9,7 @@ import {
     ChangeDetectorRef,
     TemplateRef,
 } from '@angular/core';
+import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
@@ -34,35 +35,47 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() progress?: boolean | number | null = false;
 
-    @Input() @coerceBoolean rowSelectable: boolean = false;
+    @Input() @coerceBoolean rowSelectable: boolean | '' = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @Input() sizes: boolean | number[] | string = false;
+    @Input() set size(size: number | undefined) {
+        if (size) this.size$.next(size);
+    }
 
-    @Input() @coerceBoolean hasMore?: boolean | string = false;
+    @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
     @Output() more = new EventEmitter<{ size?: number }>();
 
     @Output() sizeChange = new EventEmitter<number>();
     @Output() update = new EventEmitter<{ size?: number }>();
 
+    @Input() sortActive?: string;
+    @Input() sortDirection?: SortDirection;
+    @Output() sortChange = new EventEmitter<Sort>();
+
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
-    size$ = new BehaviorSubject<undefined | number>(25);
+    size$ = new BehaviorSubject<undefined | number>(undefined);
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
     menuCellTpl!: TemplateRef<unknown>;
 
+    renderedSizes: number[] = [];
+
     constructor(private cdr: ChangeDetectorRef) {}
 
     get renderedCellTemplate(): MtxGrid['cellTemplate'] {
         if (this.cellTemplate instanceof TemplateRef) return this.cellTemplate;
-        return Object.fromEntries(
-            this.renderedColumns
-                .filter((c) => c.type === ('menu' as string))
-                .map((c) => [c.field, this.menuCellTpl])
-        );
+        return {
+            ...Object.fromEntries(
+                this.renderedColumns
+                    .filter((c) => c.type === ('menu' as string))
+                    .map((c) => [c.field, this.menuCellTpl])
+            ),
+            ...(this.cellTemplate || {}),
+        };
     }
 
     get hasUpdate() {
@@ -71,12 +84,6 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
 
     get hasSizes() {
         return this.renderedSizes.length;
-    }
-
-    get renderedSizes() {
-        if (Array.isArray(this.sizes)) return this.sizes;
-        if (typeof this.sizes !== 'string' && !this.sizeChange.observed) return [];
-        return [25, 100, 1000];
     }
 
     get inProgress() {
@@ -88,7 +95,19 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
-        if (changes.columns) this.renderedColumns = createGridColumns(this.columns) as never;
+        if (changes.columns) {
+            this.renderedColumns = createGridColumns(this.columns) as never;
+        }
+        if (changes.sizes) {
+            if (Array.isArray(this.sizes)) {
+                this.renderedSizes = this.sizes;
+            } else if (typeof this.sizes !== 'string' && !this.sizeChange.observed) {
+                this.renderedSizes = [];
+            } else {
+                this.renderedSizes = [25, 100, 1000];
+            }
+            this.size$.next(this.renderedSizes[0]);
+        }
     }
 
     updateColumns(columns: MtxGridColumn<T>[]) {

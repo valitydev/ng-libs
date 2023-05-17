@@ -6,17 +6,17 @@ import { LogError } from './log-error';
 import { Operation } from './types/operation';
 
 const DEFAULT_DURATION_MS = 3000;
-const DEFAULT_ERROR_DURATION_MS = 6000;
+const DEFAULT_ERROR_DURATION_MS = 10000;
 
 @Injectable({ providedIn: 'root' })
 export class NotifyLogService {
     constructor(private snackBar: MatSnackBar) {}
 
-    success(message: string = 'Completed successfully'): void {
+    success = (message: string = 'Completed successfully'): void => {
         this.notify(message);
-    }
+    };
 
-    error(error: unknown, message?: string) {
+    error = (error: unknown, message?: string): void => {
         const logError = new LogError(error);
         message = message || logError.message || logError.name;
         console.warn(
@@ -30,6 +30,10 @@ export class NotifyLogService {
                 .join('\n')
         );
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
+    };
+
+    createErrorOperation(operation: Operation, objectName: string) {
+        return (err: unknown) => this.errorOperation(err, operation, objectName);
     }
 
     successOperation(operation: Operation, objectName: string): void {

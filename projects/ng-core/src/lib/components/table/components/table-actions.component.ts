@@ -3,9 +3,9 @@ import { Component } from '@angular/core';
 @Component({
     selector: 'v-table-actions',
     template: `
-        <div fxLayout fxLayoutGap="16px">
+        <v-actions>
             <ng-content></ng-content>
-        </div>
+        </v-actions>
     `,
 })
 export class TableActionsComponent {}

@@ -2,6 +2,9 @@ import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angula
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { Overwrite } from 'utility-types';
 
+import { Column, ExtColumn } from '../types/column';
+import { createGridColumn } from '../utils/create-grid-columns';
+
 @Component({
     selector: 'v-table-menu-cell-template',
     template: `
@@ -45,3 +48,21 @@ export type MenuColumn<T> = Overwrite<
         }[];
     };
 };
+
+export function createOperationMenuColumn<T>(
+    column: Column<T>,
+    items: MenuColumn<T>['data']['items']
+): ExtColumn<T> {
+    const menuCol = createGridColumn(column);
+    return {
+        type: 'menu',
+        pinned: 'right',
+        width: '0',
+        ...menuCol,
+        header: typeof column === 'string' ? '' : menuCol.header,
+        data: {
+            ...((menuCol as MenuColumn<T>).data || {}),
+            items,
+        },
+    };
+}
