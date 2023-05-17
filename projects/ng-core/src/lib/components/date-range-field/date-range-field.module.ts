@@ -5,11 +5,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
-import { DateRangeComponent } from './date-range.component';
+import { DateRangeFieldComponent } from './date-range-field.component';
 import { ActionsModule } from '../actions';
 
 @NgModule({
-    declarations: [DateRangeComponent],
+    declarations: [DateRangeFieldComponent],
     imports: [
         MatDatepickerModule,
         MatInputModule,
@@ -18,6 +18,6 @@ import { ActionsModule } from '../actions';
         MatButtonModule,
         ActionsModule,
     ],
-    exports: [DateRangeComponent],
+    exports: [DateRangeFieldComponent],
 })
-export class DateRangeModule {}
+export class DateRangeFieldModule {}

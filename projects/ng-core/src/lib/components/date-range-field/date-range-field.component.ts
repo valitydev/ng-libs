@@ -5,12 +5,12 @@ import { DateRange } from '@angular/material/datepicker';
 import { createControlProviders, ValidatedControlSuperclass } from '../../utils';
 
 @Component({
-    selector: 'v-date-range',
-    templateUrl: './date-range.component.html',
-    styleUrls: ['./date-range.component.scss'],
-    providers: createControlProviders(() => DateRangeComponent),
+    selector: 'v-date-range-field',
+    templateUrl: './date-range-field.component.html',
+    styleUrls: ['./date-range-field.component.scss'],
+    providers: createControlProviders(() => DateRangeFieldComponent),
 })
-export class DateRangeComponent extends ValidatedControlSuperclass<DateRange<Date>> {
+export class DateRangeFieldComponent extends ValidatedControlSuperclass<DateRange<Date>> {
     control = this.fb.group({
         start: undefined,
         end: undefined,
