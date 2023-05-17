@@ -4,8 +4,8 @@ import { ValuesType } from 'utility-types';
 import { isEmpty } from './is-empty';
 import { isEmptyPrimitive } from './is-empty-primitive';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function clean<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends ReadonlyArray<any> | ArrayLike<any> | Record<any, any>,
     TAllowRootRemoval extends boolean = false
 >(
