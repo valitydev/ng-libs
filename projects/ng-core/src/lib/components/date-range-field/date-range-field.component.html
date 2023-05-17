@@ -9,7 +9,7 @@
         <mat-date-range-picker-actions>
             <v-actions style="width: 100%">
                 <button
-                    [disabled]="!control.value.start && !control.value.end"
+                    [disabled]="!control.value?.start && !control.value?.end"
                     mat-button
                     (click)="control.reset(); picker.close()"
                 >
