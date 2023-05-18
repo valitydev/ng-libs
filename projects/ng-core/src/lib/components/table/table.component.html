@@ -87,6 +87,9 @@
         <v-table-description-cell-template
             (templateChange)="cellTemplates.set('description', $event)"
         ></v-table-description-cell-template>
+        <v-table-tag-cell-template
+            (templateChange)="cellTemplates.set('tag', $event)"
+        ></v-table-tag-cell-template>
         <ng-template #footerTpl>
             <div *ngIf="hasMore" class="show-more-wrapper">
                 <button
