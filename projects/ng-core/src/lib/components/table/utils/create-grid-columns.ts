@@ -24,23 +24,3 @@ export function createGridColumn<T>(col: Column<T>): ExtColumn<T> {
 export function createGridColumns<T>(columns: Column<T>[]): ExtColumn<T>[] {
     return columns?.map((col) => createGridColumn(col)) || [];
 }
-
-export function createDescriptionFormatterColumn<T>(
-    field: string,
-    getDescriptionOrDescriptionField: ((data: T) => string) | string,
-    getValue?: (data: T) => string
-): ExtColumn<T> {
-    return {
-        field,
-        formatter: (data: T) => {
-            const desc =
-                typeof getDescriptionOrDescriptionField === 'function'
-                    ? getDescriptionOrDescriptionField(data)
-                    : String(data[getDescriptionOrDescriptionField as keyof T]);
-            const value = getValue ? getValue(data) : String(data[field as keyof T]);
-            return (
-                value + (desc ? `<div class="mat-caption mat-secondary-text">${desc}</div>` : '')
-            );
-        },
-    };
-}

@@ -9,8 +9,6 @@
                 >
                     Update
                 </button>
-            </ng-container>
-            <ng-container *ngIf="hasUpdate">
                 <button
                     *ngIf="rowSelectable"
                     [disabled]="inProgress || !hasMore"
@@ -42,10 +40,11 @@
         </div>
     </v-actions>
     <div class="details">
-        <div>
+        <div *ngIf="data?.length">
             Quantity: {{ data?.length ?? 0
             }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0) }}
         </div>
+        <div></div>
         <ng-container>
             <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
             <mtx-grid-column-menu
@@ -68,6 +67,7 @@
             [columns]="renderedColumns"
             [columnSortable]="true"
             [data]="data || []"
+            [emptyValuePlaceholder]="''"
             [loading]="inProgress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="!!rowSelectable"
@@ -82,8 +82,14 @@
             (sortChange)="sortChange.emit($event)"
         ></mtx-grid>
         <v-table-menu-cell-template
-            (templateChange)="menuCellTpl = $event"
+            (templateChange)="cellTemplates.set('menu', $event)"
         ></v-table-menu-cell-template>
+        <v-table-description-cell-template
+            (templateChange)="cellTemplates.set('description', $event)"
+        ></v-table-description-cell-template>
+        <v-table-tag-cell-template
+            (templateChange)="cellTemplates.set('tag', $event)"
+        ></v-table-tag-cell-template>
         <ng-template #footerTpl>
             <div *ngIf="hasMore" class="show-more-wrapper">
                 <button

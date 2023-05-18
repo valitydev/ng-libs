@@ -9,7 +9,11 @@
         >
     </button>
     <button
-        *ngIf="filters.filtersCount - ((filters.displayedFiltersCount$ | async) ?? 0) > 0"
+        *ngIf="
+            ((filters.filtersCount$ | async) ?? 0) -
+                ((filters.displayedFiltersCount$ | async) ?? 0) >
+            0
+        "
         mat-icon-button
         (click)="filters.open()"
     >

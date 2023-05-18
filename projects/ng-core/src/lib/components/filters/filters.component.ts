@@ -9,6 +9,7 @@ import {
     TemplateRef,
     ViewChild,
 } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FiltersDialogComponent } from './components/filters-dialog/filters-dialog.component';
@@ -24,7 +25,9 @@ export class FiltersComponent {
     @Output() clear = new EventEmitter<void>();
 
     @ContentChild(TemplateRef, { static: true }) contentTemplate!: TemplateRef<unknown>;
-    @ViewChild('content') content!: ElementRef<HTMLElement>;
+    @ViewChild('content') set content(content: ElementRef<HTMLElement>) {
+        this.filtersCount$.next(content?.nativeElement?.children?.length ?? 0);
+    }
 
     repeat$ = this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
         map((b) => {
@@ -37,10 +40,7 @@ export class FiltersComponent {
     );
 
     displayedFiltersCount$ = this.repeat$.pipe(map((r) => r * 2));
-
-    get filtersCount() {
-        return this.content?.nativeElement?.children?.length;
-    }
+    filtersCount$ = new BehaviorSubject(0);
 
     constructor(private dialog: DialogService, private breakpointObserver: BreakpointObserver) {}
 

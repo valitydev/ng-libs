@@ -1,0 +1,27 @@
+@use '@angular/material' as mat;
+
+@mixin theme($theme) {
+    $foreground: map-get($theme, foreground);
+    $warn: map-get($theme, warn);
+
+    .v-table-description-cell-template {
+        .description.description {
+            color: mat.get-color-from-palette($foreground, secondary-text);
+        }
+    }
+
+    .v-table-tag-cell-template.v-table-tag-cell-template {
+        .color-pending {
+            background-color: #f5824d;
+            * {
+                color: #fff !important;
+            }
+        }
+        .color-success {
+            background-color: #008d3b;
+            * {
+                color: #fff !important;
+            }
+        }
+    }
+}
