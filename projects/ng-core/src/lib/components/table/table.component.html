@@ -1,9 +1,9 @@
 <div class="table">
     <v-actions>
         <v-actions>
-            <ng-container *ngIf="hasUpdate">
+            <ng-container *ngIf="update.observed">
                 <button
-                    [disabled]="inProgress"
+                    [disabled]="!!progress"
                     mat-stroked-button
                     (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
                 >
@@ -11,15 +11,15 @@
                 </button>
                 <button
                     *ngIf="rowSelectable"
-                    [disabled]="inProgress || !hasMore"
+                    [disabled]="!!progress || !hasMore"
                     mat-button
                     (click)="more.emit()"
                 >
                     Get more
                 </button>
             </ng-container>
-            <ng-container *ngIf="hasSizes">
-                <button [disabled]="inProgress" [matMenuTriggerFor]="menu" mat-button>
+            <ng-container *ngIf="renderedSizes.length">
+                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>
                     {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
@@ -68,15 +68,15 @@
             [columnSortable]="true"
             [data]="data || []"
             [emptyValuePlaceholder]="''"
-            [loading]="inProgress || !columns"
+            [loading]="!!progress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="!!rowSelectable"
             [rowSelected]="rowSelected"
             [sortActive]="sortActive || ''"
             [sortDirection]="sortDirection || ''"
-            [sortDisabled]="inProgress"
+            [sortDisabled]="!!progress"
             [sortOnFront]="false"
-            [trackBy]="trackBy"
+            [trackBy]="trackByField ? trackByFieldFn : trackBy"
             columnHideableChecked="show"
             (rowSelectionChange)="rowSelectionChange.emit($event)"
             (sortChange)="sortChange.emit($event)"
@@ -93,12 +93,12 @@
         <ng-template #footerTpl>
             <div *ngIf="hasMore" class="show-more-wrapper">
                 <button
-                    [disabled]="inProgress"
+                    [disabled]="!!progress"
                     class="show-more"
                     mat-button
                     (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
                 >
-                    {{ inProgress ? 'Loading...' : 'Show more' }}
+                    {{ progress ? 'Loading...' : 'Show more' }}
                 </button>
             </div>
         </ng-template>
