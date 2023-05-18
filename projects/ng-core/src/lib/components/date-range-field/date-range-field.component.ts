@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NonNullableFormBuilder } from '@angular/forms';
+import { coerceBoolean } from 'coerce-property';
 
 import { ValidatedControlSuperclass, createControlProviders } from '../../utils';
 
 export interface DateRange {
-    start?: Date;
-    end?: Date;
+    start: Date;
+    end: Date;
 }
 
 @Component({
@@ -15,6 +16,8 @@ export interface DateRange {
     providers: createControlProviders(() => DateRangeFieldComponent),
 })
 export class DateRangeFieldComponent extends ValidatedControlSuperclass<DateRange> {
+    @Input() @coerceBoolean required: boolean | '' = false;
+
     control = this.fb.group({
         start: undefined,
         end: undefined,
