@@ -1,15 +1,22 @@
-import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
+import { Component } from '@angular/core';
 import { get } from 'lodash-es';
-import { Overwrite } from 'utility-types';
 
+import { CellTemplateDirective, TemplateColumn } from './cell-template.directive';
 import { Column } from '../types/column';
 import { createGridColumn } from '../utils/create-grid-columns';
+
+export type DescriptionColumn<T> = TemplateColumn<
+    T,
+    'description',
+    {
+        description: string | ((data: T) => string);
+    }
+>;
 
 @Component({
     selector: 'v-table-description-cell-template',
     template: `
-        <ng-template #tpl let-col="colDef" let-index="index" let-row>
+        <ng-template let-col="colDef" let-index="index" let-row>
             <div class="v-table-description-cell-template">
                 {{ getValue(col, row) }}
                 <div class="mat-caption description">
@@ -18,38 +25,17 @@ import { createGridColumn } from '../utils/create-grid-columns';
             </div>
         </ng-template>
     `,
-    styles: [``],
 })
-export class TableDescriptionCellTemplateComponent<T> {
-    @Output() templateChange = new EventEmitter<TemplateRef<unknown>>();
-
-    @ViewChild('tpl', { static: true }) set tpl(tpl: TemplateRef<unknown>) {
-        this.templateChange.emit(tpl);
-    }
-
-    getValue(col: DescriptionColumn<T>, row: T) {
-        return col.formatter
-            ? col.formatter(row, col as unknown as MtxGridColumn)
-            : get(row, col.field);
-    }
-
+export class TableDescriptionCellTemplateComponent<T> extends CellTemplateDirective<
+    T,
+    DescriptionColumn<T>
+> {
     getDescription(col: DescriptionColumn<T>, row: T) {
         return typeof col.data.description === 'function'
             ? col.data.description(row)
             : get(row, col.data.description);
     }
 }
-
-export type DescriptionColumn<T> = Overwrite<
-    MtxGridColumn<T>,
-    {
-        type: 'description';
-    }
-> & {
-    data: {
-        description: string | ((data: T) => string);
-    };
-};
 
 export function createDescriptionColumn<T>(
     column: Column<T>,

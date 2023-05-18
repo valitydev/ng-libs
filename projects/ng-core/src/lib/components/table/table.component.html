@@ -67,6 +67,7 @@
             [columns]="renderedColumns"
             [columnSortable]="true"
             [data]="data || []"
+            [emptyValuePlaceholder]="''"
             [loading]="inProgress || !columns"
             [paginationTemplate]="footerTpl"
             [rowSelectable]="!!rowSelectable"
@@ -81,10 +82,10 @@
             (sortChange)="sortChange.emit($event)"
         ></mtx-grid>
         <v-table-menu-cell-template
-            (templateChange)="menuCellTpl = $event"
+            (templateChange)="cellTemplates.set('menu', $event)"
         ></v-table-menu-cell-template>
         <v-table-description-cell-template
-            (templateChange)="descriptionCellTpl = $event"
+            (templateChange)="cellTemplates.set('description', $event)"
         ></v-table-description-cell-template>
         <ng-template #footerTpl>
             <div *ngIf="hasMore" class="show-more-wrapper">

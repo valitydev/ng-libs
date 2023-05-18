@@ -58,11 +58,10 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
-    menuCellTpl!: TemplateRef<unknown>;
-    descriptionCellTpl!: TemplateRef<unknown>;
-
     renderedSizes: number[] = [];
     renderedCellTemplate!: MtxGrid['cellTemplate'];
+
+    cellTemplates: Map<NonNullable<ExtColumn<T>['type']>, TemplateRef<unknown>> = new Map();
 
     constructor(private cdr: ChangeDetectorRef) {}
 
@@ -128,13 +127,9 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
         if (this.cellTemplate instanceof TemplateRef) this.renderedCellTemplate = this.cellTemplate;
         this.renderedCellTemplate = {
             ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
-                switch (c.type) {
-                    case 'menu':
-                        acc[c.field] = this.menuCellTpl;
-                        break;
-                    case 'description':
-                        acc[c.field] = this.descriptionCellTpl;
-                        break;
+                const tpl = this.cellTemplates.get(c.type as NonNullable<ExtColumn<T>['type']>);
+                if (tpl) {
+                    acc[c.field] = tpl;
                 }
                 return acc;
             }, {} as MtxGridCellTemplate),

@@ -1,14 +1,24 @@
-import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
-import { Overwrite } from 'utility-types';
+import { Component } from '@angular/core';
 
+import { CellTemplateDirective, TemplateColumn } from './cell-template.directive';
 import { Column } from '../types/column';
 import { createGridColumn } from '../utils/create-grid-columns';
+
+export type MenuColumn<T> = TemplateColumn<
+    T,
+    'menu',
+    {
+        items: {
+            label: string;
+            click?: (rowData: T) => void;
+        }[];
+    }
+>;
 
 @Component({
     selector: 'v-table-menu-cell-template',
     template: `
-        <ng-template #tpl let-col="colDef" let-index="index" let-row>
+        <ng-template let-col="colDef" let-index="index" let-row>
             <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
                 <mat-icon>more_vert</mat-icon>
             </button>
@@ -27,27 +37,7 @@ import { createGridColumn } from '../utils/create-grid-columns';
         `,
     ],
 })
-export class TableMenuCellTemplateComponent {
-    @Output() templateChange = new EventEmitter<TemplateRef<unknown>>();
-
-    @ViewChild('tpl', { static: true }) set tpl(tpl: TemplateRef<unknown>) {
-        this.templateChange.emit(tpl);
-    }
-}
-
-export type MenuColumn<T> = Overwrite<
-    MtxGridColumn<T>,
-    {
-        type: 'menu';
-    }
-> & {
-    data: {
-        items: {
-            label: string;
-            click?: (rowData: T) => void;
-        }[];
-    };
-};
+export class TableMenuCellTemplateComponent<T> extends CellTemplateDirective<T, MenuColumn<T>> {}
 
 export function createOperationMenuColumn<T>(
     column: Column<T>,
