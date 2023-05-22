@@ -66,6 +66,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     renderedCellTemplate!: MtxGrid['cellTemplate'];
 
     cellTemplates: Map<NonNullable<ExtColumn<T>['type']>, TemplateRef<unknown>> = new Map();
+    internalSelected: T[] = [];
 
     constructor(private cdr: ChangeDetectorRef) {}
 
