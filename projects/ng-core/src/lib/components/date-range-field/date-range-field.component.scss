@@ -1,0 +1,11 @@
+mat-form-field {
+    width: 100%;
+}
+
+::ng-deep .mat-mdc-form-field-infix {
+    width: auto !important;
+}
+
+.actions {
+    width: 100%;
+}

@@ -1,4 +1,4 @@
-<mat-form-field style="width: 100%">
+<mat-form-field>
     <mat-label>Date range</mat-label>
     <mat-date-range-input
         [formGroup]="control"
@@ -11,7 +11,7 @@
     <mat-datepicker-toggle [for]="picker" matIconSuffix></mat-datepicker-toggle>
     <mat-date-range-picker #picker>
         <mat-date-range-picker-actions>
-            <v-actions style="width: 100%">
+            <v-actions class="actions">
                 <button
                     *ngIf="!required"
                     [disabled]="!control.value?.start && !control.value?.end"
