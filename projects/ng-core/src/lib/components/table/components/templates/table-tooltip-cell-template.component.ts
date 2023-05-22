@@ -1,7 +1,7 @@
 import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
 
-import { Column } from '../types/column';
-import { createGridColumn } from '../utils/create-grid-columns';
+import { Column } from '../../types/column';
+import { createGridColumn } from '../../utils/create-grid-columns';
 
 @Component({
     selector: 'v-table-tooltip-cell-template',

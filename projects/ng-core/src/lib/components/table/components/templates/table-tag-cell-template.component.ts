@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 
 import { CellTemplateDirective, TemplateColumn } from './cell-template.directive';
-import { Column } from '../types/column';
-import { createGridColumn } from '../utils/create-grid-columns';
+import { Column } from '../../types/column';
+import { createGridColumn } from '../../utils/create-grid-columns';
 
 export type TagColumn<T, TTag extends PropertyKey = PropertyKey> = TemplateColumn<
     T,

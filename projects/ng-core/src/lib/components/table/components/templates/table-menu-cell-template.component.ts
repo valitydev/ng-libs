@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 
 import { CellTemplateDirective, TemplateColumn } from './cell-template.directive';
-import { Column } from '../types/column';
-import { createGridColumn } from '../utils/create-grid-columns';
+import { Column } from '../../types/column';
+import { createGridColumn } from '../../utils/create-grid-columns';
 
 export type MenuColumn<T> = TemplateColumn<
     T,
