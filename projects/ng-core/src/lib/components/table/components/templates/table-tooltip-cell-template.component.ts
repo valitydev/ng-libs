@@ -35,6 +35,6 @@ export class TableTooltipCellTemplateComponent {
     }
 }
 
-export function createTooltipTemplateGridColumn<T>(col: Column<T>, tooltip: (data: T) => unknown) {
+export function createTooltipColumn<T>(col: Column<T>, tooltip: (data: T) => unknown) {
     return { ...createGridColumn(col), _data: { tooltip } };
 }
