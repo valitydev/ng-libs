@@ -95,6 +95,9 @@
         <v-table-tag-cell-template
             (templateChange)="cellTemplates.set('tag', $event)"
         ></v-table-tag-cell-template>
+        <v-table-currency-cell-template
+            (templateChange)="cellTemplates.set('currency', $event)"
+        ></v-table-currency-cell-template>
         <ng-template #footerTpl>
             <div *ngIf="hasMore" class="show-more-wrapper">
                 <button

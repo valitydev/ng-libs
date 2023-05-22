@@ -1,19 +1,28 @@
-import { Component, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
+import { Component } from '@angular/core';
+import { get } from 'lodash-es';
 
+import { CellTemplateDirective, TemplateColumn } from './cell-template.directive';
 import { Column } from '../../types/column';
 import { createGridColumn } from '../../utils/create-grid-columns';
+
+export type TooltipColumn<T> = TemplateColumn<
+    T,
+    'tooltip',
+    {
+        tooltip: string | ((data: T) => string);
+    }
+>;
 
 @Component({
     selector: 'v-table-tooltip-cell-template',
     template: `
         <ng-template #tpl let-col="colDef" let-index="index" let-row>
             <div
-                *ngIf="col.formatter ? col.formatter(row, col) : row[col.field] as val"
-                [matTooltip]="col._data?.tooltip && (col._data.tooltip(row) | json)"
-                [ngClass]="{ dashed: !!col._data?.tooltip?.(row) }"
+                [matTooltip]="getTooltip(col, row) || {} | json"
+                [ngClass]="{ dashed: !!getTooltip(col, row) }"
                 matTooltipPosition="right"
             >
-                {{ val }}
+                {{ getValue(col, row) }}
             </div>
         </ng-template>
     `,
@@ -27,14 +36,28 @@ import { createGridColumn } from '../../utils/create-grid-columns';
         `,
     ],
 })
-export class TableTooltipCellTemplateComponent {
-    @Output() template = new EventEmitter<TemplateRef<unknown>>();
-
-    @ViewChild('tpl', { static: true }) set tpl(tpl: TemplateRef<unknown>) {
-        this.template.emit(tpl);
+export class TableTooltipCellTemplateComponent<T> extends CellTemplateDirective<
+    T,
+    TooltipColumn<T>
+> {
+    getTooltip(col: TooltipColumn<T>, row: T) {
+        return typeof col.data?.tooltip === 'function'
+            ? col.data.tooltip(row)
+            : get(row, col.data.tooltip);
     }
 }
 
-export function createTooltipColumn<T>(col: Column<T>, tooltip: (data: T) => unknown) {
-    return { ...createGridColumn(col), _data: { tooltip } };
+export function createTooltipColumn<T>(
+    column: Column<T>,
+    tooltip: TooltipColumn<T>['data']['tooltip']
+): TooltipColumn<T> {
+    const extCol = createGridColumn(column) as Omit<TooltipColumn<T>, 'type'>;
+    return {
+        type: 'tooltip',
+        ...extCol,
+        data: {
+            ...(extCol?.data || {}),
+            tooltip,
+        },
+    };
 }
