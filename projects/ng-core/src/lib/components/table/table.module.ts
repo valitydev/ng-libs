@@ -13,11 +13,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MtxGridModule } from '@ng-matero/extensions/grid';
 
 import { TableActionsComponent } from './components/table-actions.component';
-import { TableDescriptionCellTemplateComponent } from './components/table-description-cell-template.component';
-import { TableMenuCellTemplateComponent } from './components/table-menu-cell-template.component';
-import { TableTagCellTemplateComponent } from './components/table-tag-cell-template.component';
-import { TableTooltipCellTemplateComponent } from './components/table-tooltip-cell-template.component';
+import { TEMPLATE_COMPONENTS } from './components/templates/templates';
 import { TableComponent } from './table.component';
+import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
 
 @NgModule({
@@ -35,15 +33,9 @@ import { ActionsModule } from '../actions';
         MatTooltipModule,
         MtxGridModule,
         MatChipsModule,
+        PipesModule,
     ],
-    declarations: [
-        TableComponent,
-        TableActionsComponent,
-        TableTooltipCellTemplateComponent,
-        TableMenuCellTemplateComponent,
-        TableDescriptionCellTemplateComponent,
-        TableTagCellTemplateComponent,
-    ],
-    exports: [TableComponent, TableActionsComponent, TableTooltipCellTemplateComponent],
+    declarations: [TableComponent, TableActionsComponent, ...TEMPLATE_COMPONENTS],
+    exports: [TableComponent, TableActionsComponent],
 })
 export class TableModule {}

@@ -1,14 +1,19 @@
-<mat-form-field style="width: 100%">
+<mat-form-field>
     <mat-label>Date range</mat-label>
-    <mat-date-range-input [formGroup]="control" [rangePicker]="picker">
+    <mat-date-range-input
+        [formGroup]="control"
+        [rangePicker]="picker"
+        [required]="required || false"
+    >
         <input formControlName="start" matStartDate placeholder="Start date" />
         <input formControlName="end" matEndDate placeholder="End date" />
     </mat-date-range-input>
     <mat-datepicker-toggle [for]="picker" matIconSuffix></mat-datepicker-toggle>
     <mat-date-range-picker #picker>
         <mat-date-range-picker-actions>
-            <v-actions style="width: 100%">
+            <v-actions class="actions">
                 <button
+                    *ngIf="!required"
                     [disabled]="!control.value?.start && !control.value?.end"
                     mat-button
                     (click)="control.reset(); picker.close()"

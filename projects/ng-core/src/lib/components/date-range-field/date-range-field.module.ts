@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +11,7 @@ import { ActionsModule } from '../actions';
 @NgModule({
     declarations: [DateRangeFieldComponent],
     imports: [
+        CommonModule,
         MatDatepickerModule,
         MatInputModule,
         ReactiveFormsModule,

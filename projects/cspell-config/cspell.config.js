@@ -34,6 +34,7 @@ module.exports = {
         'inputmask',
         'codegen',
         'titlecase',
+        'dinero',
         // Local names
         'Wachter',
         'Deanonimus',

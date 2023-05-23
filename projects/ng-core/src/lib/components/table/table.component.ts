@@ -1,19 +1,21 @@
 import {
-    Component,
-    Input,
-    Output,
-    EventEmitter,
-    OnInit,
-    ContentChild,
-    OnChanges,
+    ChangeDetectionStrategy,
     ChangeDetectorRef,
+    Component,
+    ContentChild,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
     TemplateRef,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridColumn, MtxGridCellTemplate } from '@ng-matero/extensions/grid';
+import { MtxGridCellTemplate, MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
-import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
+import { get } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
 
 import { TableActionsComponent } from './components/table-actions.component';
@@ -27,12 +29,14 @@ import { ComponentChanges } from '../../utils';
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
+    @Input() trackByField?: string;
     @Input() progress?: boolean | number | null = false;
 
     @Input() @coerceBoolean rowSelectable: boolean | '' = false;
@@ -62,20 +66,9 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     renderedCellTemplate!: MtxGrid['cellTemplate'];
 
     cellTemplates: Map<NonNullable<ExtColumn<T>['type']>, TemplateRef<unknown>> = new Map();
+    internalSelected: T[] = [];
 
     constructor(private cdr: ChangeDetectorRef) {}
-
-    get hasUpdate() {
-        return this.update.observed;
-    }
-
-    get hasSizes() {
-        return this.renderedSizes.length;
-    }
-
-    get inProgress() {
-        return !!this.progress;
-    }
 
     ngOnInit() {
         this.size$.pipe(untilDestroyed(this)).subscribe((v) => this.sizeChange.emit(v));
@@ -121,6 +114,10 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
             this.hasReset = false;
         }
         this.updateCellTemplate();
+    }
+
+    trackByFieldFn(index: number, item: T) {
+        return get(item, this.trackByField ?? '');
     }
 
     private updateCellTemplate() {

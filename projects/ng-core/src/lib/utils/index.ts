@@ -4,6 +4,7 @@ export * from './operators';
 export * from './component';
 export * from './form';
 export * from './date';
+export * from './currency';
 
 export * from './clean';
 export * from './is-empty';

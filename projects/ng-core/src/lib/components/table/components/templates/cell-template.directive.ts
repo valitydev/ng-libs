@@ -3,7 +3,7 @@ import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { get } from 'lodash-es';
 import { Overwrite } from 'utility-types';
 
-import { ExtColumn } from '../types/column';
+import { ExtColumn } from '../../types/column';
 
 @Directive()
 export class CellTemplateDirective<T, TColumn extends ExtColumn<T>> {
