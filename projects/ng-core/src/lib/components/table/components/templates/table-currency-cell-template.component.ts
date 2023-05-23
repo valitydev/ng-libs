@@ -40,7 +40,6 @@ export function createCurrencyColumn<T>(
     return {
         type: 'currency',
         ...extColumn,
-        header: typeof column === 'string' ? '' : extColumn.header,
         data: {
             ...(extColumn.data || {}),
             currencyField,

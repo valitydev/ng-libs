@@ -45,7 +45,6 @@ export function createDescriptionColumn<T>(
     return {
         type: 'description',
         ...descColumn,
-        header: typeof column === 'string' ? '' : descColumn.header,
         data: {
             ...(descColumn.data || {}),
             description,

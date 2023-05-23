@@ -51,7 +51,6 @@ export function createTagColumn<T, TTag extends PropertyKey>(
     return {
         type: 'tag',
         ...extCol,
-        header: typeof column === 'string' ? '' : extCol.header,
         data: {
             ...(extCol.data || {}),
             tags,
