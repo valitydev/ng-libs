@@ -3,6 +3,7 @@ import { FormGroup } from '@angular/forms';
 
 import { AbstractControlSuperclass } from './abstract-control-superclass';
 import { getValue } from '../get-value';
+import { hasControls } from '../has-controls';
 
 @Directive()
 export abstract class FormGroupSuperclass<OuterType, InnerType = OuterType>
@@ -17,7 +18,7 @@ export abstract class FormGroupSuperclass<OuterType, InnerType = OuterType>
     }
 
     protected override outerToInnerValue(outer: OuterType): InnerType {
-        if ('controls' in this.control) {
+        if (hasControls(this.control)) {
             if (!outer) return this.emptyValue;
             if (
                 Object.keys(outer).length < Object.keys((this.control as FormGroup).controls).length
