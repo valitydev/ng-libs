@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { NonNullableFormBuilder } from '@angular/forms';
 
-import { ValidatedControlSuperclass, createControlProviders } from '../../utils';
+import { FormGroupSuperclass, createControlProviders } from '../../utils';
 
 export type NumberRange = {
     start?: number;
@@ -14,7 +14,7 @@ export type NumberRange = {
     styleUrls: ['./number-range-field.component.scss'],
     providers: createControlProviders(() => NumberRangeFieldComponent),
 })
-export class NumberRangeFieldComponent extends ValidatedControlSuperclass<NumberRange> {
+export class NumberRangeFieldComponent extends FormGroupSuperclass<NumberRange> {
     @Input() label!: string;
 
     control = this.fb.group<NumberRange>({
