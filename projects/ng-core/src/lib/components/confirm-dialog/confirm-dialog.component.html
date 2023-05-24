@@ -11,7 +11,7 @@
         <input [formControl]="control" matInput />
     </mat-form-field>
     <v-dialog-actions>
-        <button mat-button (click)="cancel()">Cancel</button>
+        <button mat-button (click)="closeWithCancellation()">Cancel</button>
         <button color="primary" mat-flat-button (click)="confirm()">
             {{ dialogData?.['confirmLabel'] || 'Confirm' }}
         </button>
