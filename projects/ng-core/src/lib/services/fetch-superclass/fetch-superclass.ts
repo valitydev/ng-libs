@@ -1,13 +1,5 @@
-import {
-    shareReplay,
-    Observable,
-    defer,
-    mergeScan,
-    map,
-    BehaviorSubject,
-    ReplaySubject,
-    skipWhile,
-} from 'rxjs';
+import { Observable, defer, mergeScan, map, BehaviorSubject, Subject } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 import { inProgressFrom, progressTo } from '../../utils';
 
@@ -42,9 +34,9 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         () => this.state$
     );
 
-    private fetch$ = new ReplaySubject<Action<TParams>>(1);
+    private fetch$ = new Subject<Action<TParams>>();
     private progress$ = new BehaviorSubject(0);
-    private state$ = defer(() => this.fetch$.pipe(skipWhile((r) => r.type !== 'load'))).pipe(
+    private state$ = this.fetch$.pipe(
         mergeScan<Action<TParams>, Accumulator<TResultItem, TParams, TContinuationToken>>(
             (acc, action) => {
                 const params = (action.type === 'load' ? action.params : acc.params) as TParams;

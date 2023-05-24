@@ -17,6 +17,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
 import { BehaviorSubject } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ExtColumn } from './types/column';
@@ -71,7 +72,9 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     constructor(private cdr: ChangeDetectorRef) {}
 
     ngOnInit() {
-        this.size$.pipe(untilDestroyed(this)).subscribe((v) => this.sizeChange.emit(v));
+        this.size$
+            .pipe(distinctUntilChanged(), untilDestroyed(this))
+            .subscribe((v) => this.sizeChange.emit(v));
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
