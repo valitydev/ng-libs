@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
 import { coerceBoolean } from 'coerce-property';
 
 import { DialogResponseStatus } from './types/dialog-response-status';
@@ -10,6 +10,8 @@ import { Progressable } from '../../types/progressable';
     styleUrls: ['dialog.component.scss'],
 })
 export class DialogComponent implements Progressable {
+    @HostBinding('class.v-dialog') hostClass: boolean = true;
+
     @Input() title!: string;
 
     @coerceBoolean @Input() disabled: boolean | string = false;

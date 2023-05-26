@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { DialogResponseStatus, DialogSuperclass } from '../dialog';
+import { DialogSuperclass } from '../dialog';
 
 @Component({
     selector: 'v-action-dialog',
@@ -15,17 +15,9 @@ export class ConfirmDialogComponent extends DialogSuperclass<
 > {
     control = new FormControl<string>('', { nonNullable: true });
 
-    cancel() {
-        this.dialogRef.close({ status: DialogResponseStatus.Cancelled });
-    }
-
     confirm() {
-        this.dialogRef.close({
-            status: DialogResponseStatus.Success,
-            data:
-                this.dialogData && this.dialogData.hasReason
-                    ? { reason: this.control.value }
-                    : undefined,
-        });
+        this.closeWithSuccess(
+            this.dialogData?.hasReason ? { reason: this.control.value } : undefined
+        );
     }
 }

@@ -9,7 +9,7 @@ export type TooltipColumn<T> = TemplateColumn<
     T,
     'tooltip',
     {
-        tooltip: string | ((data: T) => string);
+        tooltip: string | ((data: T) => unknown);
     }
 >;
 

@@ -3,10 +3,12 @@
 @mixin theme($theme) {
     $foreground: map-get($theme, foreground);
     $warn: map-get($theme, warn);
+    $typography: map-get($theme, typography);
 
     .v-table-description-cell-template {
         .description.description {
             color: mat.get-color-from-palette($foreground, secondary-text);
+            @include mat.typography-level($typography, 'caption');
         }
     }
 

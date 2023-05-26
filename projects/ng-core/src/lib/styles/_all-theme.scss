@@ -1,5 +1,7 @@
 @use '../components/table/table-theme';
+@use '../components/dialog/dialog-theme';
 
 @mixin all-component-themes($theme-or-color-config) {
     @include table-theme.theme($theme-or-color-config);
+    @include dialog-theme.theme($theme-or-color-config);
 }
