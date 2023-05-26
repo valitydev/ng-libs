@@ -9,27 +9,27 @@ export function clean<
     T extends ReadonlyArray<any> | ArrayLike<any> | Record<any, any>,
     TAllowRootRemoval extends boolean = false
 >(
-    value: T,
+    obj: T,
     allowRootRemoval: TAllowRootRemoval = false as TAllowRootRemoval,
     isNotDeep = false,
     filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmpty(v)
 ): TAllowRootRemoval extends true ? T | null : T {
-    if (!isObject(value) || (value.constructor !== Object && !Array.isArray(value))) return value;
-    if (allowRootRemoval && !filterPredicate(value as never)) return null as never;
     let result: unknown;
     const cleanChild = (v: unknown) =>
         isNotDeep ? v : clean(v as never, allowRootRemoval, isNotDeep, filterPredicate);
-    if (Array.isArray(value))
-        result = (value as ValuesType<T>[])
-            .slice()
+    if (Array.isArray(obj)) {
+        result = (obj as ValuesType<T>[])
             .map((v) => cleanChild(v))
             .filter((v, idx) => filterPredicate(v, idx));
-    else
+    } else if (isObject(obj)) {
         result = Object.fromEntries(
-            (Object.entries(value) as [keyof T, ValuesType<T>][])
+            (Object.entries(obj) as [keyof T, ValuesType<T>][])
                 .map(([k, v]) => [k, cleanChild(v)] as const)
                 .filter(([k, v]) => filterPredicate(v, k))
         );
+    } else {
+        result = obj;
+    }
     return allowRootRemoval && !filterPredicate(result) ? (null as never) : (result as never);
 }
 
