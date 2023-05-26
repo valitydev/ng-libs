@@ -1,0 +1,5 @@
+@use '@angular/material' as mat;
+
+@mixin typography-hierarchy($theme) {
+    @include mat.typography-hierarchy($theme);
+}
