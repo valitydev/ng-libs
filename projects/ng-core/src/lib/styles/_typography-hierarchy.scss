@@ -1,5 +1,11 @@
 @use '@angular/material' as mat;
+@import './utils/get-color';
 
-@mixin typography-hierarchy($theme) {
-    @include mat.typography-hierarchy($theme);
+@mixin typography-hierarchy($theme, $selector: '.mat-typography') {
+    @include mat.typography-hierarchy($theme, $selector);
+
+    .mat-secondary-text,
+    #{$selector} .mat-secondary-text {
+        color: get-color($theme, foreground, secondary-text);
+    }
 }
