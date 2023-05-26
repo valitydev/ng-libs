@@ -19,7 +19,7 @@ export type DescriptionColumn<T> = TemplateColumn<
         <ng-template let-col="colDef" let-index="index" let-row>
             <div class="v-table-description-cell-template">
                 {{ getValue(col, row) }}
-                <div class="mat-caption description">
+                <div class="description">
                     {{ getDescription(col, row) }}
                 </div>
             </div>
