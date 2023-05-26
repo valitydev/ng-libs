@@ -10,7 +10,7 @@ import { Progressable } from '../../types/progressable';
     styleUrls: ['dialog.component.scss'],
 })
 export class DialogComponent implements Progressable {
-    @HostBinding('class.v-dialog') klass: boolean = true;
+    @HostBinding('class.v-dialog') hostClass: boolean = true;
 
     @Input() title!: string;
 
