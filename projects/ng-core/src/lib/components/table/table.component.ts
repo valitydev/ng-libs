@@ -40,6 +40,8 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackByField?: string;
     @Input() progress?: boolean | number | null = false;
 
+    @Input() @coerceBoolean noActions: boolean | '' = false;
+
     @Input() @coerceBoolean rowSelectable: boolean | '' = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();

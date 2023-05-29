@@ -1,5 +1,5 @@
 <div class="table">
-    <v-actions>
+    <v-actions *ngIf="!noActions">
         <v-actions>
             <ng-container *ngIf="update.observed">
                 <button
