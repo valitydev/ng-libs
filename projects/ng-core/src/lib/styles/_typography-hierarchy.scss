@@ -6,11 +6,15 @@
 
     .mat-secondary-text,
     #{$selector} .mat-secondary-text {
-        color: get-color($theme, foreground, secondary-text);
+        &#{&} {
+            color: get-color($theme, foreground, secondary-text);
+        }
     }
 
     .mat-no-margin,
     #{$selector} .mat-no-margin {
-        margin: 0;
+        &#{&} {
+            margin: 0;
+        }
     }
 }
