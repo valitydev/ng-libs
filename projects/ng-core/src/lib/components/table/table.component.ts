@@ -9,6 +9,7 @@ import {
     OnInit,
     Output,
     TemplateRef,
+    ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGridCellTemplate, MtxGridColumn } from '@ng-matero/extensions/grid';
@@ -21,7 +22,7 @@ import { distinctUntilChanged } from 'rxjs/operators';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ExtColumn } from './types/column';
-import { createGridColumns } from './utils/create-grid-columns';
+import { createMtxGridColumns } from './utils/create-mtx-grid-columns';
 import { Progressable } from '../../types/progressable';
 import { ComponentChanges } from '../../utils';
 
@@ -32,7 +33,7 @@ import { ComponentChanges } from '../../utils';
     styleUrls: ['./table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TableComponent<T> implements OnInit, Progressable, OnChanges {
+export class TableComponent<T extends object> implements OnInit, Progressable, OnChanges {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
@@ -60,6 +61,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Output() sortChange = new EventEmitter<Sort>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
+    @ViewChild('cellTpl', { static: true }) defaultCellTemplate!: TemplateRef<unknown>;
 
     size$ = new BehaviorSubject<undefined | number>(undefined);
     renderedColumns!: MtxGridColumn<T>[];
@@ -68,7 +70,6 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     renderedSizes: number[] = [];
     renderedCellTemplate!: MtxGrid['cellTemplate'];
 
-    cellTemplates: Map<NonNullable<ExtColumn<T>['type']>, TemplateRef<unknown>> = new Map();
     internalSelected: T[] = [];
 
     constructor(private cdr: ChangeDetectorRef) {}
@@ -115,7 +116,7 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
             this.renderedColumns.forEach((c) => (c.hide = !c.show));
             this.hasReset = true;
         } else {
-            this.renderedColumns = createGridColumns(this.columns) as never;
+            this.renderedColumns = createMtxGridColumns(this.columns) as never;
             this.hasReset = false;
         }
         this.updateCellTemplate();
@@ -126,13 +127,17 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     }
 
     private updateCellTemplate() {
-        if (this.cellTemplate instanceof TemplateRef) this.renderedCellTemplate = this.cellTemplate;
+        if (this.cellTemplate instanceof TemplateRef) {
+            this.renderedCellTemplate = this.cellTemplate;
+            return;
+        }
+        if (!this.renderedColumns.every((c) => !c.cellTemplate)) {
+            this.renderedCellTemplate = this.defaultCellTemplate;
+            return;
+        }
         this.renderedCellTemplate = {
             ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
-                const tpl = this.cellTemplates.get(c.type as NonNullable<ExtColumn<T>['type']>);
-                if (tpl) {
-                    acc[c.field] = tpl;
-                }
+                if (!c.cellTemplate) c.cellTemplate = this.defaultCellTemplate;
                 return acc;
             }, {} as MtxGridCellTemplate),
             ...(this.cellTemplate || {}),

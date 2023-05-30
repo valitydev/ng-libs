@@ -1,0 +1,62 @@
+<div class="wrapper">
+    <ng-container *ngIf="colDef.tooltip; else content">
+        <div
+            *ngIf="rowData | vSelect : colDef.tooltip : '' : [colDef] as tooltip"
+            [matTooltip]="tooltip | json"
+            class="tooltip"
+            matTooltipPosition="right"
+        >
+            <ng-container *ngTemplateOutlet="content"></ng-container>
+        </div>
+    </ng-container>
+</div>
+
+<ng-template #content>
+    <div
+        *ngIf="rowData | vSelect : colDef.formatter ?? colDef.field : '' : [colDef] as value"
+        class="value"
+    >
+        <ng-template [ngIf]="colDef.type === 'datetime'">
+            {{ value | date }}
+        </ng-template>
+        <ng-template [ngIf]="colDef.type === 'tag'">
+            <mat-chip-option
+                *ngIf="colDef.typeParameters.tags[value] ?? {} as tag"
+                [color]="tag.color"
+                [highlighted]="!!tag.color"
+                [ngClass]="['color-' + tag.color]"
+                [selectable]="false"
+                class="tag"
+            >
+                {{ tag.label ?? value }}
+            </mat-chip-option>
+        </ng-template>
+        <ng-template [ngIf]="colDef.type === 'currency'">
+            {{
+                value
+                    | amountCurrency
+                        : (rowData | vSelect : colDef?.typeParameters?.currencyCode : '' : [colDef])
+            }}
+        </ng-template>
+        <ng-template [ngIf]="colDef.type === 'menu'">
+            <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button
+                    *ngFor="let item of colDef.typeParameters.items"
+                    mat-menu-item
+                    (click)="item.click(rowData)"
+                >
+                    {{ item.label }}
+                </button>
+            </mat-menu>
+        </ng-template>
+        <ng-template [ngIf]="!colDef.type">
+            {{ value }}
+        </ng-template>
+    </div>
+    <div class="description mat-caption mat-secondary-text">
+        {{ rowData | vSelect : colDef.description : '' : [colDef] }}
+    </div>
+</ng-template>

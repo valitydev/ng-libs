@@ -5,24 +5,22 @@
     $warn: map-get($theme, warn);
     $typography: map-get($theme, typography);
 
-    .v-table-description-cell-template {
-        .description.description {
-            color: mat.get-color-from-palette($foreground, secondary-text);
-            @include mat.typography-level($typography, 'caption');
-        }
-    }
+    .v-table-cell {
+        .tag {
+            &.color-pending {
+                background-color: #f5824d;
 
-    .v-table-tag-cell-template.v-table-tag-cell-template {
-        .color-pending {
-            background-color: #f5824d;
-            * {
-                color: #fff !important;
+                * {
+                    color: #fff !important;
+                }
             }
-        }
-        .color-success {
-            background-color: #008d3b;
-            * {
-                color: #fff !important;
+
+            &.color-success {
+                background-color: #008d3b;
+
+                * {
+                    color: #fff !important;
+                }
             }
         }
     }
