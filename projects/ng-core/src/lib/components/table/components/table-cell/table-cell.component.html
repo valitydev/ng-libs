@@ -17,7 +17,7 @@
         class="value"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
-            {{ value | date }}
+            {{ value | date : 'dd.MM.yyyy HH:mm:ss' }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'tag'">
             <mat-chip-option
