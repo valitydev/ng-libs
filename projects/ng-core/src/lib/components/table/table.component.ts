@@ -137,7 +137,9 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
         }
         this.renderedCellTemplate = {
             ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
-                if (!c.cellTemplate) c.cellTemplate = this.defaultCellTemplate;
+                if (this.cellTemplate[c.field as never])
+                    acc[c.field as never] = this.cellTemplate[c.field as never];
+                else acc[c.field as never] = this.defaultCellTemplate;
                 return acc;
             }, {} as MtxGridCellTemplate),
             ...(this.cellTemplate || {}),
