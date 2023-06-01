@@ -35,6 +35,8 @@
                 value
                     | amountCurrency
                         : (rowData | vSelect : colDef?.typeParameters?.currencyCode : '' : [colDef])
+                        : 'long'
+                        : (colDef.typeParameters.isMinor ? undefined : 0)
             }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'menu'">

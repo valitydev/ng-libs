@@ -15,10 +15,11 @@ export class AmountCurrencyPipe implements PipeTransform {
     transform(
         amount: unknown,
         currencyCode: string = this._defaultCurrencyCode,
-        format: 'short' | 'long' = 'long'
+        format: 'short' | 'long' = 'long',
+        exponent?: number
     ): unknown {
         if (typeof amount === 'number')
-            return formatCurrency(amount, currencyCode, format, this._locale);
+            return formatCurrency(amount, currencyCode, format, this._locale, exponent);
         return amount;
     }
 }

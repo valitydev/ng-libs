@@ -12,7 +12,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridCellTemplate, MtxGridColumn } from '@ng-matero/extensions/grid';
+import { MtxGridColumn } from '@ng-matero/extensions/grid';
 import { MtxGrid } from '@ng-matero/extensions/grid/grid';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
@@ -21,7 +21,7 @@ import { BehaviorSubject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
 import { TableActionsComponent } from './components/table-actions.component';
-import { Column, ExtColumn } from './types/column';
+import { Column } from './types/column';
 import { createMtxGridColumns } from './utils/create-mtx-grid-columns';
 import { Progressable } from '../../types/progressable';
 import { ComponentChanges } from '../../utils';
@@ -131,18 +131,15 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
             this.renderedCellTemplate = this.cellTemplate;
             return;
         }
-        if (!this.renderedColumns.every((c) => !c.cellTemplate)) {
+        if (!this.cellTemplate && this.renderedColumns.every((c) => !c.cellTemplate)) {
             this.renderedCellTemplate = this.defaultCellTemplate;
             return;
         }
-        this.renderedCellTemplate = {
-            ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
-                if (this.cellTemplate[c.field as never])
-                    acc[c.field as never] = this.cellTemplate[c.field as never];
-                else acc[c.field as never] = this.defaultCellTemplate;
-                return acc;
-            }, {} as MtxGridCellTemplate),
-            ...(this.cellTemplate || {}),
-        } as MtxGridCellTemplate;
+        this.renderedCellTemplate = Object.fromEntries(
+            this.renderedColumns.map((c) => [
+                c.field,
+                this.cellTemplate?.[c.field as never] ?? c.cellTemplate ?? this.defaultCellTemplate,
+            ])
+        );
     }
 }

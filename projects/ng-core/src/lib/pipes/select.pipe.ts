@@ -7,6 +7,7 @@ import { select, SelectFn } from '../utils';
 @Pipe({
     standalone: true,
     name: 'vSelect',
+    pure: false,
 })
 export class VSelectPipe<TObject extends object, TResult, TParams = void>
     implements PipeTransform, OnDestroy

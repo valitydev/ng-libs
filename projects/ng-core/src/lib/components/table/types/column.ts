@@ -23,7 +23,7 @@ export type ExtColumn<T extends object> = Pick<
 } & (
         | { type?: undefined }
         | TypedColumn<'datetime'>
-        | TypedColumn<'currency', { currencyCode: FormatterFn<T> }>
+        | TypedColumn<'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
         | TypedColumn<
               'tag',
               {
