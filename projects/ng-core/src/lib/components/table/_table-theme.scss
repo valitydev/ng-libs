@@ -1,14 +1,11 @@
 @use '@angular/material' as mat;
+@import '../../styles/utils/get-color';
 
 @mixin theme($theme) {
-    $foreground: map-get($theme, foreground);
-    $warn: map-get($theme, warn);
-    $typography: map-get($theme, typography);
-
     .v-table-cell {
         .tag {
             &.color-pending {
-                background-color: #f5824d;
+                background-color: get-color($theme, pending, darker);
 
                 * {
                     color: #fff !important;
@@ -16,7 +13,7 @@
             }
 
             &.color-success {
-                background-color: #008d3b;
+                background-color: get-color($theme, success, darker);
 
                 * {
                     color: #fff !important;

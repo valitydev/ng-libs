@@ -8,7 +8,7 @@ import { ExtColumn } from '../../types/column';
     styleUrls: ['./table-cell.component.scss'],
 })
 export class TableCellComponent<T extends object> {
-    @HostBinding('class.v-table-cell-template') hostClass: boolean = true;
+    @HostBinding('class.v-table-cell') hostClass: boolean = true;
 
     @Input() rowData!: T;
     @Input() colDef!: ExtColumn<T>;

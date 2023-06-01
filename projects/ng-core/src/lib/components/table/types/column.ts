@@ -3,36 +3,42 @@ import { MtxGridColumn } from '@ng-matero/extensions/grid';
 
 import { SelectFn } from '../../../utils';
 
-type FormatterFn<T extends object> = SelectFn<T, unknown, [colDef: ExtColumn<T>]>;
-type TypedColumn<T = never, P = never> = {
-    type: T;
-} & Pick<
-    {
-        typeParameters: P;
-    },
-    P extends never ? never : 'typeParameters'
+type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
+    TObject,
+    TResult,
+    [colDef: ExtColumn<TObject>]
 >;
 
-export type ExtColumn<T extends object> = Pick<
-    MtxGridColumn<T>,
-    'field' | 'header' | 'cellTemplate'
-> & {
+type BaseColumn<T extends object> = Pick<MtxGridColumn<T>, 'field' | 'header' | 'cellTemplate'> & {
     formatter?: FormatterFn<T>;
     description?: FormatterFn<T>;
     tooltip?: FormatterFn<T>;
-} & (
+};
+
+type TypedColumn<TType = never, TParams = never> = {
+    type: TType;
+} & Pick<
+    {
+        typeParameters: TParams;
+    },
+    TParams extends never ? never : 'typeParameters'
+>;
+
+export type TagColumn<T extends object, TTags extends PropertyKey = PropertyKey> = BaseColumn<T> &
+    TypedColumn<
+        'tag',
+        {
+            value?: FormatterFn<T, TTags>;
+            tags: Record<TTags, { label?: string; color?: 'success' | 'pending' | ThemePalette }>;
+        }
+    >;
+
+export type ExtColumn<T extends object> = BaseColumn<T> &
+    (
         | { type?: undefined }
         | TypedColumn<'datetime'>
         | TypedColumn<'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
-        | TypedColumn<
-              'tag',
-              {
-                  tags: Record<
-                      PropertyKey,
-                      { label?: string; color?: 'success' | 'pending' | ThemePalette }
-                  >;
-              }
-          >
+        | TagColumn<T>
         | TypedColumn<
               'menu',
               {

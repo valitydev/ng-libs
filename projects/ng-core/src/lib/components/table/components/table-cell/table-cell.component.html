@@ -19,16 +19,22 @@
             {{ value | date : 'dd.MM.yyyy HH:mm:ss' }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'tag'">
-            <mat-chip-option
-                *ngIf="colDef.typeParameters.tags[value] ?? {} as tag"
-                [color]="tag.color"
-                [highlighted]="!!tag.color"
-                [ngClass]="['color-' + tag.color]"
-                [selectable]="false"
-                class="tag"
+            <ng-container
+                *ngIf="
+                    rowData | vSelect : colDef.typeParameters.value : value : [colDef] as tagValue
+                "
             >
-                {{ tag.label ?? value }}
-            </mat-chip-option>
+                <mat-chip-option
+                    *ngIf="colDef.typeParameters.tags[tagValue] ?? {} as tag"
+                    [color]="tag.color"
+                    [highlighted]="!!tag.color"
+                    [ngClass]="['color-' + tag.color]"
+                    [selectable]="false"
+                    class="tag"
+                >
+                    {{ tag.label ?? value }}
+                </mat-chip-option>
+            </ng-container>
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'currency'">
             {{
