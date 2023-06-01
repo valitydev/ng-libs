@@ -18,7 +18,7 @@ jobs:
         uses: valitydev/action-frontend/publish@v0.1
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
-          directory: ./dist/ng-core
+          directory: ./projects/ng-core/dist
       - name: Publish ESLint Config
         uses: valitydev/action-frontend/publish@v0.1
         with:

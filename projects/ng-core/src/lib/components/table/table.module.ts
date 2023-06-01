@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MtxGridModule } from '@ng-matero/extensions/grid';
+import { NgLetModule } from 'ng-let';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
@@ -34,6 +35,7 @@ import { ActionsModule } from '../actions';
         MtxGridModule,
         MatChipsModule,
         PipesModule,
+        NgLetModule,
     ],
     declarations: [TableComponent, TableActionsComponent, TableCellComponent],
     exports: [TableComponent, TableActionsComponent],

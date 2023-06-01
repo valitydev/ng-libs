@@ -13,6 +13,7 @@
     "@s-libs/ng-core": "^15.2.0",
     "@s-libs/rxjs-core": "^15.2.0",
     "dinero.js": "^2.0.0-alpha.14",
+    "ng-let": "^15.0.2",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {

@@ -1,18 +1,16 @@
 <div class="wrapper">
-    <ng-container *ngIf="colDef.tooltip; else content">
-        <ng-container
-            *ngIf="rowData | vSelect : colDef.tooltip : '' : [colDef] as tooltip; else content"
-        >
-            <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
-                <ng-container *ngTemplateOutlet="content"></ng-container>
-            </div>
-        </ng-container>
+    <ng-container
+        *ngIf="rowData | vSelect : colDef.tooltip : '' : [colDef] as tooltip; else content"
+    >
+        <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
+            <ng-container *ngTemplateOutlet="content"></ng-container>
+        </div>
     </ng-container>
 </div>
 
 <ng-template #content>
     <div
-        *ngIf="rowData | vSelect : colDef.formatter ?? colDef.field : '' : [colDef] as value"
+        *ngLet="rowData | vSelect : colDef.formatter ?? colDef.field : '' : [colDef] as value"
         class="value"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
