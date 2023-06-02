@@ -1,0 +1,5 @@
+<mat-form-field style="width: 100%">
+    <mat-label>{{ label }}</mat-label>
+    <input #input="matInput" [formControl]="control" autocomplete="false" matInput type="string" />
+    <mat-hint *ngIf="input.focused" class="mat-secondary-text">item_1, item_2</mat-hint>
+</mat-form-field>
