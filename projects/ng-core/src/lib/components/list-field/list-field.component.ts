@@ -11,10 +11,10 @@ export class ListFieldComponent extends FormControlSuperclass<string[], string> 
     @Input() label?: string;
 
     protected override innerToOuterValue(inner: string): string[] {
-        return splitBySeparators(inner);
+        return splitBySeparators(inner || '');
     }
 
     protected override outerToInnerValue(outer: string[]): string {
-        return outer.join(', ');
+        return (outer || []).join(', ');
     }
 }
