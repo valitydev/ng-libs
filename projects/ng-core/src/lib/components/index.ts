@@ -6,3 +6,4 @@ export * from './filters';
 export * from './date-range-field';
 export * from './number-range-field';
 export * from './list-field';
+export * from './input-field';
