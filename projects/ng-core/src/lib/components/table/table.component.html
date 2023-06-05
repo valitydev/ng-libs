@@ -32,25 +32,25 @@
                     </button>
                 </mat-menu>
             </ng-container>
-            <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
-            <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
         </v-actions>
         <div>
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
     <div class="details">
-        <div *ngIf="data?.length">
-            Quantity: {{ data?.length ?? 0
-            }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
-            }}{{
-                (rowSelected || internalSelected)?.length
-                    ? '. Selected: ' + (rowSelected || internalSelected).length
-                    : ''
-            }}
+        <div>
+            <ng-container *ngIf="data?.length">
+                Quantity: {{ data?.length ?? 0
+                }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
+                }}{{
+                    (rowSelected || internalSelected)?.length
+                        ? '. Selected: ' + (rowSelected || internalSelected).length
+                        : ''
+                }}
+            </ng-container>
         </div>
-        <div></div>
-        <ng-container>
+        <div class="customize">
+            <mat-icon *ngIf="hasReset" (click)="updateColumns()">restart_alt</mat-icon>
             <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
             <mtx-grid-column-menu
                 #columnMenu
@@ -59,7 +59,7 @@
                 class="column-menu"
                 (columnChange)="updateColumns($event)"
             ></mtx-grid-column-menu>
-        </ng-container>
+        </div>
     </div>
     <mat-card class="table-card">
         <mtx-grid

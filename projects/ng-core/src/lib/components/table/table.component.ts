@@ -1,6 +1,4 @@
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     ContentChild,
     EventEmitter,
@@ -31,7 +29,6 @@ import { ComponentChanges } from '../../utils';
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T extends object> implements OnInit, Progressable, OnChanges {
     @Input() data!: T[];
@@ -72,8 +69,6 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
 
     internalSelected: T[] = [];
 
-    constructor(private cdr: ChangeDetectorRef) {}
-
     ngOnInit() {
         this.size$
             .pipe(distinctUntilChanged(), untilDestroyed(this))
@@ -102,23 +97,17 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
         }
     }
 
-    reset() {
-        this.updateColumns();
-        // TODO: Hack, problem with pinned columns rerender in mtx-grid
-        this.renderedColumns.push({ field: ' ' });
-        this.cdr.detectChanges();
-        this.renderedColumns.pop();
-    }
-
     updateColumns(columns?: MtxGridColumn<T>[]) {
         if (columns) {
             this.renderedColumns = columns;
-            this.renderedColumns.forEach((c) => (c.hide = !c.show));
             this.hasReset = true;
         } else {
             this.renderedColumns = createMtxGridColumns(this.columns) as never;
             this.hasReset = false;
         }
+        this.renderedColumns.forEach(
+            (c) => (c.hide = typeof c.show === 'boolean' ? !c.show : !!c.hide)
+        );
         this.updateCellTemplate();
     }
 
