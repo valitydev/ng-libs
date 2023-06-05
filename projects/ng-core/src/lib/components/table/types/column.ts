@@ -9,7 +9,10 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
     [colDef: ExtColumn<TObject>]
 >;
 
-type BaseColumn<T extends object> = Pick<MtxGridColumn<T>, 'field' | 'header' | 'cellTemplate'> & {
+type BaseColumn<T extends object> = Pick<
+    MtxGridColumn<T>,
+    'field' | 'header' | 'cellTemplate' | 'hide'
+> & {
     formatter?: FormatterFn<T>;
     description?: FormatterFn<T>;
     tooltip?: FormatterFn<T>;
