@@ -7,14 +7,27 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 import { FiltersDialogComponent } from './components/filters-dialog/filters-dialog.component';
+import { MainFiltersDirective } from './components/main-filters/main-filters.directive';
 import { MoreFiltersButtonComponent } from './components/more-filters-button/more-filters-button.component';
+import { OtherFiltersDirective } from './components/other-filters/other-filters.directive';
 import { FiltersComponent } from './filters.component';
 import { ActionsModule } from '../actions';
 import { DialogModule } from '../dialog';
 
 @NgModule({
-    declarations: [FiltersComponent, MoreFiltersButtonComponent, FiltersDialogComponent],
-    exports: [FiltersComponent, MoreFiltersButtonComponent],
+    declarations: [
+        FiltersComponent,
+        MoreFiltersButtonComponent,
+        FiltersDialogComponent,
+        OtherFiltersDirective,
+        MainFiltersDirective,
+    ],
+    exports: [
+        FiltersComponent,
+        MoreFiltersButtonComponent,
+        OtherFiltersDirective,
+        MainFiltersDirective,
+    ],
     imports: [
         CommonModule,
         MatCardModule,

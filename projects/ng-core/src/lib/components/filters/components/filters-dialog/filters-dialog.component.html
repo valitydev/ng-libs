@@ -1,5 +1,18 @@
 <v-dialog noActions title="Filters">
-    <div [ngClass]="['v-filters-dialog-cols-' + (dialogData.filters.repeat$ | async), 'filters']">
-        <ng-container *ngTemplateOutlet="dialogData.filters.contentTemplate"></ng-container>
+    <div
+        [ngClass]="
+            [
+                !dialogData.filters.otherFiltersTemplate.templateRef &&
+                    'v-filters-dialog-cols-' + (dialogData.filters.repeat$ | async),
+                'filters'
+            ].filter(Boolean)
+        "
+    >
+        <ng-container
+            *ngTemplateOutlet="
+                dialogData.filters.otherFiltersTemplate?.templateRef ??
+                dialogData.filters.filtersTemplate
+            "
+        ></ng-container>
     </div>
 </v-dialog>

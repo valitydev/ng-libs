@@ -13,6 +13,8 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FiltersDialogComponent } from './components/filters-dialog/filters-dialog.component';
+import { MainFiltersDirective } from './components/main-filters/main-filters.directive';
+import { OtherFiltersDirective } from './components/other-filters/other-filters.directive';
 import { DialogService } from '../dialog';
 
 @Component({
@@ -24,7 +26,12 @@ export class FiltersComponent {
     @Input() active = 0;
     @Output() clear = new EventEmitter<void>();
 
-    @ContentChild(TemplateRef, { static: true }) contentTemplate!: TemplateRef<unknown>;
+    @ContentChild(TemplateRef, { static: true }) filtersTemplate!: TemplateRef<unknown>;
+    @ContentChild(OtherFiltersDirective, { static: true })
+    otherFiltersTemplate!: OtherFiltersDirective;
+    @ContentChild(MainFiltersDirective, { static: true })
+    mainFiltersTemplate!: OtherFiltersDirective;
+
     @ViewChild('content') set content(content: ElementRef<HTMLElement>) {
         this.filtersCount$.next(content?.nativeElement?.children?.length ?? 0);
     }
