@@ -9,6 +9,7 @@ import {
     TemplateRef,
     ViewChild,
 } from '@angular/core';
+import { coerceBoolean } from 'coerce-property';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -24,6 +25,7 @@ import { DialogService } from '../dialog';
 })
 export class FiltersComponent {
     @Input() active = 0;
+    @Input() @coerceBoolean merge: boolean | '' = false;
     @Output() clear = new EventEmitter<void>();
 
     @ContentChild(TemplateRef, { static: true }) filtersTemplate!: TemplateRef<unknown>;
