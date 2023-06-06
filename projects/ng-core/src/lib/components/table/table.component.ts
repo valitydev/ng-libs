@@ -72,6 +72,10 @@ export class TableComponent<T extends object> implements Progressable, OnChanges
         return this.isPreload ? this.preloadSize : this.size;
     }
 
+    get hasShowMore() {
+        return !!this.hasMore || this.data?.length > this.size * this.displayedPages;
+    }
+
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
         if (changes.columns) {
             this.updateColumns();
@@ -125,7 +129,7 @@ export class TableComponent<T extends object> implements Progressable, OnChanges
 
     showMore() {
         this.displayedPages += 1;
-        if (this.displayedPages * this.size > (this.data?.length || 0)) {
+        if (this.hasMore && this.displayedPages * this.size > this.data?.length) {
             this.more.emit({ size: this.currentSize });
         }
     }
