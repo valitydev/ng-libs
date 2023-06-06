@@ -19,6 +19,10 @@ export interface FetchOptions<TContinuationToken = string> {
     continuationToken?: TContinuationToken;
 }
 
+export interface LoadOptions {
+    size?: number;
+}
+
 export interface Accumulator<TResultItem, TParams, TContinuationToken> {
     result: TResultItem[];
     size: number;
@@ -63,7 +67,7 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         shareReplay({ bufferSize: 1, refCount: true })
     );
 
-    load(params: TParams, options: { size?: number } = {}): void {
+    load(params: TParams, options: LoadOptions = {}): void {
         this.fetch$.next({ type: 'load', params, size: options.size });
     }
 

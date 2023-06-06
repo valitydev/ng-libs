@@ -1,11 +1,12 @@
 <div class="table">
-    <v-actions>
+    <v-actions *ngIf="!noActions">
         <v-actions>
             <ng-container *ngIf="update.observed">
                 <button
                     [disabled]="!!progress"
                     mat-stroked-button
-                    (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
+                    matTooltip="Reload {{ size }} elements"
+                    (click)="load()"
                 >
                     Update
                 </button>
@@ -13,44 +14,46 @@
                     *ngIf="rowSelectable"
                     [disabled]="!!progress || !hasMore"
                     mat-button
-                    (click)="more.emit()"
+                    matTooltip="Preload {{ preloadSize }}{{
+                        isPreload && hasMore ? ' more' : ''
+                    }} elements"
+                    (click)="preload()"
                 >
-                    Get more
+                    {{ isPreload ? (hasMore ? 'Preload more' : 'Preloaded') : 'Preload' }}
                 </button>
             </ng-container>
-            <ng-container *ngIf="renderedSizes.length">
-                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>
-                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                    <button
-                        *ngFor="let size of renderedSizes"
-                        mat-menu-item
-                        (click)="size$.next(size)"
-                    >
-                        {{ size }}
-                    </button>
-                </mat-menu>
-            </ng-container>
-            <!--            TODO: there are problems with resetting, it does not reset when for example many columns are hidden-->
-            <!--            <button *ngIf="hasReset" mat-button (click)="reset()">Reset</button>-->
+            <!--            <ng-container *ngIf="renderedSizes.length">-->
+            <!--                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>-->
+            <!--                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>-->
+            <!--                </button>-->
+            <!--                <mat-menu #menu="matMenu">-->
+            <!--                    <button-->
+            <!--                        *ngFor="let size of renderedSizes"-->
+            <!--                        mat-menu-item-->
+            <!--                        (click)="size$.next(size)"-->
+            <!--                    >-->
+            <!--                        {{ size }}-->
+            <!--                    </button>-->
+            <!--                </mat-menu>-->
+            <!--            </ng-container>-->
         </v-actions>
         <div>
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
     <div class="details">
-        <div *ngIf="data?.length">
-            Quantity: {{ data?.length ?? 0
-            }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
-            }}{{
-                (rowSelected || internalSelected)?.length
-                    ? '. Selected: ' + (rowSelected || internalSelected).length
-                    : ''
-            }}
+        <div>
+            <ng-container *ngIf="!progress; else loading">
+                Quantity:
+                {{ data?.length ? data.length + (hasMore ? ' (more available)' : ' (all)') : '0'
+                }}<ng-container *ngIf="internalSelected?.length">
+                    | <b>Selected: {{ internalSelected.length }}</b></ng-container
+                >
+            </ng-container>
+            <ng-template #loading>Loading...</ng-template>
         </div>
-        <div></div>
-        <ng-container>
+        <div class="customize">
+            <mat-icon *ngIf="hasReset" (click)="updateColumns()">restart_alt</mat-icon>
             <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
             <mtx-grid-column-menu
                 #columnMenu
@@ -59,7 +62,7 @@
                 class="column-menu"
                 (columnChange)="updateColumns($event)"
             ></mtx-grid-column-menu>
-        </ng-container>
+        </div>
     </div>
     <mat-card class="table-card">
         <mtx-grid
@@ -72,43 +75,43 @@
             [columns]="renderedColumns"
             [columnSortable]="true"
             [data]="data || []"
+            [disableRowClickSelection]="true"
             [emptyValuePlaceholder]="''"
-            [loading]="!!progress || !columns"
-            [paginationTemplate]="footerTpl"
+            [loading]="!!progress"
+            [pageIndex]="0"
+            [pageSize]="size * displayedPages"
             [rowSelectable]="!!rowSelectable"
             [rowSelected]="rowSelected"
+            [showColumnMenuHeader]="true"
+            [showStatusbar]="hasShowMore"
             [sortActive]="sortActive || ''"
             [sortDirection]="sortDirection || ''"
             [sortDisabled]="!!progress"
             [sortOnFront]="false"
+            [statusbarTemplate]="footerTpl"
+            [toolbarTemplate]="summaryTpl"
             [trackBy]="trackByField ? trackByFieldFn : trackBy"
-            columnHideableChecked="show"
-            (rowSelectionChange)="rowSelectionChange.emit($event); internalSelected = $event"
+            columnHideableChecked="hide"
+            toolbarTitle="test"
+            (rowSelectionChange)="select($event)"
             (sortChange)="sortChange.emit($event)"
         ></mtx-grid>
-        <v-table-menu-cell-template
-            (templateChange)="cellTemplates.set('menu', $event)"
-        ></v-table-menu-cell-template>
-        <v-table-description-cell-template
-            (templateChange)="cellTemplates.set('description', $event)"
-        ></v-table-description-cell-template>
-        <v-table-tag-cell-template
-            (templateChange)="cellTemplates.set('tag', $event)"
-        ></v-table-tag-cell-template>
-        <v-table-currency-cell-template
-            (templateChange)="cellTemplates.set('currency', $event)"
-        ></v-table-currency-cell-template>
+        <ng-template #cellTpl let-col="colDef" let-index="index" let-row>
+            <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
+        </ng-template>
+        <ng-template #summaryTpl> test {{ displayedPages }} </ng-template>
         <ng-template #footerTpl>
-            <div *ngIf="hasMore" class="show-more-wrapper">
-                <button
-                    [disabled]="!!progress"
-                    class="show-more"
-                    mat-button
-                    (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
-                >
-                    {{ progress ? 'Loading...' : 'Show more' }}
-                </button>
-            </div>
+            <button
+                [disabled]="!!progress"
+                class="show-more"
+                mat-button
+                matTooltip="Show {{ size }} more (currently shown {{
+                    data.length < displayedPages * size ? data?.length : displayedPages * size
+                }})"
+                (click)="showMore()"
+            >
+                {{ progress ? 'Loading...' : 'Show more' }}
+            </button>
         </ng-template>
     </mat-card>
 </div>

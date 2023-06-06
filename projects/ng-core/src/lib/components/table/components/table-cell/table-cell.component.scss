@@ -1,0 +1,18 @@
+.wrapper {
+    & > * {
+        white-space: nowrap;
+    }
+
+    .tooltip {
+        text-decoration: underline;
+        text-decoration-style: dotted;
+
+        .value {
+            cursor: default;
+        }
+    }
+
+    .button {
+        margin: -2.5px 0;
+    }
+}

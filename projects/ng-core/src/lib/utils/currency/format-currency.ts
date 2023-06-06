@@ -1,15 +1,17 @@
 import { formatCurrency as ngFormatCurrency, getCurrencySymbol } from '@angular/common';
+import isNil from 'lodash-es/isNil';
 
-import { toMajor } from './to-major';
+import { toMajor, toMajorByExponent } from './to-major';
 
 export function formatCurrency(
     amount: number,
     currencyCode: string = 'USD',
     format: 'short' | 'long' = 'long',
-    locale = 'en-GB'
+    locale = 'en-GB',
+    exponent?: number
 ): string {
     return ngFormatCurrency(
-        toMajor(amount, currencyCode),
+        isNil(exponent) ? toMajor(amount, currencyCode) : toMajorByExponent(amount, exponent),
         locale,
         getCurrencySymbol(currencyCode, 'narrow', locale),
         currencyCode,

@@ -4,6 +4,10 @@
     display: flex;
     gap: 32px;
 
+    ::ng-deep .mtx-grid-pagination {
+        display: none;
+    }
+
     .header {
         flex-direction: row;
         box-sizing: border-box;
@@ -25,12 +29,8 @@
         display: none;
     }
 
-    .show-more-wrapper {
-        padding: 16px;
-
-        .show-more {
-            width: 100%;
-        }
+    .show-more {
+        width: 100%;
     }
 
     .details {
@@ -38,7 +38,8 @@
         display: flex;
         justify-content: space-between;
 
-        & > * {
+        & > *,
+        mat-icon {
             font-size: 12px;
             color: rgba(0, 0, 0, 0.54);
         }
@@ -47,6 +48,18 @@
             cursor: pointer;
             text-decoration: underline;
             text-decoration-style: dotted;
+        }
+
+        .customize {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            mat-icon {
+                height: auto;
+                width: auto;
+                cursor: pointer;
+            }
         }
     }
 }

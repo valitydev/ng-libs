@@ -1,7 +1,56 @@
+import { ThemePalette } from '@angular/material/core';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 
-import { TemplateColumn } from '../components/templates/templates';
+import { SelectFn } from '../../../utils';
 
-export type ExtColumn<T> = MtxGridColumn<T> | TemplateColumn<T>;
+type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
+    TObject,
+    TResult,
+    [colDef: ExtColumn<TObject>]
+>;
 
-export type Column<T> = ExtColumn<T> | string;
+type BaseColumn<T extends object> = Pick<
+    MtxGridColumn<T>,
+    'field' | 'header' | 'cellTemplate' | 'hide'
+> & {
+    formatter?: FormatterFn<T>;
+    description?: FormatterFn<T>;
+    tooltip?: FormatterFn<T>;
+};
+
+type TypedColumn<TType = never, TParams = never> = {
+    type: TType;
+} & Pick<
+    {
+        typeParameters: TParams;
+    },
+    TParams extends never ? never : 'typeParameters'
+>;
+
+export type TagColumn<T extends object, TTags extends PropertyKey = PropertyKey> = BaseColumn<T> &
+    TypedColumn<
+        'tag',
+        {
+            value?: FormatterFn<T, TTags>;
+            tags: Record<TTags, { label?: string; color?: 'success' | 'pending' | ThemePalette }>;
+        }
+    >;
+
+export type ExtColumn<T extends object> = BaseColumn<T> &
+    (
+        | { type?: undefined }
+        | TypedColumn<'datetime'>
+        | TypedColumn<'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
+        | TagColumn<T>
+        | TypedColumn<
+              'menu',
+              {
+                  items: {
+                      label: string;
+                      click: (rowData: T) => void;
+                  }[];
+              }
+          >
+    );
+
+export type Column<T extends object> = ExtColumn<T> | string;

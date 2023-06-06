@@ -1,0 +1,15 @@
+@use '@angular/material' as mat;
+@use '@ng-matero/extensions' as mtx;
+
+@use '../components/table/table-theme';
+@use '../components/dialog/dialog-theme';
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@mixin all-component-themes($theme) {
+    @include mat.all-component-themes($theme);
+    @include mtx.all-component-themes($theme);
+    @include table-theme.theme($theme);
+    @include dialog-theme.theme($theme);
+}

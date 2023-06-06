@@ -1,4 +1,3 @@
-import isObject from 'lodash-es/isObject';
 import { ValuesType } from 'utility-types';
 
 import { isEmpty } from './is-empty';
@@ -14,23 +13,24 @@ export function clean<
     isNotDeep = false,
     filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmpty(v)
 ): TAllowRootRemoval extends true ? T | null : T {
-    let result: unknown;
+    if (allowRootRemoval && !filterPredicate(obj)) {
+        return null as never;
+    }
     const cleanChild = (v: unknown) =>
-        isNotDeep ? v : clean(v as never, allowRootRemoval, isNotDeep, filterPredicate);
+        isNotDeep ? v : clean(v as never, true, isNotDeep, filterPredicate);
     if (Array.isArray(obj)) {
-        result = (obj as ValuesType<T>[])
+        return (obj as ValuesType<T>[])
             .map((v) => cleanChild(v))
-            .filter((v, idx) => filterPredicate(v, idx));
-    } else if (isObject(obj)) {
-        result = Object.fromEntries(
+            .filter((v, idx) => filterPredicate(v, idx)) as never;
+    }
+    if (obj?.constructor === Object) {
+        return Object.fromEntries(
             (Object.entries(obj) as [keyof T, ValuesType<T>][])
                 .map(([k, v]) => [k, cleanChild(v)] as const)
                 .filter(([k, v]) => filterPredicate(v, k))
-        );
-    } else {
-        result = obj;
+        ) as never;
     }
-    return allowRootRemoval && !filterPredicate(result) ? (null as never) : (result as never);
+    return obj;
 }
 
 export function cleanPrimitiveProps<T extends object>(

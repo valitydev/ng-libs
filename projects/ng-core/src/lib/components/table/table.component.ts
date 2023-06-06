@@ -1,38 +1,36 @@
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
     Component,
     ContentChild,
     EventEmitter,
     Input,
     OnChanges,
-    OnInit,
     Output,
     TemplateRef,
+    ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridCellTemplate, MtxGridColumn } from '@ng-matero/extensions/grid';
-import { MtxGrid } from '@ng-matero/extensions/grid/grid';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MtxGridColumn, MtxGrid } from '@ng-matero/extensions/grid';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
-import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
 
 import { TableActionsComponent } from './components/table-actions.component';
-import { Column, ExtColumn } from './types/column';
-import { createGridColumns } from './utils/create-grid-columns';
+import { Column } from './types/column';
+import { createMtxGridColumns } from './utils/create-mtx-grid-columns';
 import { Progressable } from '../../types/progressable';
 import { ComponentChanges } from '../../utils';
+
+export type UpdateOptions = {
+    size: number;
+};
 
 @UntilDestroy()
 @Component({
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TableComponent<T> implements OnInit, Progressable, OnChanges {
+export class TableComponent<T extends object> implements Progressable, OnChanges {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
@@ -40,82 +38,61 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
     @Input() trackByField?: string;
     @Input() progress?: boolean | number | null = false;
 
+    @Input() @coerceBoolean noActions: boolean | '' = false;
+
     @Input() @coerceBoolean rowSelectable: boolean | '' = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
-    @Input() sizes: boolean | number[] | string = false;
-    @Input() size?: number;
+    @Input() size: number = 25;
+    @Input() preloadSize: number = 1000;
 
     @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
-    @Output() more = new EventEmitter<{ size?: number }>();
-
-    @Output() sizeChange = new EventEmitter<number>();
-    @Output() update = new EventEmitter<{ size?: number }>();
+    @Output() more = new EventEmitter<UpdateOptions>();
+    @Output() update = new EventEmitter<UpdateOptions>();
 
     @Input() sortActive?: string;
     @Input() sortDirection?: SortDirection;
     @Output() sortChange = new EventEmitter<Sort>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
+    @ViewChild('cellTpl', { static: true }) defaultCellTemplate!: TemplateRef<unknown>;
 
-    size$ = new BehaviorSubject<undefined | number>(undefined);
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
-    renderedSizes: number[] = [];
     renderedCellTemplate!: MtxGrid['cellTemplate'];
 
-    cellTemplates: Map<NonNullable<ExtColumn<T>['type']>, TemplateRef<unknown>> = new Map();
     internalSelected: T[] = [];
 
-    constructor(private cdr: ChangeDetectorRef) {}
+    isPreload = false;
+    displayedPages = 1;
 
-    ngOnInit() {
-        this.size$
-            .pipe(distinctUntilChanged(), untilDestroyed(this))
-            .subscribe((v) => this.sizeChange.emit(v));
+    get currentSize() {
+        return this.isPreload ? this.preloadSize : this.size;
+    }
+
+    get hasShowMore() {
+        return !!this.hasMore || this.data?.length > this.size * this.displayedPages;
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
         if (changes.columns) {
             this.updateColumns();
         }
-        if (changes.sizes) {
-            if (Array.isArray(this.sizes)) {
-                this.renderedSizes = this.sizes;
-            } else if (typeof this.sizes !== 'string' && !this.sizeChange.observed) {
-                this.renderedSizes = [];
-            } else {
-                this.renderedSizes = [25, 100, 1000];
-            }
-            this.size$.next(this.renderedSizes[0]);
-        }
-        if (changes.size && this.size) {
-            this.size$.next(this.size);
-        }
         if (changes.cellTemplate) {
             this.updateCellTemplate();
         }
-    }
-
-    reset() {
-        this.updateColumns();
-        // TODO: Hack, problem with pinned columns rerender in mtx-grid
-        this.renderedColumns.push({ field: ' ' });
-        this.cdr.detectChanges();
-        this.renderedColumns.pop();
+        if (changes.data || changes.rowSelected) {
+            this.select(this.rowSelected, true);
+        }
     }
 
     updateColumns(columns?: MtxGridColumn<T>[]) {
-        if (columns) {
-            this.renderedColumns = columns;
-            this.renderedColumns.forEach((c) => (c.hide = !c.show));
-            this.hasReset = true;
-        } else {
-            this.renderedColumns = createGridColumns(this.columns) as never;
-            this.hasReset = false;
-        }
+        this.hasReset = !!columns;
+        const renderedColumns = columns ? columns.slice() : createMtxGridColumns(this.columns);
+        renderedColumns.forEach((c) => (c.hide = typeof c.show === 'boolean' ? !c.show : !!c.hide));
+        this.renderedColumns = renderedColumns;
         this.updateCellTemplate();
     }
 
@@ -123,17 +100,54 @@ export class TableComponent<T> implements OnInit, Progressable, OnChanges {
         return get(item, this.trackByField ?? '');
     }
 
+    select(selected: T[], noEmit = false) {
+        if (selected && !selected.every((d) => this.data?.includes(d))) {
+            selected = [];
+            noEmit = false;
+        }
+        this.internalSelected = selected;
+        if (!noEmit) {
+            this.rowSelectionChange.emit(selected);
+        }
+    }
+
+    load(isPreload = false) {
+        if (this.isPreload !== isPreload) {
+            this.isPreload = isPreload;
+        }
+        this.update.emit({ size: this.currentSize });
+        this.displayedPages = 1;
+    }
+
+    preload() {
+        if (this.isPreload && this.hasMore) {
+            this.more.emit({ size: this.currentSize });
+            return;
+        }
+        this.load(true);
+    }
+
+    showMore() {
+        this.displayedPages += 1;
+        if (this.hasMore && this.displayedPages * this.size > this.data?.length) {
+            this.more.emit({ size: this.currentSize });
+        }
+    }
+
     private updateCellTemplate() {
-        if (this.cellTemplate instanceof TemplateRef) this.renderedCellTemplate = this.cellTemplate;
-        this.renderedCellTemplate = {
-            ...(this.renderedColumns as ExtColumn<T>[]).reduce((acc, c) => {
-                const tpl = this.cellTemplates.get(c.type as NonNullable<ExtColumn<T>['type']>);
-                if (tpl) {
-                    acc[c.field] = tpl;
-                }
-                return acc;
-            }, {} as MtxGridCellTemplate),
-            ...(this.cellTemplate || {}),
-        } as MtxGridCellTemplate;
+        if (this.cellTemplate instanceof TemplateRef) {
+            this.renderedCellTemplate = this.cellTemplate;
+            return;
+        }
+        if (!this.cellTemplate && this.renderedColumns.every((c) => !c.cellTemplate)) {
+            this.renderedCellTemplate = this.defaultCellTemplate;
+            return;
+        }
+        this.renderedCellTemplate = Object.fromEntries(
+            this.renderedColumns.map((c) => [
+                c.field,
+                this.cellTemplate?.[c.field as never] ?? c.cellTemplate ?? this.defaultCellTemplate,
+            ])
+        );
     }
 }

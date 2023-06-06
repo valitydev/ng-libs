@@ -1,5 +1,24 @@
 <v-dialog noActions title="Filters">
-    <div [ngClass]="['v-filters-dialog-cols-' + (dialogData.filters.repeat$ | async), 'filters']">
-        <ng-container *ngTemplateOutlet="dialogData.filters.contentTemplate"></ng-container>
+    <div
+        [ngClass]="[
+            'v-filters-dialog-cols-' +
+                (!dialogData.filters.otherFiltersTemplate.templateRef || dialogData.filters.merge
+                    ? (dialogData.filters.repeat$ | async)
+                    : 1),
+            'filters'
+        ]"
+    >
+        <ng-container
+            *ngIf="
+                !dialogData.filters.otherFiltersTemplate?.templateRef || dialogData.filters.merge
+            "
+        >
+            <ng-container *ngTemplateOutlet="dialogData.filters.filtersTemplate"></ng-container>
+        </ng-container>
+        <ng-container *ngIf="dialogData.filters.otherFiltersTemplate?.templateRef">
+            <ng-container
+                *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate.templateRef"
+            ></ng-container>
+        </ng-container>
     </div>
 </v-dialog>
