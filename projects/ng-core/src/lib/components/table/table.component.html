@@ -43,14 +43,14 @@
     </v-actions>
     <div class="details">
         <div>
-            <ng-container *ngIf="data?.length">
-                Quantity: {{ progress ? '?' : data.length
-                }}{{ progress ? ' (loading)' : hasMore ? ' (more available)' : ' (all)' }} | Shown:
-                {{ data.length < displayedPages * size ? data?.length : displayedPages * size }}
-                <ng-container *ngIf="!progress && internalSelected?.length">
+            <ng-container *ngIf="!progress; else loading">
+                Quantity:
+                {{ data?.length ? data.length + (hasMore ? ' (more available)' : ' (all)') : '0'
+                }}<ng-container *ngIf="internalSelected?.length">
                     | <b>Selected: {{ internalSelected.length }}</b></ng-container
                 >
             </ng-container>
+            <ng-template #loading>Loading...</ng-template>
         </div>
         <div class="customize">
             <mat-icon *ngIf="hasReset" (click)="updateColumns()">restart_alt</mat-icon>
@@ -82,26 +82,32 @@
             [pageSize]="size * displayedPages"
             [rowSelectable]="!!rowSelectable"
             [rowSelected]="rowSelected"
+            [showColumnMenuHeader]="true"
             [showStatusbar]="hasShowMore"
             [sortActive]="sortActive || ''"
             [sortDirection]="sortDirection || ''"
             [sortDisabled]="!!progress"
             [sortOnFront]="false"
             [statusbarTemplate]="footerTpl"
+            [toolbarTemplate]="summaryTpl"
             [trackBy]="trackByField ? trackByFieldFn : trackBy"
-            columnHideableChecked="show"
+            columnHideableChecked="hide"
+            toolbarTitle="test"
             (rowSelectionChange)="select($event)"
             (sortChange)="sortChange.emit($event)"
         ></mtx-grid>
         <ng-template #cellTpl let-col="colDef" let-index="index" let-row>
             <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
         </ng-template>
+        <ng-template #summaryTpl> test {{ displayedPages }} </ng-template>
         <ng-template #footerTpl>
             <button
                 [disabled]="!!progress"
                 class="show-more"
                 mat-button
-                matTooltip="Show {{ size }} more elements"
+                matTooltip="Show {{ size }} more (currently shown {{
+                    data.length < displayedPages * size ? data?.length : displayedPages * size
+                }})"
                 (click)="showMore()"
             >
                 {{ progress ? 'Loading...' : 'Show more' }}
