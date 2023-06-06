@@ -101,16 +101,10 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
     }
 
     updateColumns(columns?: MtxGridColumn<T>[]) {
-        if (columns) {
-            this.renderedColumns = columns;
-            this.hasReset = true;
-        } else {
-            this.renderedColumns = createMtxGridColumns(this.columns) as never;
-            this.hasReset = false;
-        }
-        this.renderedColumns.forEach(
-            (c) => (c.hide = typeof c.show === 'boolean' ? !c.show : !!c.hide)
-        );
+        this.hasReset = !!columns;
+        const renderedColumns = columns ? columns.slice() : createMtxGridColumns(this.columns);
+        renderedColumns.forEach((c) => (c.hide = typeof c.show === 'boolean' ? !c.show : !!c.hide));
+        this.renderedColumns = renderedColumns;
         this.updateCellTemplate();
     }
 
