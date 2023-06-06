@@ -11,6 +11,4 @@ import { FiltersComponent } from '../../filters.component';
 export class FiltersDialogComponent extends DialogSuperclass<
     FiltersDialogComponent,
     { filters: FiltersComponent }
-> {
-    protected readonly Boolean = Boolean;
-}
+> {}

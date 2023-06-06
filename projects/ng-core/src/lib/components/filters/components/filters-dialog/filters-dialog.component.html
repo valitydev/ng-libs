@@ -1,13 +1,12 @@
 <v-dialog noActions title="Filters">
     <div
-        [ngClass]="
-            [
-                (!dialogData.filters.otherFiltersTemplate.templateRef ||
-                    dialogData.filters.merge) &&
-                    'v-filters-dialog-cols-' + (dialogData.filters.repeat$ | async),
-                'filters'
-            ].filter(Boolean)
-        "
+        [ngClass]="[
+            'v-filters-dialog-cols-' +
+                (!dialogData.filters.otherFiltersTemplate.templateRef || dialogData.filters.merge
+                    ? (dialogData.filters.repeat$ | async)
+                    : 1),
+            'filters'
+        ]"
     >
         <ng-container
             *ngIf="
