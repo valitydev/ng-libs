@@ -44,13 +44,11 @@
     <div class="details">
         <div>
             <ng-container *ngIf="data?.length">
-                Quantity: {{ data?.length ?? 0
-                }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
-                }}{{
-                    internalSelected?.length
-                        ? ' and of them selected: ' + internalSelected.length
-                        : ''
-                }}
+                Quantity: {{ data.length }}{{ hasMore ? ' (more available)' : '(all)' }} | Shown:
+                {{ data.length < displayedPages * size ? data?.length : displayedPages * size }}
+                <ng-container *ngIf="internalSelected?.length">
+                    | <b>Selected: {{ internalSelected.length }}</b></ng-container
+                >
             </ng-container>
         </div>
         <div class="customize">
