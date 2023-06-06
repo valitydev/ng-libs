@@ -43,10 +43,11 @@
     </v-actions>
     <div class="details">
         <div>
-            <ng-container *ngIf="data?.length && !progress">
-                Quantity: {{ data.length }}{{ hasMore ? ' (more available)' : '(all)' }} | Shown:
+            <ng-container *ngIf="data?.length">
+                Quantity: {{ progress ? '?' : data.length
+                }}{{ progress ? ' (loading)' : hasMore ? ' (more available)' : ' (all)' }} | Shown:
                 {{ data.length < displayedPages * size ? data?.length : displayedPages * size }}
-                <ng-container *ngIf="internalSelected?.length">
+                <ng-container *ngIf="!progress && internalSelected?.length">
                     | <b>Selected: {{ internalSelected.length }}</b></ng-container
                 >
             </ng-container>
