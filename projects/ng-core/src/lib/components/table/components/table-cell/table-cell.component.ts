@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 
 import { ExtColumn } from '../../types/column';
 
@@ -6,6 +6,7 @@ import { ExtColumn } from '../../types/column';
     selector: 'v-table-cell',
     templateUrl: './table-cell.component.html',
     styleUrls: ['./table-cell.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableCellComponent<T extends object> {
     @HostBinding('class.v-table-cell') hostClass: boolean = true;

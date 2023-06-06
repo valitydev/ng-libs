@@ -1,4 +1,5 @@
 import {
+    ChangeDetectionStrategy,
     Component,
     ContentChild,
     EventEmitter,
@@ -9,7 +10,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridColumn, MtxGrid } from '@ng-matero/extensions/grid';
+import { MtxGrid, MtxGridColumn } from '@ng-matero/extensions/grid';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
@@ -29,6 +30,7 @@ export type UpdateOptions = {
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T extends object> implements Progressable, OnChanges {
     @Input() data!: T[];
