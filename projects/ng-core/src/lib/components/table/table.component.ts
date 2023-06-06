@@ -95,6 +95,9 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
         if (changes.cellTemplate) {
             this.updateCellTemplate();
         }
+        if (changes.data || changes.rowSelected) {
+            this.select(this.rowSelected, true);
+        }
     }
 
     updateColumns(columns?: MtxGridColumn<T>[]) {
@@ -113,6 +116,17 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
 
     trackByFieldFn(index: number, item: T) {
         return get(item, this.trackByField ?? '');
+    }
+
+    select(selected: T[], noEmit = false) {
+        if (selected && !selected.every((d) => this.data?.includes(d))) {
+            selected = [];
+            noEmit = false;
+        }
+        this.internalSelected = selected;
+        if (!noEmit) {
+            this.rowSelectionChange.emit(selected);
+        }
     }
 
     private updateCellTemplate() {

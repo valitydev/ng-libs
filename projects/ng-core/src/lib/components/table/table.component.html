@@ -42,11 +42,7 @@
             <ng-container *ngIf="data?.length">
                 Quantity: {{ data?.length ?? 0
                 }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
-                }}{{
-                    (rowSelected || internalSelected)?.length
-                        ? '. Selected: ' + (rowSelected || internalSelected).length
-                        : ''
-                }}
+                }}{{ internalSelected?.length ? '. Selected: ' + internalSelected.length : '' }}
             </ng-container>
         </div>
         <div class="customize">
@@ -83,7 +79,7 @@
             [sortOnFront]="false"
             [trackBy]="trackByField ? trackByFieldFn : trackBy"
             columnHideableChecked="show"
-            (rowSelectionChange)="rowSelectionChange.emit($event); internalSelected = $event"
+            (rowSelectionChange)="select($event)"
             (sortChange)="sortChange.emit($event)"
         ></mtx-grid>
         <ng-template #cellTpl let-col="colDef" let-index="index" let-row>
