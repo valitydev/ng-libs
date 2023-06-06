@@ -10,8 +10,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
-import { MtxGridColumn } from '@ng-matero/extensions/grid';
-import { MtxGrid } from '@ng-matero/extensions/grid/grid';
+import { MtxGridColumn, MtxGrid } from '@ng-matero/extensions/grid';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
