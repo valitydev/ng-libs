@@ -2,36 +2,30 @@
     <v-actions *ngIf="!noActions">
         <v-actions>
             <ng-container *ngIf="update.observed">
-                <button
-                    [disabled]="!!progress"
-                    mat-stroked-button
-                    (click)="update.emit(this.size$.value ? { size: this.size$.value } : {})"
-                >
-                    Update
-                </button>
+                <button [disabled]="!!progress" mat-stroked-button (click)="load()">Update</button>
                 <button
                     *ngIf="rowSelectable"
                     [disabled]="!!progress || !hasMore"
                     mat-button
-                    (click)="more.emit()"
+                    (click)="preload()"
                 >
-                    Get more
+                    Preload
                 </button>
             </ng-container>
-            <ng-container *ngIf="renderedSizes.length">
-                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>
-                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                    <button
-                        *ngFor="let size of renderedSizes"
-                        mat-menu-item
-                        (click)="size$.next(size)"
-                    >
-                        {{ size }}
-                    </button>
-                </mat-menu>
-            </ng-container>
+            <!--            <ng-container *ngIf="renderedSizes.length">-->
+            <!--                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>-->
+            <!--                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>-->
+            <!--                </button>-->
+            <!--                <mat-menu #menu="matMenu">-->
+            <!--                    <button-->
+            <!--                        *ngFor="let size of renderedSizes"-->
+            <!--                        mat-menu-item-->
+            <!--                        (click)="size$.next(size)"-->
+            <!--                    >-->
+            <!--                        {{ size }}-->
+            <!--                    </button>-->
+            <!--                </mat-menu>-->
+            <!--            </ng-container>-->
         </v-actions>
         <div>
             <ng-content select="v-table-actions"></ng-content>
@@ -70,14 +64,17 @@
             [data]="data || []"
             [disableRowClickSelection]="true"
             [emptyValuePlaceholder]="''"
-            [loading]="!!progress || !columns"
-            [paginationTemplate]="footerTpl"
+            [loading]="!!progress"
+            [pageIndex]="0"
+            [pageSize]="size * displayedPages"
             [rowSelectable]="!!rowSelectable"
             [rowSelected]="rowSelected"
+            [showStatusbar]="!!hasMore || (data?.length || 0) < size * displayedPages"
             [sortActive]="sortActive || ''"
             [sortDirection]="sortDirection || ''"
             [sortDisabled]="!!progress"
             [sortOnFront]="false"
+            [statusbarTemplate]="footerTpl"
             [trackBy]="trackByField ? trackByFieldFn : trackBy"
             columnHideableChecked="show"
             (rowSelectionChange)="select($event)"
@@ -87,16 +84,9 @@
             <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
         </ng-template>
         <ng-template #footerTpl>
-            <div *ngIf="hasMore" class="show-more-wrapper">
-                <button
-                    [disabled]="!!progress"
-                    class="show-more"
-                    mat-button
-                    (click)="more.emit(this.size$.value ? { size: this.size$.value } : {})"
-                >
-                    {{ progress ? 'Loading...' : 'Show more' }}
-                </button>
-            </div>
+            <button [disabled]="!!progress" class="show-more" mat-button (click)="showMore()">
+                {{ progress ? 'Loading...' : 'Show more' }}
+            </button>
         </ng-template>
     </mat-card>
 </div>

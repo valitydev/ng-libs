@@ -4,18 +4,15 @@ import {
     EventEmitter,
     Input,
     OnChanges,
-    OnInit,
     Output,
     TemplateRef,
     ViewChild,
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGridColumn, MtxGrid } from '@ng-matero/extensions/grid';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
-import { BehaviorSubject } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column } from './types/column';
@@ -23,13 +20,17 @@ import { createMtxGridColumns } from './utils/create-mtx-grid-columns';
 import { Progressable } from '../../types/progressable';
 import { ComponentChanges } from '../../utils';
 
+export type UpdateOptions = {
+    size: number;
+};
+
 @UntilDestroy()
 @Component({
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
 })
-export class TableComponent<T extends object> implements OnInit, Progressable, OnChanges {
+export class TableComponent<T extends object> implements Progressable, OnChanges {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: MtxGrid['cellTemplate'] = undefined as never;
@@ -43,14 +44,12 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
     @Input() rowSelected!: T[];
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
-    @Input() sizes: boolean | number[] | string = false;
-    @Input() size?: number;
+    @Input() size: number = 25;
+    @Input() preloadSize: number = 1000;
 
     @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
-    @Output() more = new EventEmitter<{ size?: number }>();
-
-    @Output() sizeChange = new EventEmitter<number>();
-    @Output() update = new EventEmitter<{ size?: number }>();
+    @Output() more = new EventEmitter<UpdateOptions>();
+    @Output() update = new EventEmitter<UpdateOptions>();
 
     @Input() sortActive?: string;
     @Input() sortDirection?: SortDirection;
@@ -59,37 +58,23 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
     @ViewChild('cellTpl', { static: true }) defaultCellTemplate!: TemplateRef<unknown>;
 
-    size$ = new BehaviorSubject<undefined | number>(undefined);
     renderedColumns!: MtxGridColumn<T>[];
     hasReset = false;
 
-    renderedSizes: number[] = [];
     renderedCellTemplate!: MtxGrid['cellTemplate'];
 
     internalSelected: T[] = [];
 
-    ngOnInit() {
-        this.size$
-            .pipe(distinctUntilChanged(), untilDestroyed(this))
-            .subscribe((v) => this.sizeChange.emit(v));
+    isPreload = false;
+    displayedPages = 1;
+
+    get currentSize() {
+        return this.isPreload ? this.preloadSize : this.size;
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
         if (changes.columns) {
             this.updateColumns();
-        }
-        if (changes.sizes) {
-            if (Array.isArray(this.sizes)) {
-                this.renderedSizes = this.sizes;
-            } else if (typeof this.sizes !== 'string' && !this.sizeChange.observed) {
-                this.renderedSizes = [];
-            } else {
-                this.renderedSizes = [25, 100, 1000];
-            }
-            this.size$.next(this.renderedSizes[0]);
-        }
-        if (changes.size && this.size) {
-            this.size$.next(this.size);
         }
         if (changes.cellTemplate) {
             this.updateCellTemplate();
@@ -119,6 +104,29 @@ export class TableComponent<T extends object> implements OnInit, Progressable, O
         this.internalSelected = selected;
         if (!noEmit) {
             this.rowSelectionChange.emit(selected);
+        }
+    }
+
+    load(isPreload = false) {
+        if (this.isPreload !== isPreload) {
+            this.isPreload = isPreload;
+        }
+        this.update.emit({ size: this.currentSize });
+        this.displayedPages = 1;
+    }
+
+    preload() {
+        if (this.isPreload && this.hasMore) {
+            this.more.emit({ size: this.currentSize });
+            return;
+        }
+        this.load(true);
+    }
+
+    showMore() {
+        this.displayedPages += 1;
+        if (this.displayedPages * this.size > (this.data?.length || 0)) {
+            this.more.emit({ size: this.currentSize });
         }
     }
 
