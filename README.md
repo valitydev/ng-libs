@@ -1,13 +1,23 @@
 # Angular Libraries
 
 -   [Core](/projects/ng-core)
+-   Configs
+    -   [Prettier Config](/projects/prettier-config)
+    -   [ESLint Config](/projects/eslint-config)
+    -   [CSpell Config](/projects/cspell-config)
 
 ## 💻 Development with locally built/runnable library
 
-1. Link the library
+1. [Link](https://docs.npmjs.com/cli/commands/npm-link) the library
 
     ```sh
-    npm link ../ng-libs/dist/ng-core
+    npm link ~/github/valitydev/ng-libs/projects/ng-core/dist
+    ```
+
+    [Alternative](https://www.npmjs.com/package/link):
+
+    ```sh
+    npx link ~/github/valitydev/ng-libs/projects/ng-core/dist
     ```
 
 1. Start Library
