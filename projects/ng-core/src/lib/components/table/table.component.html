@@ -2,14 +2,24 @@
     <v-actions *ngIf="!noActions">
         <v-actions>
             <ng-container *ngIf="update.observed">
-                <button [disabled]="!!progress" mat-stroked-button (click)="load()">Update</button>
+                <button
+                    [disabled]="!!progress"
+                    mat-stroked-button
+                    matTooltip="Reload {{ size }} elements"
+                    (click)="load()"
+                >
+                    Update
+                </button>
                 <button
                     *ngIf="rowSelectable"
                     [disabled]="!!progress || !hasMore"
                     mat-button
+                    matTooltip="Preload {{ preloadSize }}{{
+                        isPreload && hasMore ? ' more' : ''
+                    }} elements"
                     (click)="preload()"
                 >
-                    Preload
+                    {{ isPreload ? (hasMore ? 'Preload more' : 'Preloaded') : 'Preload' }}
                 </button>
             </ng-container>
             <!--            <ng-container *ngIf="renderedSizes.length">-->
@@ -36,7 +46,11 @@
             <ng-container *ngIf="data?.length">
                 Quantity: {{ data?.length ?? 0
                 }}{{ hasMore ? ' (more available)' : '/' + (data?.length ?? 0)
-                }}{{ internalSelected?.length ? '. Selected: ' + internalSelected.length : '' }}
+                }}{{
+                    internalSelected?.length
+                        ? ' and of them selected: ' + internalSelected.length
+                        : ''
+                }}
             </ng-container>
         </div>
         <div class="customize">
@@ -84,7 +98,13 @@
             <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
         </ng-template>
         <ng-template #footerTpl>
-            <button [disabled]="!!progress" class="show-more" mat-button (click)="showMore()">
+            <button
+                [disabled]="!!progress"
+                class="show-more"
+                mat-button
+                matTooltip="Show {{ size }} more elements"
+                (click)="showMore()"
+            >
                 {{ progress ? 'Loading...' : 'Show more' }}
             </button>
         </ng-template>
