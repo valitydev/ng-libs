@@ -43,7 +43,7 @@
     </v-actions>
     <div class="details">
         <div>
-            <ng-container *ngIf="data?.length">
+            <ng-container *ngIf="data?.length && !progress">
                 Quantity: {{ data.length }}{{ hasMore ? ' (more available)' : '(all)' }} | Shown:
                 {{ data.length < displayedPages * size ? data?.length : displayedPages * size }}
                 <ng-container *ngIf="internalSelected?.length">
