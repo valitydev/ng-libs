@@ -68,6 +68,7 @@
             [columns]="renderedColumns"
             [columnSortable]="true"
             [data]="data || []"
+            [disableRowClickSelection]="true"
             [emptyValuePlaceholder]="''"
             [loading]="!!progress || !columns"
             [paginationTemplate]="footerTpl"
