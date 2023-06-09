@@ -14,7 +14,7 @@
         class="value"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
-            {{ value | date : 'dd.MM.yyyy HH:mm:ss' }}
+            {{ value | date : 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'tag'">
             <ng-container
