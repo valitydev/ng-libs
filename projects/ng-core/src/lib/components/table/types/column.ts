@@ -11,7 +11,15 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
 
 type BaseColumn<T extends object> = Pick<
     MtxGridColumn<T>,
-    'field' | 'header' | 'cellTemplate' | 'hide' | 'pinned' | 'maxWidth' | 'minWidth' | 'width'
+    | 'field'
+    | 'header'
+    | 'cellTemplate'
+    | 'hide'
+    | 'pinned'
+    | 'maxWidth'
+    | 'minWidth'
+    | 'width'
+    | 'sortable'
 > & {
     formatter?: FormatterFn<T>;
     description?: FormatterFn<T>;
@@ -51,6 +59,7 @@ export type ExtColumn<T extends object> = BaseColumn<T> &
                   }[];
               }
           >
+        | TypedColumn<'boolean'>
     );
 
 export type Column<T extends object> = ExtColumn<T> | string;
