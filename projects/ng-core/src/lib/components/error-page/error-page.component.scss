@@ -1,0 +1,18 @@
+.error {
+    margin: 0 auto;
+    padding: 96px 24px;
+    text-align: center;
+
+    .title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+
+        mat-icon {
+            font-size: 40px;
+            width: auto;
+            height: auto;
+        }
+    }
+}
