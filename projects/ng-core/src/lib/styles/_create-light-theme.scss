@@ -28,9 +28,9 @@
                 pending: mat.define-palette(mat.$yellow-palette),
                 neutral: mat.define-palette(mat.$gray-palette),
             ),
-            $theme
+            map-remove($theme, color)
         )
     );
 
-    @return map-merge($base-theme, $theme);
+    @return $base-theme;
 }
