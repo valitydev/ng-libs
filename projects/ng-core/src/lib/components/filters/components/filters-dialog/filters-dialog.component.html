@@ -2,22 +2,16 @@
     <div
         [ngClass]="[
             'v-filters-dialog-cols-' +
-                (!dialogData.filters.otherFiltersTemplate.templateRef || dialogData.filters.merge
-                    ? (dialogData.filters.repeat$ | async)
-                    : 1),
+                (isShowMainFilters ? (dialogData.filters.repeat$ | async) : 1),
             'filters'
         ]"
     >
-        <ng-container
-            *ngIf="
-                !dialogData.filters.otherFiltersTemplate?.templateRef || dialogData.filters.merge
-            "
-        >
-            <ng-container *ngTemplateOutlet="dialogData.filters.filtersTemplate"></ng-container>
+        <ng-container *ngIf="isShowMainFilters">
+            <ng-container *ngTemplateOutlet="dialogData.filters.mainFiltersTemplate"></ng-container>
         </ng-container>
-        <ng-container *ngIf="dialogData.filters.otherFiltersTemplate?.templateRef">
+        <ng-container *ngIf="dialogData.filters.otherFiltersTemplate">
             <ng-container
-                *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate.templateRef"
+                *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate"
             ></ng-container>
         </ng-container>
     </div>

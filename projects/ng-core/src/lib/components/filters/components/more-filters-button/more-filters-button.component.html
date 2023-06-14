@@ -10,7 +10,7 @@
     </button>
     <button
         *ngIf="
-            filters.otherFiltersTemplate ||
+            filters.otherFiltersDirective ||
             ((filters.filtersCount$ | async) ?? 0) -
                 ((filters.displayedFiltersCount$ | async) ?? 0) >
                 0

@@ -11,4 +11,11 @@ import { FiltersComponent } from '../../filters.component';
 export class FiltersDialogComponent extends DialogSuperclass<
     FiltersDialogComponent,
     { filters: FiltersComponent }
-> {}
+> {
+    get isShowMainFilters() {
+        return (
+            !this.dialogData.filters.otherFiltersDirective?.templateRef ||
+            this.dialogData.filters.merge
+        );
+    }
+}

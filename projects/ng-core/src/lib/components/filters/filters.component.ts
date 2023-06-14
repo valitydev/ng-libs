@@ -30,12 +30,20 @@ export class FiltersComponent {
 
     @ContentChild(TemplateRef, { static: true }) filtersTemplate!: TemplateRef<unknown>;
     @ContentChild(OtherFiltersDirective, { static: true })
-    otherFiltersTemplate!: OtherFiltersDirective;
+    otherFiltersDirective!: OtherFiltersDirective;
     @ContentChild(MainFiltersDirective, { static: true })
-    mainFiltersTemplate!: OtherFiltersDirective;
+    mainFiltersDirective!: MainFiltersDirective;
 
     @ViewChild('content') set content(content: ElementRef<HTMLElement>) {
         this.filtersCount$.next(content?.nativeElement?.children?.length ?? 0);
+    }
+
+    get mainFiltersTemplate() {
+        return this.mainFiltersDirective?.templateRef ?? this.filtersTemplate;
+    }
+
+    get otherFiltersTemplate() {
+        return this.otherFiltersDirective?.templateRef;
     }
 
     repeat$ = this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
