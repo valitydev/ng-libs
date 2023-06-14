@@ -3,6 +3,7 @@
 
 @use '../components/table/table-theme';
 @use '../components/dialog/dialog-theme';
+@use '../components/tag/tag-theme';
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
@@ -12,4 +13,5 @@
     @include mtx.all-component-themes($theme);
     @include table-theme.theme($theme);
     @include dialog-theme.theme($theme);
+    @include tag-theme.theme($theme);
 }

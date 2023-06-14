@@ -1,6 +1,6 @@
-import { ThemePalette } from '@angular/material/core';
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
 
+import { Color } from '../../../styles';
 import { SelectFn } from '../../../utils';
 
 type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
@@ -35,12 +35,12 @@ type TypedColumn<TType = never, TParams = never> = {
     TParams extends never ? never : 'typeParameters'
 >;
 
-export type TagColumn<T extends object, TTags extends PropertyKey = PropertyKey> = BaseColumn<T> &
+export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> = BaseColumn<T> &
     TypedColumn<
         'tag',
         {
-            value?: FormatterFn<T, TTags>;
-            tags: Record<TTags, { label?: string; color?: 'success' | 'pending' | ThemePalette }>;
+            label?: FormatterFn<T>;
+            tags: Record<TTag, { label?: string; color?: Color }>;
         }
     >;
 
