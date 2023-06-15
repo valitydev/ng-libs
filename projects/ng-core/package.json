@@ -1,6 +1,6 @@
 {
   "name": "@vality/ng-core",
-  "version": "15.0.0",
+  "version": "15.0.1",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -11,7 +11,7 @@
     "@ng-matero/extensions": "^15.0.0",
     "@s-libs/js-core": "^15.2.0",
     "@s-libs/micro-dash": "^15.2.0",
-    "@s-libs/ng-core": "^15.2.0",
+    "@s-libs/ng-core": "^16.0.0",
     "@s-libs/rxjs-core": "^15.2.0",
     "dinero.js": "^2.0.0-alpha.14",
     "ng-let": "^15.0.2",
