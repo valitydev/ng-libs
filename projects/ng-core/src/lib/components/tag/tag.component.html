@@ -1,0 +1,9 @@
+<mat-chip-option
+    [color]="color"
+    [highlighted]="!!color"
+    [ngClass]="['color-' + color]"
+    [selectable]="false"
+    class="tag"
+>
+    <ng-content></ng-content>
+</mat-chip-option>

@@ -18,6 +18,7 @@ import { TableCellComponent } from './components/table-cell/table-cell.component
 import { TableComponent } from './table.component';
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
+import { TagModule } from '../tag';
 
 @NgModule({
     imports: [
@@ -36,6 +37,7 @@ import { ActionsModule } from '../actions';
         MatChipsModule,
         PipesModule,
         NgLetModule,
+        TagModule,
     ],
     declarations: [TableComponent, TableActionsComponent, TableCellComponent],
     exports: [TableComponent, TableActionsComponent],

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
     selector: 'v-table-actions',
@@ -7,5 +7,6 @@ import { Component } from '@angular/core';
             <ng-content></ng-content>
         </v-actions>
     `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableActionsComponent {}

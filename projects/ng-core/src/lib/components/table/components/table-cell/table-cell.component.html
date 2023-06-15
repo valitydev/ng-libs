@@ -14,25 +14,23 @@
         class="value"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
-            {{ value | date : 'dd.MM.yyyy HH:mm:ss' }}
+            {{ value | date : 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'tag'">
-            <ng-container
-                *ngIf="
-                    rowData | vSelect : colDef.typeParameters.value : value : [colDef] as tagValue
-                "
+            <v-tag *ngIf="colDef.typeParameters.tags[value] ?? {} as tag" [color]="tag.color">
+                {{
+                    tag.label ??
+                        (rowData | vSelect : colDef.typeParameters.label : value : [colDef])
+                }}
+            </v-tag>
+        </ng-template>
+        <ng-template [ngIf]="colDef.type === 'boolean'">
+            <v-tag
+                *ngIf="value === true || value === false"
+                [color]="value ? 'success' : 'neutral'"
             >
-                <mat-chip-option
-                    *ngIf="colDef.typeParameters.tags[tagValue] ?? {} as tag"
-                    [color]="tag.color"
-                    [highlighted]="!!tag.color"
-                    [ngClass]="['color-' + tag.color]"
-                    [selectable]="false"
-                    class="tag"
-                >
-                    {{ tag.label ?? value }}
-                </mat-chip-option>
-            </ng-container>
+                {{ value ? 'Yes' : 'No' }}
+            </v-tag>
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'currency'">
             {{
