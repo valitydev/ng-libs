@@ -1,6 +1,6 @@
 {
   "name": "@vality/eslint-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -12,9 +12,9 @@
     "eslint": ">= 8"
   },
   "dependencies": {
-    "@angular-eslint/eslint-plugin": "^15.2.1",
-    "@angular-eslint/eslint-plugin-template": "^15.2.1",
-    "@angular-eslint/template-parser": "^15.2.1",
+    "@angular-eslint/eslint-plugin": "^16.0.0",
+    "@angular-eslint/eslint-plugin-template": "^16.0.0",
+    "@angular-eslint/template-parser": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
     "eslint-config-prettier": "^8.8.0",
