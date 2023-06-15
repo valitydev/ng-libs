@@ -1,6 +1,6 @@
 {
   "name": "@vality/ng-core",
-  "version": "15.0.0",
+  "version": "15.0.1",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -19,8 +19,8 @@
   },
   "peerDependencies": {
     "@angular/cdk": "^15.0.0",
-    "@angular/common": "^15.0.0",
-    "@angular/core": "^15.0.0",
+    "@angular/common": "^15.0.0 || ^16.0.0",
+    "@angular/core": "^15.0.0 || ^16.0.0",
     "@angular/material": "^15.0.0",
     "@ngneat/until-destroy": "^9.0.0",
     "@types/lodash-es": "^4.0.0",
