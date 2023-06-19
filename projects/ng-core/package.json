@@ -1,6 +1,6 @@
 {
   "name": "@vality/ng-core",
-  "version": "15.0.0",
+  "version": "16.0.0",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -8,21 +8,20 @@
     }
   },
   "dependencies": {
-    "@ng-matero/extensions": "^15.0.0",
-    "@s-libs/js-core": "^15.2.0",
-    "@s-libs/micro-dash": "^15.2.0",
-    "@s-libs/ng-core": "^15.2.0",
-    "@s-libs/rxjs-core": "^15.2.0",
+    "@ng-matero/extensions": "^16.0.0",
+    "@s-libs/js-core": "^16.0.0",
+    "@s-libs/micro-dash": "^16.0.0",
+    "@s-libs/ng-core": "^16.0.0",
+    "@s-libs/rxjs-core": "^16.0.0",
     "dinero.js": "^2.0.0-alpha.14",
-    "ng-let": "^15.0.2",
+    "ng-let": "^16.0.1",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/cdk": "^15.0.0",
-    "@angular/common": "^15.0.0",
-    "@angular/core": "^15.0.0",
-    "@angular/material": "^15.0.0",
-    "@ngneat/until-destroy": "^9.0.0",
+    "@angular/cdk": "^16.0.0",
+    "@angular/common": "^16.0.0",
+    "@angular/core": "^16.0.0",
+    "@angular/material": "^16.0.0",
     "@types/lodash-es": "^4.0.0",
     "coerce-property": "^15.0.0",
     "lodash-es": "^4.0.0",
