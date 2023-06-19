@@ -12,7 +12,7 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
 
 export type BaseColumn<
     T extends object,
-    TType extends string = never,
+    TType extends string | void = void,
     TTypeParameters extends object = never
 > = Pick<
     MtxGridColumn<T>,
@@ -47,15 +47,14 @@ export type MenuColumn<T extends object> = BaseColumn<
         }[];
     }
 >;
-export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> = BaseColumn<T> &
-    BaseColumn<
-        T,
-        'tag',
-        {
-            label?: FormatterFn<T>;
-            tags: Record<TTag, { label?: string; color?: Color }>;
-        }
-    >;
+export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> = BaseColumn<
+    T,
+    'tag',
+    {
+        label?: FormatterFn<T>;
+        tags: Record<TTag, { label?: string; color?: Color }>;
+    }
+>;
 
 export type ExtColumn<T extends object> =
     | BaseColumn<T>
