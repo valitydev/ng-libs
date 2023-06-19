@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGrid, MtxGridColumn } from '@ng-matero/extensions/grid';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
 
@@ -25,7 +24,6 @@ export type UpdateOptions = {
     size: number;
 };
 
-@UntilDestroy()
 @Component({
     selector: 'v-table',
     templateUrl: './table.component.html',

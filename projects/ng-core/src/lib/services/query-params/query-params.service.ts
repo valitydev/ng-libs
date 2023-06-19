@@ -1,6 +1,5 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
 import { Observable } from 'rxjs';
@@ -16,7 +15,6 @@ type Options = {
     filter?: (param: unknown, key: string) => boolean;
 };
 
-@UntilDestroy()
 @Injectable({ providedIn: 'root' })
 export class QueryParamsService<P extends object> {
     params$: Observable<P> = this.route.queryParams.pipe(
