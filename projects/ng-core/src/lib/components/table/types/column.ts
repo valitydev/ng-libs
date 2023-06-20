@@ -12,7 +12,7 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
 
 export type BaseColumn<
     T extends object,
-    TType extends string | void = void,
+    TType extends string | undefined = undefined,
     TTypeParameters extends object = never
 > = Pick<
     MtxGridColumn<T>,
@@ -25,17 +25,13 @@ export type BaseColumn<
     | 'minWidth'
     | 'width'
     | 'sortable'
-> &
-    OmitByValue<
-        {
-            formatter?: FormatterFn<T>;
-            description?: FormatterFn<T>;
-            tooltip?: FormatterFn<T>;
-            type: TType;
-            typeParameters: TTypeParameters;
-        },
-        never
-    >;
+> & {
+    formatter?: FormatterFn<T>;
+    description?: FormatterFn<T>;
+    tooltip?: FormatterFn<T>;
+} & (TType extends void
+        ? { type?: TType }
+        : OmitByValue<{ type: TType; typeParameters: TTypeParameters }, never>);
 
 export type MenuColumn<T extends object> = BaseColumn<
     T,
