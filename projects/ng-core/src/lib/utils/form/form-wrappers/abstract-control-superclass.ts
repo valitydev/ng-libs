@@ -4,8 +4,9 @@ import isEqual from 'lodash-es/isEqual';
 import { EMPTY, Observable, switchMap } from 'rxjs';
 import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 
-import { getErrorsTree } from './utils/get-errors-tree';
 import { hasControls } from '../has-controls';
+
+import { getErrorsTree } from './utils/get-errors-tree';
 
 export abstract class AbstractControlSuperclass<
     OuterType,

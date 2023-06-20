@@ -3,8 +3,9 @@ import { NonNullableFormBuilder } from '@angular/forms';
 import { DateAdapter, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 import { coerceBoolean } from 'coerce-property';
 
-import { DateRange } from './types/date-range';
 import { FormGroupSuperclass, createControlProviders } from '../../utils';
+
+import { DateRange } from './types/date-range';
 
 @Component({
     selector: 'v-date-range-field',
