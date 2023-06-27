@@ -1,22 +1,21 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
+import { isEmpty } from '../../utils';
+
 import { Serializer } from './types/serializer';
 import { deserializeQueryParam } from './utils/deserialize-query-param';
 import { QUERY_PARAMS_SERIALIZERS } from './utils/query-params-serializers';
 import { serializeQueryParam } from './utils/serialize-query-param';
-import { isEmpty } from '../../utils';
 
 type Options = {
     filter?: (param: unknown, key: string) => boolean;
 };
 
-@UntilDestroy()
 @Injectable({ providedIn: 'root' })
 export class QueryParamsService<P extends object> {
     params$: Observable<P> = this.route.queryParams.pipe(

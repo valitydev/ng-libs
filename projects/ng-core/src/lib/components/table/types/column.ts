@@ -1,4 +1,5 @@
 import { MtxGridColumn } from '@ng-matero/extensions/grid';
+import { OmitByValue } from 'utility-types';
 
 import { Color } from '../../../styles';
 import { SelectFn } from '../../../utils';
@@ -9,7 +10,11 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
     [colDef: ExtColumn<TObject>]
 >;
 
-type BaseColumn<T extends object> = Pick<
+export type BaseColumn<
+    T extends object,
+    TType extends string | undefined = undefined,
+    TTypeParameters extends object = never
+> = Pick<
     MtxGridColumn<T>,
     | 'field'
     | 'header'
@@ -24,42 +29,35 @@ type BaseColumn<T extends object> = Pick<
     formatter?: FormatterFn<T>;
     description?: FormatterFn<T>;
     tooltip?: FormatterFn<T>;
-};
+} & (TType extends void
+        ? { type?: TType }
+        : OmitByValue<{ type: TType; typeParameters: TTypeParameters }, never>);
 
-type TypedColumn<TType = never, TParams = never> = {
-    type: TType;
-} & Pick<
+export type MenuColumn<T extends object> = BaseColumn<
+    T,
+    'menu',
     {
-        typeParameters: TParams;
-    },
-    TParams extends never ? never : 'typeParameters'
+        items: {
+            label: string;
+            click: (rowData: T) => void;
+        }[];
+    }
+>;
+export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> = BaseColumn<
+    T,
+    'tag',
+    {
+        label?: FormatterFn<T>;
+        tags: Record<TTag, { label?: string; color?: Color }>;
+    }
 >;
 
-export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> = BaseColumn<T> &
-    TypedColumn<
-        'tag',
-        {
-            label?: FormatterFn<T>;
-            tags: Record<TTag, { label?: string; color?: Color }>;
-        }
-    >;
-
-export type ExtColumn<T extends object> = BaseColumn<T> &
-    (
-        | { type?: undefined }
-        | TypedColumn<'datetime'>
-        | TypedColumn<'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
-        | TagColumn<T>
-        | TypedColumn<
-              'menu',
-              {
-                  items: {
-                      label: string;
-                      click: (rowData: T) => void;
-                  }[];
-              }
-          >
-        | TypedColumn<'boolean'>
-    );
+export type ExtColumn<T extends object> =
+    | BaseColumn<T>
+    | BaseColumn<T, 'datetime'>
+    | BaseColumn<T, 'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
+    | TagColumn<T>
+    | MenuColumn<T>
+    | BaseColumn<T, 'boolean'>;
 
 export type Column<T extends object> = ExtColumn<T> | string;

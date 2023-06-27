@@ -1,9 +1,10 @@
 import { Directive, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
-import { AbstractControlSuperclass } from './abstract-control-superclass';
 import { getValue } from '../get-value';
 import { hasControls } from '../has-controls';
+
+import { AbstractControlSuperclass } from './abstract-control-superclass';
 
 @Directive()
 export abstract class FormGroupSuperclass<OuterType, InnerType = OuterType>

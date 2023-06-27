@@ -13,10 +13,11 @@ import { coerceBoolean } from 'coerce-property';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { DialogService } from '../dialog';
+
 import { FiltersDialogComponent } from './components/filters-dialog/filters-dialog.component';
 import { MainFiltersDirective } from './components/main-filters/main-filters.directive';
 import { OtherFiltersDirective } from './components/other-filters/other-filters.directive';
-import { DialogService } from '../dialog';
 
 @Component({
     selector: 'v-filters',

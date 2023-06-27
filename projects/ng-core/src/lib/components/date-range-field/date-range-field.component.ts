@@ -5,10 +5,7 @@ import { coerceBoolean } from 'coerce-property';
 
 import { FormGroupSuperclass, createControlProviders } from '../../utils';
 
-export interface DateRange {
-    start: Date;
-    end: Date;
-}
+import { DateRange } from './types/date-range';
 
 @Component({
     selector: 'v-date-range-field',
@@ -19,10 +16,10 @@ export interface DateRange {
         { provide: DateAdapter, useClass: NativeDateAdapter, deps: [MAT_DATE_LOCALE] },
     ],
 })
-export class DateRangeFieldComponent extends FormGroupSuperclass<DateRange> {
+export class DateRangeFieldComponent extends FormGroupSuperclass<Partial<DateRange>> {
     @Input() @coerceBoolean required: boolean | '' = false;
 
-    control = this.fb.group({
+    control = this.fb.group<Partial<DateRange>>({
         start: undefined,
         end: undefined,
     });

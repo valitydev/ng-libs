@@ -1,8 +1,9 @@
 import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
 import { coerceBoolean } from 'coerce-property';
 
-import { DialogResponseStatus } from './types/dialog-response-status';
 import { Progressable } from '../../types/progressable';
+
+import { DialogResponseStatus } from './types/dialog-response-status';
 
 @Component({
     selector: 'v-dialog',

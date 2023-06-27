@@ -11,21 +11,20 @@ import {
 } from '@angular/core';
 import { Sort, SortDirection } from '@angular/material/sort';
 import { MtxGrid, MtxGridColumn } from '@ng-matero/extensions/grid';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import { coerceBoolean } from 'coerce-property';
 import { get } from 'lodash-es';
+
+import { Progressable } from '../../types/progressable';
+import { ComponentChanges } from '../../utils';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column } from './types/column';
 import { createMtxGridColumns } from './utils/create-mtx-grid-columns';
-import { Progressable } from '../../types/progressable';
-import { ComponentChanges } from '../../utils';
 
 export type UpdateOptions = {
     size: number;
 };
 
-@UntilDestroy()
 @Component({
     selector: 'v-table',
     templateUrl: './table.component.html',

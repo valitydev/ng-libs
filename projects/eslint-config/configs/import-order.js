@@ -8,8 +8,10 @@ module.exports = (internalPatterns = ['@app/**']) => ({
                     {
                         groups: [
                             ['builtin', 'external'],
+                            'type',
                             'internal',
-                            ['parent', 'sibling', 'index'],
+                            'parent',
+                            ['index', 'sibling'],
                             'object',
                         ],
                         pathGroups: internalPatterns.map((pattern) => ({

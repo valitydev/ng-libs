@@ -13,12 +13,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MtxGridModule } from '@ng-matero/extensions/grid';
 import { NgLetModule } from 'ng-let';
 
-import { TableActionsComponent } from './components/table-actions.component';
-import { TableCellComponent } from './components/table-cell/table-cell.component';
-import { TableComponent } from './table.component';
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
 import { TagModule } from '../tag';
+
+import { TableActionsComponent } from './components/table-actions.component';
+import { TableCellComponent } from './components/table-cell/table-cell.component';
+import { TableComponent } from './table.component';
 
 @NgModule({
     imports: [
