@@ -9,3 +9,4 @@ export * from './list-field';
 export * from './input-field';
 export * from './tag';
 export * from './error-page';
+export * from './select-field';

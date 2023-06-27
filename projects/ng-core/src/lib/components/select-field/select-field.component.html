@@ -1,0 +1,15 @@
+<mat-form-field>
+    <mat-label>{{ label }}</mat-label>
+
+    <mtx-select
+        [formControl]="control"
+        [items]="options"
+        [multiple]="multiple"
+        [required]="required"
+        bindLabel="label"
+        bindValue="value"
+    />
+
+    <mat-hint>{{ hint }}</mat-hint>
+    <mat-error>{{ error }}</mat-error>
+</mat-form-field>
