@@ -12,6 +12,15 @@
         }
     }
 
+    .link {
+        cursor: pointer;
+        text-decoration: underline;
+
+        .description {
+            text-decoration: none;
+        }
+    }
+
     .button {
         margin: -2.5px 0;
     }
