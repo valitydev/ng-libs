@@ -24,6 +24,7 @@
     "@angular/material": "^16.0.0",
     "@types/lodash-es": "^4.0.0",
     "coerce-property": "^15.0.0",
+    "date-fns": "^2.30.0",
     "lodash-es": "^4.0.0",
     "rxjs": "^7.0.0",
     "utility-types": "^3.0.0"
