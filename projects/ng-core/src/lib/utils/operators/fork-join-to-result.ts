@@ -15,7 +15,7 @@ export function forkJoinToResult<T>(
     progress$?: Subject<number>
 ): Observable<Result<T>[]> {
     let completed = 0;
-    if (progress$) progress$.next(1 / sources.length / 2);
+    if (progress$) progress$.next(1 / sources.length / 10);
     return merge(
         ...sources.map((source, index) =>
             source.pipe(
