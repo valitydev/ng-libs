@@ -39,9 +39,6 @@ export function forkJoinToResult<T>(
             acc.push(value);
             return acc;
         }, [] as Result<T>[]),
-        finalize(() => {
-            if (progress$) progress$.complete();
-        }),
         takeLast(1),
         map((r) => r.sort((a, b) => a.index - b.index))
     );
