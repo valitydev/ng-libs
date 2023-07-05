@@ -1,6 +1,6 @@
 import isObject from 'lodash-es/isObject';
 
-const DEFAULT_ERROR_NAME = 'Unknown error';
+export const DEFAULT_ERROR_NAME = 'Unknown error';
 
 export class LogError {
     source!: Record<PropertyKey, unknown>;
@@ -33,7 +33,7 @@ export class LogError {
 
     getLogMessage(message?: string) {
         return [
-            `Caught error: ${message}.`,
+            message && `Caught error: ${message}.`,
             this.name && `Name: ${this.name}.`,
             this.message && `Message: ${this.message}.`,
             Object.keys(this.details).length && JSON.stringify(this.details, null, 2),

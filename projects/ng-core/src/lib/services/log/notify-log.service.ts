@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { capitalize } from 'lodash-es';
 
-import { LogError } from './log-error';
+import { DEFAULT_ERROR_NAME, LogError } from './log-error';
 import { Operation } from './types/operation';
 
 const DEFAULT_DURATION_MS = 3000;
@@ -16,10 +16,13 @@ export class NotifyLogService {
         this.notify(message);
     };
 
-    error = (error: unknown, message?: string): void => {
-        const logError = new LogError(error);
-        message = message || logError.message;
-        console.warn(logError.getLogMessage(message));
+    error = (errors: unknown | unknown[], message?: string): void => {
+        const logErrors = (Array.isArray(errors) ? errors : [errors]).map((e) => new LogError(e));
+        message = message || (logErrors.length === 1 ? logErrors[0].message : DEFAULT_ERROR_NAME);
+        console.warn(
+            `Caught error: ${message}.`,
+            logErrors.map((e) => e.getLogMessage())
+        );
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
     };
 
