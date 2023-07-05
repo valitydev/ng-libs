@@ -27,9 +27,5 @@
         </div>
     </ng-container>
 
-    <mat-progress-bar
-        *ngIf="progress && progress !== 100"
-        [mode]="progressMode"
-        [value]="progressValue"
-    ></mat-progress-bar>
+    <v-progress [progress]="progress"></v-progress>
 </div>
