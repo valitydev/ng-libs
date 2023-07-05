@@ -14,7 +14,7 @@ export function forkJoinToResult<T>(
     concurrency = 4,
     progress$?: Subject<number>
 ): Observable<Result<T>[]> {
-    const completed = 0;
+    let completed = 0;
     if (progress$) progress$.next(0);
     return merge(
         ...sources.map((source, index) =>
@@ -28,6 +28,7 @@ export function forkJoinToResult<T>(
                     return of({ error: err, index, hasError: true });
                 }),
                 finalize(() => {
+                    completed += 1;
                     if (progress$) progress$.next(completed / sources.length);
                 })
             )
