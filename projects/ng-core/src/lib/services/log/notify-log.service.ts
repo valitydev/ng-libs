@@ -20,8 +20,7 @@ export class NotifyLogService {
         const logErrors = (Array.isArray(errors) ? errors : [errors]).map((e) => new LogError(e));
         message = message || (logErrors.length === 1 ? logErrors[0].message : DEFAULT_ERROR_NAME);
         console.warn(
-            `Caught error: ${message}.`,
-            logErrors.map((e) => e.getLogMessage())
+            [`Caught error: ${message}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n')
         );
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
     };

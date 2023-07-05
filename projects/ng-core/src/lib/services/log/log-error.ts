@@ -33,9 +33,9 @@ export class LogError {
 
     getLogMessage(message?: string) {
         return [
-            message && `Caught error: ${message}.`,
-            this.name && `Name: ${this.name}.`,
-            this.message && `Message: ${this.message}.`,
+            message && `Caught error: ${message}`,
+            this.name && `Name: ${this.name}`,
+            this.message && `Message: ${this.message}`,
             Object.keys(this.details).length && JSON.stringify(this.details, null, 2),
         ]
             .filter(Boolean)
