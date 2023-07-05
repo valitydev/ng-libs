@@ -15,13 +15,7 @@ export class ProgressComponent implements Progressable {
 
     get progressValue(): number {
         return typeof this.progress === 'number'
-            ? Math.min(
-                  Math.max(
-                      this.progress > 1 ? this.progress : (this.progress as number) * 100,
-                      100
-                  ),
-                  0
-              )
+            ? Math.max(Math.min(this.progress > 1 ? this.progress : this.progress * 100, 100), 0)
             : (undefined as never);
     }
 }
