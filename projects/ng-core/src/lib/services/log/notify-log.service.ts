@@ -18,17 +18,8 @@ export class NotifyLogService {
 
     error = (error: unknown, message?: string): void => {
         const logError = new LogError(error);
-        message = message || logError.message || logError.name;
-        console.warn(
-            [
-                `Caught error: ${message}.`,
-                logError.name && `Name: ${logError.name}.`,
-                logError.message && `Message: ${logError.message}.`,
-                Object.keys(logError.details).length && JSON.stringify(logError.details, null, 2),
-            ]
-                .filter(Boolean)
-                .join('\n')
-        );
+        message = message || logError.message;
+        console.warn(logError.getLogMessage(message));
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
     };
 
