@@ -10,7 +10,7 @@ export class ProgressComponent implements Progressable {
     @Input() progress: Progressable['progress'];
 
     get mode() {
-        return typeof this.progress === 'number' && this.progress < 1 && this.progress >= 0
+        return typeof this.progress === 'number' && this.progress <= 1 && this.progress > 0
             ? 'determinate'
             : !!this.progress || this.progress === ''
             ? 'indeterminate'
