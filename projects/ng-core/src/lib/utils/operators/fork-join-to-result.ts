@@ -1,6 +1,8 @@
 import { catchError, merge, Observable, of, scan, Subject, takeLast } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 
+import { getProgressByCount } from '../../components/progress';
+
 export interface Result<T> {
     index: number;
     hasError: boolean;
@@ -15,7 +17,7 @@ export function forkJoinToResult<T>(
     progress$?: Subject<number>
 ): Observable<Result<T>[]> {
     let completed = 0;
-    if (progress$) progress$.next(1 / sources.length / 10);
+    if (progress$) progress$.next(getProgressByCount(sources.length));
     return merge(
         ...sources.map((source, index) =>
             source.pipe(
@@ -29,7 +31,7 @@ export function forkJoinToResult<T>(
                 }),
                 finalize(() => {
                     completed += 1;
-                    if (progress$) progress$.next(completed / sources.length);
+                    if (progress$) progress$.next(getProgressByCount(sources.length, completed));
                 })
             )
         ),

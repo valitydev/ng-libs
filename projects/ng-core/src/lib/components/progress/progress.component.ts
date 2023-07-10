@@ -9,13 +9,17 @@ import { Progressable } from '../../types/progressable';
 export class ProgressComponent implements Progressable {
     @Input() progress: Progressable['progress'];
 
-    get progressMode() {
-        return typeof this.progress === 'number' ? 'determinate' : 'indeterminate';
+    get mode() {
+        return typeof this.progress === 'number' && this.progress < 1 && this.progress >= 0
+            ? 'determinate'
+            : !!this.progress || this.progress === ''
+            ? 'indeterminate'
+            : undefined;
     }
 
-    get progressValue(): number {
-        return typeof this.progress === 'number'
-            ? Math.max(Math.min(this.progress > 1 ? this.progress : this.progress * 100, 100), 0)
+    get value(): number {
+        return this.mode === 'determinate'
+            ? Math.max(Math.min((1 - (this.progress as number)) * 100, 100), 0)
             : (undefined as never);
     }
 }

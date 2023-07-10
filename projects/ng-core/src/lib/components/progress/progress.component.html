@@ -1,5 +1,1 @@
-<mat-progress-bar
-    *ngIf="(progress && progressValue !== 100) || progress === ''"
-    [mode]="progressMode"
-    [value]="progressValue"
-></mat-progress-bar>
+<mat-progress-bar *ngIf="!!mode" [mode]="mode" [value]="value"></mat-progress-bar>
