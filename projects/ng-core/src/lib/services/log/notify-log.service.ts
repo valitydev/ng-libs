@@ -48,7 +48,7 @@ export class NotifyLogService {
         this.success(message);
     }
 
-    errorOperation(error: unknown, operation: Operation, objectName: string) {
+    errorOperation(errors: unknown | unknown[], operation: Operation, objectName: string) {
         let message!: string;
         switch (operation) {
             case 'create':
@@ -64,7 +64,7 @@ export class NotifyLogService {
                 message = `Error deleting ${objectName}`;
                 break;
         }
-        this.error(error, message);
+        this.error(errors, message);
     }
 
     private notify(message: string, duration = DEFAULT_DURATION_MS) {
