@@ -3,6 +3,10 @@ $max-columns: 5;
 .filters {
     display: grid;
     grid-template-columns: 1fr;
+
+    .other-filters {
+        display: block !important;
+    }
 }
 
 @for $i from 1 through $max-columns {

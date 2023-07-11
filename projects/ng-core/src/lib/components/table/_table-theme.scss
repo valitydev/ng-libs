@@ -3,5 +3,10 @@
 
 @mixin theme($theme) {
     .v-table-cell {
+        .link {
+            .value {
+                color: get-color($theme, accent);
+            }
+        }
     }
 }

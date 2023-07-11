@@ -9,6 +9,7 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
     TResult,
     [colDef: ExtColumn<TObject>]
 >;
+type ColumnFn<TObject extends object, TResult = unknown> = (rowData: TObject) => TResult;
 
 export type BaseColumn<
     T extends object,
@@ -29,6 +30,7 @@ export type BaseColumn<
     formatter?: FormatterFn<T>;
     description?: FormatterFn<T>;
     tooltip?: FormatterFn<T>;
+    link?: ColumnFn<T, string>;
 } & (TType extends void
         ? { type?: TType }
         : OmitByValue<{ type: TType; typeParameters: TTypeParameters }, never>);
@@ -39,7 +41,7 @@ export type MenuColumn<T extends object> = BaseColumn<
     {
         items: {
             label: string;
-            click: (rowData: T) => void;
+            click: ColumnFn<T, void>;
         }[];
     }
 >;

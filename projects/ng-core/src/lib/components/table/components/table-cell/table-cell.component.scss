@@ -12,6 +12,15 @@
         }
     }
 
+    .link {
+        cursor: pointer;
+        text-decoration: none;
+
+        .value:hover {
+            text-decoration: underline;
+        }
+    }
+
     .button {
         margin: -2.5px 0;
     }

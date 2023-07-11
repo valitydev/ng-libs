@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { ActionsModule } from '../actions';
+import { ProgressModule } from '../progress/progress.module';
 
 import { DialogActionsComponent } from './components/dialog-actions/dialog-actions.component';
 import { DialogComponent } from './dialog.component';
@@ -21,6 +22,7 @@ import { DialogService } from './services/dialog.service';
         MatIconModule,
         MatProgressBarModule,
         MatDialogModule,
+        ProgressModule,
     ],
     providers: [DialogService],
     declarations: [DialogComponent, DialogActionsComponent],
