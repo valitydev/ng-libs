@@ -1,28 +1,39 @@
-import { ValidationErrors } from '@angular/forms';
+import { Directive, OnInit } from '@angular/core';
+import { ValidationErrors, Validator } from '@angular/forms';
 import { WrappedControlSuperclass } from '@s-libs/ng-core';
-import isEqual from 'lodash-es/isEqual';
-import { EMPTY, Observable, switchMap } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { EMPTY, Observable } from 'rxjs';
 
 import { getErrorsTree } from './utils/get-errors-tree';
 
-export abstract class AbstractControlSuperclass<
-    OuterType,
-    InnerType = OuterType
-> extends WrappedControlSuperclass<OuterType, InnerType> {
-    protected override setUpInnerToOuterErrors$(
-        inner$: Observable<ValidationErrors>
-    ): Observable<ValidationErrors> {
-        return inner$.pipe(
-            switchMap(() => this.control.statusChanges.pipe(startWith(this.control.status))),
-            map(() => getErrorsTree(this.control) || {}),
-            distinctUntilChanged(isEqual)
-        );
+@Directive()
+export abstract class AbstractControlSuperclass<OuterType, InnerType = OuterType>
+    extends WrappedControlSuperclass<OuterType, InnerType>
+    implements Validator, OnInit
+{
+    override ngOnInit() {
+        super.ngOnInit();
+        setTimeout(() => {
+            if (this.control.invalid) {
+                this.onValidatorChange();
+            }
+        }, 0);
     }
 
-    protected override setUpOuterToInnerErrors$(
-        _outer$: Observable<ValidationErrors>
-    ): Observable<ValidationErrors> {
+    validate() {
+        return getErrorsTree(this.control);
+    }
+
+    registerOnValidatorChange(fn: () => void): void {
+        this.onValidatorChange = fn;
+    }
+
+    protected override setUpInnerToOuterErrors$(): Observable<ValidationErrors> {
         return EMPTY;
     }
+
+    protected override setUpOuterToInnerErrors$(): Observable<ValidationErrors> {
+        return EMPTY;
+    }
+
+    private onValidatorChange: () => void = () => undefined;
 }

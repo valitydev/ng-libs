@@ -1,7 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { booleanAttribute, Component, Input } from '@angular/core';
 import { NonNullableFormBuilder } from '@angular/forms';
 import { DateAdapter, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
-import { coerceBoolean } from 'coerce-property';
 
 import { FormGroupSuperclass, createControlProviders } from '../../utils';
 
@@ -17,7 +16,7 @@ import { DateRange } from './types/date-range';
     ],
 })
 export class DateRangeFieldComponent extends FormGroupSuperclass<Partial<DateRange>> {
-    @Input() @coerceBoolean required: boolean | '' = false;
+    @Input({ transform: booleanAttribute }) required: boolean = false;
 
     control = this.fb.group<Partial<DateRange>>({
         start: undefined,

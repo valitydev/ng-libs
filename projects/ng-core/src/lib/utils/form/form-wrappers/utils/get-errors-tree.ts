@@ -24,5 +24,8 @@ export function getErrorsTree(control: AbstractControl): ValidationErrors | null
             ) as ValidationErrors;
         }
     }
+    if (!Object.keys(errors).length) {
+        return { unknownError: {} };
+    }
     return errors;
 }
