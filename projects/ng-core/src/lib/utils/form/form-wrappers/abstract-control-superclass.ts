@@ -1,7 +1,9 @@
-import { Directive, OnInit } from '@angular/core';
-import { ValidationErrors, Validator } from '@angular/forms';
+import { ChangeDetectorRef, DestroyRef, Directive, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, ValidationErrors, Validator } from '@angular/forms';
 import { WrappedControlSuperclass } from '@s-libs/ng-core';
-import { EMPTY, Observable } from 'rxjs';
+import { concat, EMPTY, Observable, take, timer } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { getErrorsTree } from './utils/get-errors-tree';
 
@@ -10,17 +12,25 @@ export abstract class AbstractControlSuperclass<OuterType, InnerType = OuterType
     extends WrappedControlSuperclass<OuterType, InnerType>
     implements Validator, OnInit
 {
+    private cdr = inject(ChangeDetectorRef);
+    private destroyRef = inject(DestroyRef);
+
     override ngOnInit() {
         super.ngOnInit();
-        setTimeout(() => {
-            if (this.control.invalid) {
+        concat(timer(0), timer(100))
+            .pipe(
+                filter(() => this.control.invalid),
+                take(1),
+                takeUntilDestroyed(this.destroyRef)
+            )
+            .subscribe(() => {
                 this.onValidatorChange();
-            }
-        }, 0);
+                this.cdr.markForCheck();
+            });
     }
 
-    validate() {
-        return getErrorsTree(this.control);
+    validate(_control: AbstractControl): ValidationErrors | null {
+        return getErrorsTree(this.control); //|| getErrorsTree(_control);
     }
 
     registerOnValidatorChange(fn: () => void): void {
