@@ -14,4 +14,11 @@
     @include table-theme.theme($theme);
     @include dialog-theme.theme($theme);
     @include tag-theme.theme($theme);
+
+    // TODO: Temporary fix mtx select typography
+    $typography: map-get($theme, typography);
+    .ng-option,
+    .ng-select-container {
+        @include mat.typography-level($typography, subtitle-1);
+    }
 }

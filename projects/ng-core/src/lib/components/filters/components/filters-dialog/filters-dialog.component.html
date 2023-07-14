@@ -9,10 +9,10 @@
         <ng-container *ngIf="isShowMainFilters">
             <ng-container *ngTemplateOutlet="dialogData.filters.mainFiltersTemplate"></ng-container>
         </ng-container>
-        <ng-container *ngIf="dialogData.filters.otherFiltersTemplate">
+        <div *ngIf="dialogData.filters.otherFiltersTemplate" class="other-filters">
             <ng-container
                 *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate"
             ></ng-container>
-        </ng-container>
+        </div>
     </div>
 </v-dialog>

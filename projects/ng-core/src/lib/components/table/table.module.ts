@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 import { MtxGridModule } from '@ng-matero/extensions/grid';
 import { NgLetModule } from 'ng-let';
 
@@ -39,6 +40,7 @@ import { TableComponent } from './table.component';
         PipesModule,
         NgLetModule,
         TagModule,
+        RouterLink,
     ],
     declarations: [TableComponent, TableActionsComponent, TableCellComponent],
     exports: [TableComponent, TableActionsComponent],

@@ -26,18 +26,6 @@ export class DialogComponent implements Progressable {
 
     @Output() cancel = new EventEmitter<void>();
 
-    get progressMode() {
-        return typeof this.progress === 'number' && this.progress > 1
-            ? 'determinate'
-            : 'indeterminate';
-    }
-
-    get progressValue(): number {
-        return this.progressMode === 'determinate'
-            ? (this.progress as number)
-            : (undefined as never);
-    }
-
     cancelData = {
         status: DialogResponseStatus.Cancelled,
     };

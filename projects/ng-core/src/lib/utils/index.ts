@@ -12,3 +12,5 @@ export * from './clean';
 export * from './is-empty';
 export * from './compare-different-types';
 export * from './is-empty-primitive';
+
+export * from './get-import-value';

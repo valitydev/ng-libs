@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { capitalize } from 'lodash-es';
 
-import { LogError } from './log-error';
+import { DEFAULT_ERROR_NAME, LogError } from './log-error';
 import { Operation } from './types/operation';
 
 const DEFAULT_DURATION_MS = 3000;
@@ -16,18 +16,11 @@ export class NotifyLogService {
         this.notify(message);
     };
 
-    error = (error: unknown, message?: string): void => {
-        const logError = new LogError(error);
-        message = message || logError.message || logError.name;
+    error = (errors: unknown | unknown[], message?: string): void => {
+        const logErrors = (Array.isArray(errors) ? errors : [errors]).map((e) => new LogError(e));
+        message = message || (logErrors.length === 1 ? logErrors[0].message : DEFAULT_ERROR_NAME);
         console.warn(
-            [
-                `Caught error: ${message}.`,
-                logError.name && `Name: ${logError.name}.`,
-                logError.message && `Message: ${logError.message}.`,
-                Object.keys(logError.details).length && JSON.stringify(logError.details, null, 2),
-            ]
-                .filter(Boolean)
-                .join('\n')
+            [`Caught error: ${message}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n')
         );
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
     };
@@ -55,7 +48,7 @@ export class NotifyLogService {
         this.success(message);
     }
 
-    errorOperation(error: unknown, operation: Operation, objectName: string) {
+    errorOperation(errors: unknown | unknown[], operation: Operation, objectName: string) {
         let message!: string;
         switch (operation) {
             case 'create':
@@ -71,7 +64,7 @@ export class NotifyLogService {
                 message = `Error deleting ${objectName}`;
                 break;
         }
-        this.error(error, message);
+        this.error(errors, message);
     }
 
     private notify(message: string, duration = DEFAULT_DURATION_MS) {

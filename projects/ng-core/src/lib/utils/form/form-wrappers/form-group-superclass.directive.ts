@@ -13,6 +13,10 @@ export abstract class FormGroupSuperclass<OuterType, InnerType = OuterType>
 {
     protected emptyValue!: InnerType;
 
+    override setDisabledState(_isDisabled: boolean): void {
+        return;
+    }
+
     override ngOnInit() {
         this.emptyValue = getValue(this.control) as InnerType;
         super.ngOnInit();
