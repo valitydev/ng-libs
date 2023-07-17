@@ -1,4 +1,4 @@
-import { Observable, defer, mergeScan, map, BehaviorSubject, Subject } from 'rxjs';
+import { Observable, defer, mergeScan, map, BehaviorSubject, ReplaySubject, skipWhile } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 import { inProgressFrom, progressTo } from '../../utils';
@@ -30,6 +30,8 @@ export interface Accumulator<TResultItem, TParams, TContinuationToken> {
     continuationToken?: TContinuationToken;
 }
 
+const DEFAULT_SIZE = 25;
+
 export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuationToken = string> {
     result$ = defer(() => this.state$).pipe(map(({ result }) => result));
     hasMore$ = defer(() => this.state$).pipe(map(({ continuationToken }) => !!continuationToken));
@@ -38,9 +40,9 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         () => this.state$
     );
 
-    private fetch$ = new Subject<Action<TParams>>();
+    private fetch$ = new ReplaySubject<Action<TParams>>(1);
     private progress$ = new BehaviorSubject(0);
-    private state$ = this.fetch$.pipe(
+    private state$ = defer(() => this.fetch$.pipe(skipWhile(({ type }) => type !== 'load'))).pipe(
         mergeScan<Action<TParams>, Accumulator<TResultItem, TParams, TContinuationToken>>(
             (acc, action) => {
                 const params = (action.type === 'load' ? action.params : acc.params) as TParams;
@@ -59,7 +61,7 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                 );
             },
             {
-                size: 25,
+                size: DEFAULT_SIZE,
                 result: [],
             },
             1
