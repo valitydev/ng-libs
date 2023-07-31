@@ -1,5 +1,5 @@
 import { Observable, defer, mergeScan, map, BehaviorSubject, ReplaySubject, skipWhile } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
+import { shareReplay, startWith } from 'rxjs/operators';
 
 import { inProgressFrom, progressTo } from '../../utils';
 
@@ -50,6 +50,16 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                 const continuationToken =
                     action.type === 'more' ? acc.continuationToken : undefined;
                 return this.fetch(params, { size, continuationToken }).pipe(
+                    ...((action.type === 'load'
+                        ? ([
+                              startWith({
+                                  params,
+                                  result: [],
+                                  size,
+                                  continuationToken: undefined,
+                              }),
+                          ] as unknown)
+                        : []) as []),
                     map(({ result, continuationToken }) => ({
                         params,
                         result:
