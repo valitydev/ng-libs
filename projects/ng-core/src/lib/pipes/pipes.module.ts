@@ -6,6 +6,7 @@ import { EnumKeyValuesPipe } from './enum-key-values.pipe';
 import { EnumKeyPipe } from './enum-key.pipe';
 import { EnumKeysPipe } from './enum-keys.pipe';
 import { InlineJsonPipe } from './inline-json.pipe';
+import { VPossiblyAsyncPipe } from './possibly-async.pipe';
 import { VSelectPipe } from './select.pipe';
 
 @NgModule({
@@ -17,6 +18,7 @@ import { VSelectPipe } from './select.pipe';
         EnumKeyValuesPipe,
         AmountCurrencyPipe,
         VSelectPipe,
+        VPossiblyAsyncPipe,
     ],
     imports: [
         CommonModule,
@@ -25,6 +27,7 @@ import { VSelectPipe } from './select.pipe';
         EnumKeyValuesPipe,
         AmountCurrencyPipe,
         VSelectPipe,
+        VPossiblyAsyncPipe,
     ],
 })
 export class PipesModule {}
