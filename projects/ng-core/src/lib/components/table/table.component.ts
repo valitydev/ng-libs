@@ -148,7 +148,7 @@ export class TableComponent<T extends object> implements Progressable, OnChanges
             this.renderedColumns.map((c) => [
                 c.field,
                 this.cellTemplate?.[c.field as never] ?? c.cellTemplate ?? this.defaultCellTemplate,
-            ])
+            ]),
         );
     }
 }

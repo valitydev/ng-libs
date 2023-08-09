@@ -9,7 +9,7 @@ export function select<TObject extends object, TResult, TParams = void>(
     obj: TObject,
     selectFn: SelectFn<TObject, TResult, TParams>,
     defaultValue?: TResult,
-    restParams: TParams[] = []
+    restParams: TParams[] = [],
 ): TResult | Observable<TResult> {
     if (typeof selectFn === 'string') return _get(obj, selectFn, defaultValue) as TResult;
     return selectFn(obj, ...restParams);
@@ -19,7 +19,7 @@ export function selectAsObservable<TObject extends object, TResult, TParams = vo
     obj: TObject,
     selectFn: SelectFn<TObject, TResult, TParams>,
     defaultValue?: TResult,
-    restParams: TParams[] = []
+    restParams: TParams[] = [],
 ): TResult | Observable<TResult> {
     const res = select(obj, selectFn, defaultValue, restParams);
     return isObservable(res) ? res : of(res);

@@ -25,7 +25,7 @@ export class NotifyLogService {
         message = message || (logErrors.length === 1 ? logErrors[0].message : DEFAULT_ERROR_NAME);
         this.subscribeWithTimeout(message, (msg) => {
             console.warn(
-                [`Caught error: ${msg}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n')
+                [`Caught error: ${msg}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n'),
             );
         });
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
@@ -88,7 +88,7 @@ export class NotifyLogService {
 
     private subscribeWithTimeout<T>(
         possiblyAsync: PossiblyAsync<T>,
-        subscribe: Partial<Observer<T>> | Observer<T>['next']
+        subscribe: Partial<Observer<T>> | Observer<T>['next'],
     ) {
         (isAsync(possiblyAsync) ? possiblyAsync : of(possiblyAsync))
             .pipe(first(), timeout(DEFAULT_TIMEOUT_MS))

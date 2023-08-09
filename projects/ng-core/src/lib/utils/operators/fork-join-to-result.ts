@@ -14,7 +14,7 @@ export interface Result<T> {
 export function forkJoinToResult<T>(
     sources: Observable<T>[],
     concurrency = 4,
-    progress$?: Subject<number>
+    progress$?: Subject<number>,
 ): Observable<Result<T>[]> {
     let completed = 0;
     if (progress$) progress$.next(getProgressByCount(sources.length));
@@ -32,16 +32,16 @@ export function forkJoinToResult<T>(
                 finalize(() => {
                     completed += 1;
                     if (progress$) progress$.next(getProgressByCount(sources.length, completed));
-                })
-            )
+                }),
+            ),
         ),
-        concurrency
+        concurrency,
     ).pipe(
         scan((acc, value) => {
             acc.push(value);
             return acc;
         }, [] as Result<T>[]),
         takeLast(1),
-        map((r) => r.sort((a, b) => a.index - b.index))
+        map((r) => r.sort((a, b) => a.index - b.index)),
     );
 }

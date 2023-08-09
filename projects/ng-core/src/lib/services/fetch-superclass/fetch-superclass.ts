@@ -37,7 +37,7 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
     hasMore$ = defer(() => this.state$).pipe(map(({ continuationToken }) => !!continuationToken));
     isLoading$ = inProgressFrom(
         () => this.progress$,
-        () => this.state$
+        () => this.state$,
     );
 
     private fetch$ = new ReplaySubject<Action<TParams>>(1);
@@ -67,16 +67,16 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                         size,
                         continuationToken,
                     })),
-                    progressTo(this.progress$)
+                    progressTo(this.progress$),
                 );
             },
             {
                 size: DEFAULT_SIZE,
                 result: [],
             },
-            1
+            1,
         ),
-        shareReplay({ bufferSize: 1, refCount: true })
+        shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     load(params: TParams, options: LoadOptions = {}): void {
@@ -89,6 +89,6 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
 
     protected abstract fetch(
         params: TParams,
-        options: FetchOptions<TContinuationToken>
+        options: FetchOptions<TContinuationToken>,
     ): Observable<FetchResult<TResultItem, TContinuationToken>>;
 }

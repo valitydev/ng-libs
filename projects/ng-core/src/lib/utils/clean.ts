@@ -6,12 +6,12 @@ import { isEmptyPrimitive } from './is-empty-primitive';
 export function clean<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends ReadonlyArray<any> | ArrayLike<any> | Record<any, any>,
-    TAllowRootRemoval extends boolean = false
+    TAllowRootRemoval extends boolean = false,
 >(
     obj: T,
     allowRootRemoval: TAllowRootRemoval = false as TAllowRootRemoval,
     isNotDeep = false,
-    filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmpty(v)
+    filterPredicate: (v: unknown, k?: PropertyKey) => boolean = (v) => !isEmpty(v),
 ): TAllowRootRemoval extends true ? T | null : T {
     if (allowRootRemoval && !filterPredicate(obj)) {
         return null as never;
@@ -27,7 +27,7 @@ export function clean<
         return Object.fromEntries(
             (Object.entries(obj) as [keyof T, ValuesType<T>][])
                 .map(([k, v]) => [k, cleanChild(v)] as const)
-                .filter(([k, v]) => filterPredicate(v, k))
+                .filter(([k, v]) => filterPredicate(v, k)),
         ) as never;
     }
     return obj;
@@ -36,7 +36,7 @@ export function clean<
 export function cleanPrimitiveProps<T extends object>(
     obj: T,
     allowRootRemoval = false,
-    isNotDeep = false
+    isNotDeep = false,
 ) {
     return clean(obj, allowRootRemoval, isNotDeep, (v) => !isEmptyPrimitive(v));
 }

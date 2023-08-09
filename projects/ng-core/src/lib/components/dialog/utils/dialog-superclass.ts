@@ -10,7 +10,7 @@ export class DialogSuperclass<
     TDialogComponent,
     TDialogData = void,
     TDialogResponseData = void,
-    TDialogResponseStatus = void
+    TDialogResponseStatus = void,
 > {
     static defaultDialogConfig = DEFAULT_DIALOG_CONFIG.medium;
 

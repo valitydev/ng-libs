@@ -9,6 +9,6 @@ import { getFormValueChanges } from './get-form-value-changes';
 export function getValidValueChanges(control: AbstractControl, predicate = isEmptyPrimitive) {
     return getFormValueChanges(control, true).pipe(
         filter(() => control.valid),
-        map((value) => omitBy(value, predicate))
+        map((value) => omitBy(value, predicate)),
     );
 }

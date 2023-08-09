@@ -9,14 +9,14 @@ import { formatCurrency } from '../utils';
 export class AmountCurrencyPipe implements PipeTransform {
     constructor(
         @Inject(LOCALE_ID) private _locale: string,
-        @Inject(DEFAULT_CURRENCY_CODE) private _defaultCurrencyCode: string = 'USD'
+        @Inject(DEFAULT_CURRENCY_CODE) private _defaultCurrencyCode: string = 'USD',
     ) {}
 
     transform(
         amount: unknown,
         currencyCode: string = this._defaultCurrencyCode,
         format: 'short' | 'long' = 'long',
-        exponent?: number
+        exponent?: number,
     ): unknown {
         if (typeof amount === 'number')
             return formatCurrency(amount, currencyCode, format, this._locale, exponent);
