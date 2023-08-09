@@ -1,27 +1,33 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { capitalize } from 'lodash-es';
+import { first, of, timeout, Observer } from 'rxjs';
+
+import { isAsync, PossiblyAsync } from '../../pipes';
 
 import { DEFAULT_ERROR_NAME, LogError } from './log-error';
 import { Operation } from './types/operation';
 
-const DEFAULT_DURATION_MS = 3000;
-const DEFAULT_ERROR_DURATION_MS = 10000;
+const DEFAULT_DURATION_MS = 3_000;
+const DEFAULT_ERROR_DURATION_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class NotifyLogService {
     constructor(private snackBar: MatSnackBar) {}
 
-    success = (message: string = 'Completed successfully'): void => {
+    success = (message: PossiblyAsync<string> = 'Completed successfully'): void => {
         this.notify(message);
     };
 
-    error = (errors: unknown | unknown[], message?: string): void => {
+    error = (errors: unknown | unknown[], message?: PossiblyAsync<string>): void => {
         const logErrors = (Array.isArray(errors) ? errors : [errors]).map((e) => new LogError(e));
         message = message || (logErrors.length === 1 ? logErrors[0].message : DEFAULT_ERROR_NAME);
-        console.warn(
-            [`Caught error: ${message}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n')
-        );
+        this.subscribeWithTimeout(message, (msg) => {
+            console.warn(
+                [`Caught error: ${msg}.`, ...logErrors.map((e) => e.getLogMessage())].join('\n')
+            );
+        });
         this.notify(message, DEFAULT_ERROR_DURATION_MS);
     };
 
@@ -67,9 +73,25 @@ export class NotifyLogService {
         this.error(errors, message);
     }
 
-    private notify(message: string, duration = DEFAULT_DURATION_MS) {
-        return this.snackBar.open(message, 'OK', {
-            duration,
+    private notify(message: PossiblyAsync<string>, duration = DEFAULT_DURATION_MS) {
+        this.subscribeWithTimeout(message, {
+            next: (msg) => {
+                this.snackBar.open(msg, 'OK', {
+                    duration,
+                });
+            },
+            error: () => {
+                // TODO: Default message
+            },
         });
+    }
+
+    private subscribeWithTimeout<T>(
+        possiblyAsync: PossiblyAsync<T>,
+        subscribe: Partial<Observer<T>> | Observer<T>['next']
+    ) {
+        (isAsync(possiblyAsync) ? possiblyAsync : of(possiblyAsync))
+            .pipe(first(), timeout(DEFAULT_TIMEOUT_MS))
+            .subscribe(subscribe);
     }
 }
