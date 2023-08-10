@@ -1,6 +1,6 @@
 {
   "name": "ng-libs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "npm run watch",
@@ -38,7 +38,7 @@
     "@angular/cli": "~16.1.0",
     "@angular/compiler-cli": "^16.1.1",
     "@types/jasmine": "~4.3.0",
-    "cspell": "^6.31.1",
+    "cspell": "^7.0.0",
     "eslint": "^8.39.0",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
