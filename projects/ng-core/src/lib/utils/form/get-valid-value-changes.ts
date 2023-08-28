@@ -2,7 +2,7 @@ import { AbstractControl } from '@angular/forms';
 import omitBy from 'lodash-es/omitBy';
 import { filter, map } from 'rxjs/operators';
 
-import { isEmptyPrimitive } from '../is-empty-primitive';
+import { isEmptyPrimitive } from '../empty/is-empty-primitive';
 
 import { getFormValueChanges } from './get-form-value-changes';
 

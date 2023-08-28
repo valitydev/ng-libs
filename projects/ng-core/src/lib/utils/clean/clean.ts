@@ -1,7 +1,7 @@
 import { ValuesType } from 'utility-types';
 
-import { isEmpty } from './is-empty';
-import { isEmptyPrimitive } from './is-empty-primitive';
+import { isEmpty } from '../empty/is-empty';
+import { isEmptyPrimitive } from '../empty/is-empty-primitive';
 
 export function clean<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

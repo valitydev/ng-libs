@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { capitalize } from 'lodash-es';
 import { first, of, timeout, Observer } from 'rxjs';
 
-import { isAsync, PossiblyAsync } from '../../pipes';
+import { isAsync, PossiblyAsync } from '../../utils';
 
 import { DEFAULT_ERROR_NAME, LogError } from './log-error';
 import { Operation } from './types/operation';
