@@ -2,14 +2,47 @@
     <mat-label>{{ label }}</mat-label>
 
     <mtx-select
+        [closeOnSelect]="false"
         [formControl]="control"
         [items]="options"
         [multiple]="multiple"
         [required]="required"
         [searchable]="true"
+        [selectableGroup]="true"
+        [selectableGroupAsModel]="false"
         bindLabel="label"
         bindValue="value"
-    />
+        class
+        groupBy="type"
+        markFirst
+    >
+        <ng-template let-index="index" let-item="item" let-item$="item$" ng-optgroup-tmp>
+            <mat-checkbox
+                *ngIf="multiple; else text"
+                [ngModel]="item$.selected"
+                class="checkbox-option"
+                id="item-{{ index }}"
+            >
+                {{ item.type | uppercase }}
+            </mat-checkbox>
+            <ng-template #text>
+                {{ item.type | uppercase }}
+            </ng-template>
+        </ng-template>
+        <ng-template let-index="index" let-item="item" let-item$="item$" ng-option-tmp>
+            <mat-checkbox
+                *ngIf="multiple; else text"
+                [ngModel]="item$.selected"
+                class="checkbox-option"
+                id="item-{{ index }}"
+            >
+                {{ item.label }}
+            </mat-checkbox>
+            <ng-template #text>
+                {{ item.label }}
+            </ng-template>
+        </ng-template>
+    </mtx-select>
 
     <mat-hint>{{ hint }}</mat-hint>
     <mat-error>{{ error }}</mat-error>

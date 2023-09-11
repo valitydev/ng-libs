@@ -10,7 +10,7 @@ import { Option } from './types/option';
     styleUrls: ['./select-field.component.scss'],
     providers: createControlProviders(() => SelectFieldComponent),
 })
-export class SelectFieldComponent<T> extends FormControlSuperclass<T> {
+export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input() options: Option<T>[] = [];
 
     @Input() label?: string;
