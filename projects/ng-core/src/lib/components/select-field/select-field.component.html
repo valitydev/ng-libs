@@ -44,6 +44,9 @@
         </ng-template>
     </mtx-select>
 
-    <mat-hint>{{ hint }}</mat-hint>
+    <mat-hint>{{
+        hint ||
+            (options?.length > 1 ? (control.value?.length || 0) + '/' + (options?.length || 0) : '')
+    }}</mat-hint>
     <mat-error>{{ error }}</mat-error>
 </mat-form-field>
