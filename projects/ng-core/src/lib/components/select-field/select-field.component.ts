@@ -19,4 +19,12 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
 
     @Input({ transform: booleanAttribute }) multiple = false;
     @Input({ transform: booleanAttribute }) required = false;
+
+    search(term: string, item: Option<T>) {
+        const termLowerCase = term.toLowerCase();
+        return (
+            item.label.toLowerCase().includes(termLowerCase) ||
+            !!item.description?.includes?.(termLowerCase)
+        );
+    }
 }
