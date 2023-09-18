@@ -5,8 +5,10 @@
         [closeOnSelect]="!multiple"
         [formControl]="control"
         [items]="options"
+        [loading]="progress"
         [markFirst]="true"
         [multiple]="multiple"
+        [notFoundText]="externalSearch && !searchStr ? 'Enter your search term' : 'No items found'"
         [required]="required"
         [searchable]="true"
         [searchFn]="search"
@@ -15,6 +17,7 @@
         bindLabel="label"
         bindValue="value"
         groupBy="type"
+        (search)="searchChange.emit($event); searchStr = $event.term"
     >
         <ng-template let-index="index" let-item="item" let-item$="item$" ng-optgroup-tmp>
             <mat-checkbox
@@ -40,7 +43,7 @@
             </mat-checkbox>
             <ng-template #text>
                 <div class="label">{{ item.label }}</div>
-                <div *ngIf="item.description" class="mat-caption mat-secondary-text">
+                <div *ngIf="item.description" class="description mat-caption mat-secondary-text">
                     {{ item.description }}
                 </div>
             </ng-template>

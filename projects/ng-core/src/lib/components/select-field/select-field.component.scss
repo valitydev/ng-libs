@@ -18,3 +18,9 @@
 .checkbox-option {
     margin: -12px 0 -12px -8px;
 }
+
+.label,
+.description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

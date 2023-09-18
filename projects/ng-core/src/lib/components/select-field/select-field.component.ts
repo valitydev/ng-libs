@@ -1,8 +1,13 @@
-import { booleanAttribute, Component, Input } from '@angular/core';
+import { booleanAttribute, Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { createControlProviders, FormControlSuperclass } from '../../utils';
 
 import { Option } from './types/option';
+
+export interface Search<T> {
+    term: string;
+    items: Option<T>[];
+}
 
 @Component({
     selector: 'v-select-field',
@@ -12,19 +17,25 @@ import { Option } from './types/option';
 })
 export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input() options: Option<T>[] = [];
+    @Output() searchChange = new EventEmitter<Search<T>>();
 
     @Input() label?: string;
     @Input() hint?: string;
     @Input() error?: string;
+    @Input() progress = false;
 
+    @Input({ transform: booleanAttribute }) externalSearch = false;
     @Input({ transform: booleanAttribute }) multiple = false;
     @Input({ transform: booleanAttribute }) required = false;
 
-    search(term: string, item: Option<T>) {
+    searchStr: string = '';
+
+    search = (term: string, item: Option<T>) => {
+        if (this.externalSearch) return true;
         const termLowerCase = term.toLowerCase();
         return (
             item.label.toLowerCase().includes(termLowerCase) ||
             !!item.description?.includes?.(termLowerCase)
         );
-    }
+    };
 }
