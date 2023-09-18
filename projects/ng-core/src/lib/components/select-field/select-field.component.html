@@ -17,7 +17,8 @@
         bindLabel="label"
         bindValue="value"
         groupBy="type"
-        (search)="searchChange.emit($event); searchStr = $event.term"
+        (clear)="searchChange.emit(''); searchStr = ''"
+        (search)="searchChange.emit($event.term); searchStr = $event.term"
     >
         <ng-template let-index="index" let-item="item" let-item$="item$" ng-optgroup-tmp>
             <mat-checkbox

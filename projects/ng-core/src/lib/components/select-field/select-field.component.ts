@@ -4,11 +4,6 @@ import { createControlProviders, FormControlSuperclass } from '../../utils';
 
 import { Option } from './types/option';
 
-export interface Search<T> {
-    term: string;
-    items: Option<T>[];
-}
-
 @Component({
     selector: 'v-select-field',
     templateUrl: './select-field.component.html',
@@ -17,7 +12,7 @@ export interface Search<T> {
 })
 export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input() options: Option<T>[] = [];
-    @Output() searchChange = new EventEmitter<Search<T>>();
+    @Output() searchChange = new EventEmitter<string>();
 
     @Input() label?: string;
     @Input() hint?: string;
