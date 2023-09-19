@@ -54,13 +54,16 @@ export class FiltersComponent {
             if (b.breakpoints[Breakpoints.Medium]) return 3;
             if (b.breakpoints[Breakpoints.Small]) return 2;
             return 1;
-        })
+        }),
     );
 
     displayedFiltersCount$ = this.repeat$.pipe(map((r) => r * 2));
     filtersCount$ = new BehaviorSubject(0);
 
-    constructor(private dialog: DialogService, private breakpointObserver: BreakpointObserver) {}
+    constructor(
+        private dialog: DialogService,
+        private breakpointObserver: BreakpointObserver,
+    ) {}
 
     open() {
         this.dialog.open(FiltersDialogComponent, { filters: this });

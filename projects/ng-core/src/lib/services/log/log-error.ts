@@ -19,7 +19,7 @@ export class LogError {
 
     get details() {
         return Object.fromEntries(
-            Object.entries(this.source).filter(([k, v]) => k !== 'name' && k !== 'message' && v)
+            Object.entries(this.source).filter(([k, v]) => k !== 'name' && k !== 'message' && v),
         );
     }
 
@@ -27,7 +27,7 @@ export class LogError {
         this.source = (isObject(error)
             ? error
             : new Error(
-                  error ? String(error) : DEFAULT_ERROR_NAME
+                  error ? String(error) : DEFAULT_ERROR_NAME,
               )) as unknown as LogError['source'];
     }
 

@@ -8,13 +8,13 @@ export function formatCurrency(
     currencyCode: string = 'USD',
     format: 'short' | 'long' = 'long',
     locale = 'en-GB',
-    exponent?: number
+    exponent?: number,
 ): string {
     return ngFormatCurrency(
         isNil(exponent) ? toMajor(amount, currencyCode) : toMajorByExponent(amount, exponent),
         locale,
         getCurrencySymbol(currencyCode, 'narrow', locale),
         currencyCode,
-        format === 'short' ? '0.0-2' : undefined
+        format === 'short' ? '0.0-2' : undefined,
     );
 }

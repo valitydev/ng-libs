@@ -7,6 +7,6 @@ export function getImportValue<T>(imp: Promise<unknown>, prop: string = 'default
         map((module) => {
             if (!prop) return module as T;
             return get(module, prop, null) as T;
-        })
+        }),
     );
 }

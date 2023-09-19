@@ -20,7 +20,7 @@ export class VSelectPipe<TObject extends object, TResult, TParams = void>
         obj: TObject,
         selectFn: SelectFn<TObject, TResult, TParams>,
         defaultValue?: TResult,
-        rest: TParams[] = []
+        rest: TParams[] = [],
     ): TResult | null {
         const res = obj && selectFn ? select(obj, selectFn, defaultValue, rest) : null;
         if (isObservable(res) && !this.asyncPipe) {

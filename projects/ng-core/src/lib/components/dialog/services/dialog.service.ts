@@ -14,7 +14,7 @@ export class DialogService {
         private dialog: MatDialog,
         @Optional()
         @Inject(DIALOG_CONFIG)
-        private readonly dialogConfig: DialogConfig
+        private readonly dialogConfig: DialogConfig,
     ) {
         if (!dialogConfig) this.dialogConfig = DEFAULT_DIALOG_CONFIG;
     }
@@ -39,7 +39,7 @@ export class DialogService {
                   data: TDialogData,
                   configOrConfigName?:
                       | Omit<MatDialogConfig<TDialogData>, 'data'>
-                      | keyof DialogConfig
+                      | keyof DialogConfig,
               ]
     ): MatDialogRef<TDialogComponent, DialogResponse<TDialogResponseData, TDialogResponseStatus>> {
         let config: Partial<MatDialogConfig<TDialogData>>;

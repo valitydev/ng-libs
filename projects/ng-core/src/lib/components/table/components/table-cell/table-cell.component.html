@@ -1,6 +1,6 @@
 <div class="wrapper">
     <ng-container
-        *ngIf="rowData | vSelect : colDef.tooltip : '' : [colDef] as tooltip; else linkTemplate"
+        *ngIf="rowData | vSelect: colDef.tooltip : '' : [colDef] as tooltip; else linkTemplate"
     >
         <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
             <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
@@ -21,17 +21,16 @@
 
 <ng-template #contentTemplate>
     <div
-        *ngLet="rowData | vSelect : colDef.formatter ?? colDef.field : '' : [colDef] as value"
+        *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [colDef] as value"
         class="value"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
-            {{ value | date : 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
+            {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
         </ng-template>
         <ng-template [ngIf]="colDef.type === 'tag'">
             <v-tag *ngIf="colDef.typeParameters.tags[value] ?? {} as tag" [color]="tag.color">
                 {{
-                    tag.label ??
-                        (rowData | vSelect : colDef.typeParameters.label : value : [colDef])
+                    tag.label ?? (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
                 }}
             </v-tag>
         </ng-template>
@@ -47,7 +46,7 @@
             {{
                 value
                     | amountCurrency
-                        : (rowData | vSelect : colDef?.typeParameters?.currencyCode : '' : [colDef])
+                        : (rowData | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
                         : 'long'
                         : (colDef.typeParameters.isMinor ? undefined : 0)
             }}
@@ -71,6 +70,6 @@
         </ng-template>
     </div>
     <div class="description mat-caption mat-secondary-text">
-        {{ rowData | vSelect : colDef.description : '' : [colDef] }}
+        {{ rowData | vSelect: colDef.description : '' : [colDef] }}
     </div>
 </ng-template>

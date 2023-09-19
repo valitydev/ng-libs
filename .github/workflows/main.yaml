@@ -10,27 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: valitydev/action-frontend/setup@v0.1
+      - uses: valitydev/action-frontend/setup@v1.0
       - run: npm ci
       - name: Build
         run: npm run build
       - name: Publish Angular Core
-        uses: valitydev/action-frontend/publish@v0.1
+        uses: valitydev/action-frontend/publish@v1.0
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./projects/ng-core/dist
       - name: Publish ESLint Config
-        uses: valitydev/action-frontend/publish@v0.1
+        uses: valitydev/action-frontend/publish@v1.0
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./projects/eslint-config
       - name: Publish CSpell Config
-        uses: valitydev/action-frontend/publish@v0.1
+        uses: valitydev/action-frontend/publish@v1.0
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./projects/cspell-config
       - name: Publish Prettier Config
-        uses: valitydev/action-frontend/publish@v0.1
+        uses: valitydev/action-frontend/publish@v1.0
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./projects/prettier-config

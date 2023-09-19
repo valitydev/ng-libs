@@ -3,6 +3,7 @@
     "printWidth": 100,
     "singleQuote": true,
     "tabWidth": 4,
+    "plugins": ["prettier-plugin-organize-attributes"],
     "attributeSort": "ASC",
     "attributeGroups": [
         "$ANGULAR_ELEMENT_REF",
@@ -20,6 +21,10 @@
             "options": {
                 "tabWidth": 2
             }
+        },
+        {
+            "files": "*.svg",
+            "options": { "parser": "html" }
         }
     ]
 }
