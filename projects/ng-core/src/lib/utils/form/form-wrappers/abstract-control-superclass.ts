@@ -21,7 +21,7 @@ export abstract class AbstractControlSuperclass<OuterType, InnerType = OuterType
             .pipe(
                 filter(() => this.control.invalid),
                 take(1),
-                takeUntilDestroyed(this.destroyRef)
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(() => {
                 this.onValidatorChange();

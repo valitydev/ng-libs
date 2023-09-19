@@ -14,7 +14,7 @@ type ColumnFn<TObject extends object, TResult = unknown> = (rowData: TObject) =>
 export type BaseColumn<
     T extends object,
     TType extends string | undefined = undefined,
-    TTypeParameters extends object = never
+    TTypeParameters extends object = never,
 > = Pick<
     MtxGridColumn<T>,
     | 'field'

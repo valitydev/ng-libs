@@ -22,7 +22,7 @@ export class QueryParamsService<P extends object> {
         startWith(this.route.snapshot.queryParams),
         distinctUntilChanged(isEqual),
         map((params) => this.deserialize(params)),
-        shareReplay({ refCount: true, bufferSize: 1 })
+        shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
     get params(): P {
@@ -32,7 +32,7 @@ export class QueryParamsService<P extends object> {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        @Optional() @Inject(QUERY_PARAMS_SERIALIZERS) private readonly serializers?: Serializer[]
+        @Optional() @Inject(QUERY_PARAMS_SERIALIZERS) private readonly serializers?: Serializer[],
     ) {
         // Angular @Optional not support TS syntax: `serializers: Serializer[] = []`
         if (!this.serializers) {
@@ -54,12 +54,15 @@ export class QueryParamsService<P extends object> {
 
     private serialize(
         params: P,
-        { filter = negate(isEmpty) }: Options = {}
+        { filter = negate(isEmpty) }: Options = {},
     ): { [key: string]: string } {
-        return Object.entries(params).reduce((acc, [k, v]) => {
-            if (filter(v, k)) acc[k] = serializeQueryParam(v, this.serializers);
-            return acc;
-        }, {} as { [key: string]: string });
+        return Object.entries(params).reduce(
+            (acc, [k, v]) => {
+                if (filter(v, k)) acc[k] = serializeQueryParam(v, this.serializers);
+                return acc;
+            },
+            {} as { [key: string]: string },
+        );
     }
 
     private deserialize(params: Params): P {

@@ -1,5 +1,5 @@
-import { Observable, defer, mergeScan, map, BehaviorSubject, Subject } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
+import { Observable, defer, mergeScan, map, BehaviorSubject, ReplaySubject, skipWhile } from 'rxjs';
+import { shareReplay, startWith } from 'rxjs/operators';
 
 import { inProgressFrom, progressTo } from '../../utils';
 
@@ -30,17 +30,19 @@ export interface Accumulator<TResultItem, TParams, TContinuationToken> {
     continuationToken?: TContinuationToken;
 }
 
+const DEFAULT_SIZE = 25;
+
 export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuationToken = string> {
     result$ = defer(() => this.state$).pipe(map(({ result }) => result));
     hasMore$ = defer(() => this.state$).pipe(map(({ continuationToken }) => !!continuationToken));
     isLoading$ = inProgressFrom(
         () => this.progress$,
-        () => this.state$
+        () => this.state$,
     );
 
-    private fetch$ = new Subject<Action<TParams>>();
+    private fetch$ = new ReplaySubject<Action<TParams>>(1);
     private progress$ = new BehaviorSubject(0);
-    private state$ = this.fetch$.pipe(
+    private state$ = defer(() => this.fetch$.pipe(skipWhile(({ type }) => type !== 'load'))).pipe(
         mergeScan<Action<TParams>, Accumulator<TResultItem, TParams, TContinuationToken>>(
             (acc, action) => {
                 const params = (action.type === 'load' ? action.params : acc.params) as TParams;
@@ -48,6 +50,16 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                 const continuationToken =
                     action.type === 'more' ? acc.continuationToken : undefined;
                 return this.fetch(params, { size, continuationToken }).pipe(
+                    ...((action.type === 'load'
+                        ? ([
+                              startWith({
+                                  params,
+                                  result: [],
+                                  size,
+                                  continuationToken: undefined,
+                              }),
+                          ] as unknown)
+                        : []) as []),
                     map(({ result, continuationToken }) => ({
                         params,
                         result:
@@ -55,16 +67,16 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                         size,
                         continuationToken,
                     })),
-                    progressTo(this.progress$)
+                    progressTo(this.progress$),
                 );
             },
             {
-                size: 25,
+                size: DEFAULT_SIZE,
                 result: [],
             },
-            1
+            1,
         ),
-        shareReplay({ bufferSize: 1, refCount: true })
+        shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     load(params: TParams, options: LoadOptions = {}): void {
@@ -77,6 +89,6 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
 
     protected abstract fetch(
         params: TParams,
-        options: FetchOptions<TContinuationToken>
+        options: FetchOptions<TContinuationToken>,
     ): Observable<FetchResult<TResultItem, TContinuationToken>>;
 }
