@@ -7,7 +7,7 @@ import { SelectFn } from '../../../utils';
 type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
     TObject,
     TResult,
-    [colDef: ExtColumn<TObject>]
+    [index: number, colDef: ExtColumn<TObject>]
 >;
 type ColumnFn<TObject extends object, TResult = unknown> = (
     rowData: TObject,

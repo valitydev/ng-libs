@@ -21,7 +21,8 @@
 
 <ng-template #contentTemplate>
     <div
-        *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [colDef] as value"
+        *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value"
+        [ngClass]="{ 'value-link': !!colDef.click }"
         class="value"
         (click)="colDef.click?.(rowData, index)"
     >

@@ -8,5 +8,8 @@
                 color: get-color($theme, accent);
             }
         }
+        .value-link {
+            color: get-color($theme, primary);
+        }
     }
 }
