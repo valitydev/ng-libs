@@ -23,6 +23,7 @@
     <div
         *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [colDef] as value"
         class="value"
+        (click)="colDef.click?.(rowData, index)"
     >
         <ng-template [ngIf]="colDef.type === 'datetime'">
             {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}

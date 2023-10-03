@@ -34,6 +34,7 @@ export type BaseColumn<
     description?: FormatterFn<T>;
     tooltip?: FormatterFn<T>;
     link?: ColumnFn<T, string>;
+    click?: ColumnFn<T, void>;
 } & (TType extends void
         ? { type?: TType }
         : OmitByValue<{ type: TType; typeParameters: TTypeParameters }, never>);
