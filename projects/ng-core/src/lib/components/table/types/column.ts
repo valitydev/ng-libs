@@ -9,7 +9,10 @@ type FormatterFn<TObject extends object, TResult = unknown> = SelectFn<
     TResult,
     [colDef: ExtColumn<TObject>]
 >;
-type ColumnFn<TObject extends object, TResult = unknown> = (rowData: TObject) => TResult;
+type ColumnFn<TObject extends object, TResult = unknown> = (
+    rowData: TObject,
+    index: number,
+) => TResult;
 
 export type BaseColumn<
     T extends object,

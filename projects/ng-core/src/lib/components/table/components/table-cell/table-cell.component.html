@@ -10,7 +10,7 @@
 
 <ng-template #linkTemplate>
     <a
-        *ngIf="colDef.link?.(rowData) as link; else contentTemplate"
+        *ngIf="colDef.link?.(rowData, index) as link; else contentTemplate"
         [routerLink]="link"
         class="link"
         target="_blank"
@@ -57,9 +57,9 @@
             </button>
             <mat-menu #menu="matMenu">
                 <button
-                    *ngFor="let item of colDef.typeParameters.items"
+                    *ngFor="let item of colDef.typeParameters.items; let index = index"
                     mat-menu-item
-                    (click)="item.click(rowData)"
+                    (click)="item.click(rowData, index)"
                 >
                     {{ item.label }}
                 </button>
