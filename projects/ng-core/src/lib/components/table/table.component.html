@@ -87,7 +87,7 @@
             [sortActive]="sortActive || ''"
             [sortDirection]="sortDirection || ''"
             [sortDisabled]="!!progress"
-            [sortOnFront]="false"
+            [sortOnFront]="!!sortOnFront"
             [statusbarTemplate]="footerTpl"
             [toolbarTemplate]="summaryTpl"
             [trackBy]="trackByField ? trackByFieldFn : trackBy"

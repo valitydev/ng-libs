@@ -38,6 +38,7 @@ export class TableComponent<T extends object> implements Progressable, OnChanges
     @Input() trackBy: MtxGrid['trackBy'] = undefined as never;
     @Input() trackByField?: string;
     @Input() progress?: boolean | number | null = false;
+    @Input() @coerceBoolean sortOnFront: boolean | '' = false;
 
     @Input() @coerceBoolean noActions: boolean | '' = false;
 
