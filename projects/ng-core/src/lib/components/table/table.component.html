@@ -22,95 +22,127 @@
                     {{ isPreload ? (hasMore ? 'Preload more' : 'Preloaded') : 'Preload' }}
                 </button>
             </ng-container>
-            <!--            <ng-container *ngIf="renderedSizes.length">-->
-            <!--                <button [disabled]="!!progress" [matMenuTriggerFor]="menu" mat-button>-->
-            <!--                    {{ size$ | async }} <mat-icon>table_rows_narrow</mat-icon>-->
-            <!--                </button>-->
-            <!--                <mat-menu #menu="matMenu">-->
-            <!--                    <button-->
-            <!--                        *ngFor="let size of renderedSizes"-->
-            <!--                        mat-menu-item-->
-            <!--                        (click)="size$.next(size)"-->
-            <!--                    >-->
-            <!--                        {{ size }}-->
-            <!--                    </button>-->
-            <!--                </mat-menu>-->
-            <!--            </ng-container>-->
         </v-actions>
         <div>
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
-    <div class="details">
-        <div>
-            <ng-container *ngIf="!progress; else loading">
+    <div class="table-card-details">
+        <div class="details">
+            <div>
                 Quantity:
-                {{ data?.length ? data.length + (hasMore ? ' (more available)' : ' (all)') : '0'
-                }}<ng-container *ngIf="internalSelected?.length">
-                    | <b>Selected: {{ internalSelected.length }}</b></ng-container
+                {{
+                    progress
+                        ? '...'
+                        : data?.length
+                        ? data.length + (hasMore ? ' (more available)' : ' (all)')
+                        : '0'
+                }}<ng-container *ngIf="selection.selected?.length">
+                    | <b>Selected: {{ selection.selected.length }}</b></ng-container
                 >
-            </ng-container>
-            <ng-template #loading>Loading...</ng-template>
+            </div>
         </div>
-        <div class="customize">
-            <mat-icon *ngIf="hasReset" (click)="updateColumns()">restart_alt</mat-icon>
-            <span [matMenuTriggerFor]="columnMenu.menuPanel" class="action">Customize columns</span>
-            <mtx-grid-column-menu
-                #columnMenu
-                [columns]="renderedColumns"
-                buttonText="test"
-                class="column-menu"
-                (columnChange)="updateColumns($event)"
-            ></mtx-grid-column-menu>
-        </div>
-    </div>
-    <mat-card class="table-card">
-        <mtx-grid
-            *ngIf="renderedColumns"
-            [cellSelectable]="false"
-            [cellTemplate]="renderedCellTemplate"
-            [columnHideable]="true"
-            [columnPinnable]="true"
-            [columns]="renderedColumns"
-            [columnSortable]="true"
-            [data]="data || []"
-            [disableRowClickSelection]="true"
-            [emptyValuePlaceholder]="''"
-            [loading]="!!progress"
-            [multiSelectionWithClick]="false"
-            [pageIndex]="0"
-            [pageSize]="size * displayedPages"
-            [rowSelectable]="!!rowSelectable"
-            [rowSelected]="rowSelected"
-            [showColumnMenuHeader]="true"
-            [showStatusbar]="hasShowMore"
-            [sortActive]="sortActive || ''"
-            [sortDirection]="sortDirection || ''"
-            [sortDisabled]="!!progress"
-            [sortOnFront]="!!sortOnFront"
-            [statusbarTemplate]="footerTpl"
-            [toolbarTemplate]="summaryTpl"
-            [trackBy]="trackByField ? trackByFieldFn : trackBy"
-            toolbarTitle="test"
-            (rowSelectionChange)="select($event)"
-            (sortChange)="sortChange.emit($event)"
-        ></mtx-grid>
-        <ng-template #cellTpl let-col="colDef" let-index="index" let-row>
-            <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
-        </ng-template>
-        <ng-template #summaryTpl> test {{ displayedPages }} </ng-template>
-        <ng-template #footerTpl>
-            <button
-                [disabled]="!!progress"
-                class="show-more"
-                mat-button
-                matTooltip="Show {{ size }} more (currently shown {{
-                    data.length < displayedPages * size ? data?.length : displayedPages * size
-                }})"
-                (click)="showMore()"
+        <mat-card class="table-card">
+            <table
+                [dataSource]="dataSource"
+                [matSortActive]="sortActive ?? ''"
+                [matSortDirection]="sortDirection ?? ''"
+                mat-table
+                matSort
+                (matSortChange)="sortChanged($event)"
             >
-                {{ progress ? 'Loading...' : 'Show more' }}
-            </button>
-        </ng-template>
-    </mat-card>
+                <ng-container *ngIf="rowSelectable" [matColumnDef]="selectColField" sticky>
+                    <th *matHeaderCellDef class="pinned-left" mat-header-cell>
+                        <mat-checkbox
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()"
+                            (change)="$event ? toggleAllRows() : null"
+                        >
+                        </mat-checkbox>
+                    </th>
+                    <td *matCellDef="let row" class="pinned-left" mat-cell>
+                        <mat-checkbox
+                            [checked]="selection.isSelected(row)"
+                            (change)="$event ? selection.toggle(row) : null"
+                            (click)="$event.stopPropagation()"
+                        >
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+
+                <ng-container
+                    *ngFor="let col of renderedColumns"
+                    [matColumnDef]="col.field"
+                    [sticky]="col.pinned === 'left'"
+                    [stickyEnd]="col.pinned === 'right'"
+                >
+                    <ng-container *ngIf="col.sortable; else noSort">
+                        <th
+                            *matHeaderCellDef
+                            [mat-sort-header]="col.field"
+                            [ngClass]="{
+                                'pinned-left': col.pinned === 'left',
+                                'pinned-right': col.pinned === 'right'
+                            }"
+                            [ngStyle]="{
+                                width: col.width,
+                                'min-width': col.minWidth,
+                                'max-width': col.maxWidth
+                            }"
+                            mat-header-cell
+                        >
+                            {{ col.header }}
+                        </th>
+                    </ng-container>
+                    <ng-template #noSort>
+                        <th
+                            *matHeaderCellDef
+                            [ngClass]="{
+                                'pinned-left': col.pinned === 'left',
+                                'pinned-right': col.pinned === 'right'
+                            }"
+                            [ngStyle]="{
+                                width: col.width,
+                                'min-width': col.minWidth,
+                                'max-width': col.maxWidth
+                            }"
+                            mat-header-cell
+                        >
+                            {{ col.header }}
+                        </th>
+                    </ng-template>
+                    <td
+                        *matCellDef="let row; let index = index"
+                        [ngClass]="{
+                            'pinned-left': col.pinned === 'left',
+                            'pinned-right': col.pinned === 'right'
+                        }"
+                        [ngStyle]="{
+                            width: col.width,
+                            'min-width': col.minWidth,
+                            'max-width': col.maxWidth
+                        }"
+                        mat-cell
+                    >
+                        <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
+                    </td>
+                </ng-container>
+
+                <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+            </table>
+            <mat-progress-bar
+                *ngIf="progress && !data?.length"
+                mode="indeterminate"
+            ></mat-progress-bar>
+        </mat-card>
+    </div>
+    <v-show-more-button
+        *ngIf="hasShowMore"
+        [disabled]="!!progress"
+        [displayedPages]="displayedPages"
+        [length]="data?.length ?? 0"
+        [pageSize]="size"
+        (more)="showMore()"
+    ></v-show-more-button>
 </div>

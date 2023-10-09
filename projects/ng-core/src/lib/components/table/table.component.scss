@@ -1,64 +1,45 @@
 .table {
-    flex-direction: column;
-    box-sizing: border-box;
-    display: flex;
-    gap: 32px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
 
-    ::ng-deep .mtx-grid-pagination {
-        display: none;
-    }
+    .table-card-details {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
 
-    .header {
-        flex-direction: row;
-        box-sizing: border-box;
-        display: flex;
-        place-content: stretch space-between;
-        align-items: stretch;
-    }
-
-    .table-card {
-        width: 100%;
-        overflow: hidden;
-
-        & > * {
-            border: none;
-        }
-    }
-
-    .column-menu {
-        display: none;
-    }
-
-    .show-more {
-        width: 100%;
-    }
-
-    .details {
-        margin: 0 8px -24px;
-        display: flex;
-        justify-content: space-between;
-
-        & > *,
-        mat-icon {
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.54);
-        }
-
-        .action {
-            cursor: pointer;
-            text-decoration: underline;
-            text-decoration-style: dotted;
-        }
-
-        .customize {
+        .details {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            justify-content: space-between;
 
+            & > *,
             mat-icon {
-                height: auto;
-                width: auto;
+                font-size: 12px;
+                color: rgba(0, 0, 0, 0.54);
+            }
+
+            .action {
                 cursor: pointer;
+                text-decoration: underline;
+                text-decoration-style: dotted;
+            }
+        }
+
+        .table-card {
+            width: 100%;
+            overflow: auto;
+
+            .pinned-right,
+            .pinned-left {
+                width: 0;
+            }
+
+            .pinned-right {
+                border-left: 1px solid;
+            }
+
+            .pinned-left {
+                border-right: 1px solid;
             }
         }
     }

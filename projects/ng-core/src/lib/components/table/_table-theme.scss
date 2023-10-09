@@ -2,6 +2,14 @@
 @import '../../styles/utils/get-color';
 
 @mixin theme($theme) {
+    .pinned-right {
+        border-left-color: get-color($theme, neutral, 300) !important;
+    }
+
+    .pinned-left {
+        border-right-color: get-color($theme, neutral, 300) !important;
+    }
+
     .v-table-cell {
         .link {
             .value {
