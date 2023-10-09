@@ -29,6 +29,7 @@ import { compareDifferentTypes, ComponentChanges, select } from '../../utils';
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ColumnObject } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
+import { createInternalColumnField } from './utils/create-internal-column-field';
 
 export type UpdateOptions = {
     size: number;
@@ -124,7 +125,7 @@ export class TableComponent<T extends object>
     dataSource = new MatTableDataSource<T>();
     selection = new SelectionModel<T>(true, []);
 
-    selectColField = '___$SELECT_COL';
+    selectColField = createInternalColumnField('select');
     displayedColumns: string[] = [];
 
     get displayedPages() {
