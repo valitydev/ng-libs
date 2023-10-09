@@ -262,10 +262,11 @@ export class TableComponent<T extends object>
         return combineLatest(res)
             .pipe(take(1), takeUntilDestroyed(this.destroyRef))
             .subscribe((d) => {
-                this.dataSource.sortData = () =>
-                    d
-                        .sort((a, b) => compareDifferentTypes(a.value, b.value))
-                        .map((v) => v.sourceValue);
+                let r = d
+                    .sort((a, b) => compareDifferentTypes(a.value, b.value))
+                    .map((v) => v.sourceValue);
+                if (sort.direction === 'desc') r = r.reverse();
+                this.dataSource.sortData = () => r;
             });
     }
 
