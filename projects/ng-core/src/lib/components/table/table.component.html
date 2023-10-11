@@ -71,7 +71,7 @@
                 </ng-container>
 
                 <ng-container
-                    *ngFor="let col of renderedColumns"
+                    *ngFor="let col of columnsObjects.values()"
                     [matColumnDef]="col.field"
                     [sticky]="col.pinned === 'left'"
                     [stickyEnd]="col.pinned === 'right'"
@@ -124,7 +124,22 @@
                         }"
                         mat-cell
                     >
-                        <v-table-cell [colDef]="col" [index]="index" [rowData]="row"></v-table-cell>
+                        <v-table-cell
+                            *ngIf="!col.cellTemplate && !cellTemplate[col.field]; else cellTpl"
+                            [colDef]="col"
+                            [index]="index"
+                            [rowData]="row"
+                        ></v-table-cell>
+                        <ng-template
+                            #cellTpl
+                            [ngTemplateOutlet]="$any(col.cellTemplate ?? cellTemplate[col.field])"
+                            [ngTemplateOutletContext]="{
+                                $implicit: row,
+                                colDef: col,
+                                index: index,
+                                rowData: row
+                            }"
+                        ></ng-template>
                     </td>
                 </ng-container>
 

@@ -10,18 +10,13 @@ import {
     OnChanges,
     OnInit,
     Output,
-    TemplateRef,
     ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSort, Sort, SortDirection } from '@angular/material/sort';
-import {
-    MatTableDataSource,
-    MatTableDataSourcePageEvent,
-    MatTableDataSourcePaginator,
-} from '@angular/material/table';
+import { MatTableDataSource } from '@angular/material/table';
 import { coerceBoolean } from 'coerce-property';
-import { combineLatest, isObservable, map, of, Subject, take } from 'rxjs';
+import { combineLatest, isObservable, map, of, take } from 'rxjs';
 
 import { Progressable } from '../../types/progressable';
 import { compareDifferentTypes, ComponentChanges, select } from '../../utils';
@@ -30,52 +25,11 @@ import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ColumnObject } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnField } from './utils/create-internal-column-field';
+import { VirtualPaginator } from './utils/virtual-paginator';
 
 export type UpdateOptions = {
     size: number;
 };
-
-class VirtualPaginator implements MatTableDataSourcePaginator {
-    page = new Subject<MatTableDataSourcePageEvent>();
-    pageIndex = 0;
-    initialized = of(undefined);
-    length = 0;
-    pageSize = 0;
-
-    get displayedPages() {
-        return this.pageSize / this.partSize;
-    }
-
-    constructor(private partSize = 25) {
-        this.pageSize = partSize;
-    }
-
-    firstPage() {
-        return 0;
-    }
-
-    lastPage() {
-        return 0;
-    }
-
-    reload() {
-        this.pageSize = this.partSize;
-        this.update();
-    }
-
-    more() {
-        this.pageSize += this.partSize;
-        this.update();
-    }
-
-    private update() {
-        this.page.next({
-            pageIndex: this.pageIndex,
-            pageSize: this.pageSize,
-            length: this.length,
-        });
-    }
-}
 
 @Component({
     selector: 'v-table',
@@ -88,7 +42,7 @@ export class TableComponent<T extends object>
 {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
-    @Input() cellTemplate: ColumnObject<T>['cellTemplate'] = undefined as never;
+    @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
     @Input() progress?: boolean | number | null = false;
     @Input() @coerceBoolean sortOnFront: boolean | '' = false;
 
@@ -110,15 +64,9 @@ export class TableComponent<T extends object>
     @Output() sortChange = new EventEmitter<Sort>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
-    @ViewChild('cellTpl', { static: true }) defaultCellTemplate!: TemplateRef<unknown>;
     @ViewChild(MatSort) sort!: MatSort;
 
-    renderedColumns!: ColumnObject<T>[];
-    hasReset = false;
-
-    renderedCellTemplate!:
-        | ColumnObject<T>['cellTemplate']
-        | Record<string, ColumnObject<T>['cellTemplate']>;
+    columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
 
     isPreload = false;
 
@@ -163,11 +111,10 @@ export class TableComponent<T extends object>
         if (changes.columns || changes.rowSelectable) {
             this.displayedColumns = [
                 ...(this.rowSelectable ? [this.selectColField] : []),
-                ...this.renderedColumns.filter((c) => !c.hide).map((c) => c.field),
+                ...Array.from(this.columnsObjects.values())
+                    .filter((c) => !c.hide)
+                    .map((c) => c.field),
             ];
-        }
-        if (changes.cellTemplate) {
-            this.updateCellTemplate();
         }
         if (
             changes.rowSelectable &&
@@ -192,10 +139,8 @@ export class TableComponent<T extends object>
         }
     }
 
-    updateColumns(columns?: ColumnObject<T>[]) {
-        this.hasReset = !!columns;
-        this.renderedColumns = columns ? columns.slice() : createColumnsObjects(this.columns);
-        this.updateCellTemplate();
+    updateColumns(columns: ColumnObject<T>[] = createColumnsObjects(this.columns)) {
+        this.columnsObjects = new Map((columns || []).map((c) => [c.field, c]));
     }
 
     load(isPreload = false) {
@@ -245,7 +190,7 @@ export class TableComponent<T extends object>
             this.dataSource.sortData = () => this.data;
             return;
         }
-        const colDef = this.renderedColumns.find((c) => c.field === sort.active);
+        const colDef = this.columnsObjects.get(sort.active);
         if (!colDef) {
             this.dataSource.sortData = () => this.data;
             return;
@@ -268,22 +213,5 @@ export class TableComponent<T extends object>
                 if (sort.direction === 'desc') r = r.reverse();
                 this.dataSource.sortData = () => r;
             });
-    }
-
-    private updateCellTemplate() {
-        if (this.cellTemplate instanceof TemplateRef) {
-            this.renderedCellTemplate = this.cellTemplate;
-            return;
-        }
-        if (!this.cellTemplate && this.renderedColumns.every((c) => !c.cellTemplate)) {
-            this.renderedCellTemplate = this.defaultCellTemplate;
-            return;
-        }
-        this.renderedCellTemplate = Object.fromEntries(
-            this.renderedColumns.map((c) => [
-                c.field,
-                this.cellTemplate?.[c.field as never] ?? c.cellTemplate ?? this.defaultCellTemplate,
-            ]),
-        );
     }
 }
