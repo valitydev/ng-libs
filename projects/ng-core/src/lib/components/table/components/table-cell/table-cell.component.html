@@ -3,23 +3,27 @@
         *ngIf="rowData | vSelect: colDef.tooltip : '' : [colDef] as tooltip; else linkTemplate"
     >
         <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
-            <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
+            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
         </div>
+        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
     </ng-container>
 </div>
 
 <ng-template #linkTemplate>
-    <a
-        *ngIf="colDef.link?.(rowData, index) as link; else contentTemplate"
-        [routerLink]="link"
-        class="link"
-        target="_blank"
-    >
-        <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
-    </a>
+    <ng-container *ngIf="colDef.link?.(rowData, index) as link; else contentTemplate">
+        <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
+            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+        </a>
+        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+    </ng-container>
 </ng-template>
 
 <ng-template #contentTemplate>
+    <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+    <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+</ng-template>
+
+<ng-template #valueTemplate>
     <div
         *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value"
         [ngClass]="{ 'value-link': !!colDef.click }"
@@ -71,6 +75,8 @@
             {{ value }}
         </ng-template>
     </div>
+</ng-template>
+<ng-template #descriptionTemplate>
     <div class="description mat-caption mat-secondary-text">
         {{ rowData | vSelect: colDef.description : '' : [colDef] }}
     </div>

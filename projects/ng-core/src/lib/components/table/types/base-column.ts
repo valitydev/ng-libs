@@ -28,9 +28,14 @@ export interface BaseColumn<T extends object> {
     sortable?: boolean | string;
     cellTemplate?: TemplateRef<unknown>;
     formatter?: FormatterFn<T>;
+
     description?: FormatterFn<T>;
+
     tooltip?: FormatterFn<T>;
+
     link?: ColumnFn<T, string>;
+    linkParameters?: { target?: '_blank' };
+
     click?: ColumnFn<T, void>;
 
     // TODO: Need to delete
