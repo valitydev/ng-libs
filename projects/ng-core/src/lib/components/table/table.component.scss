@@ -46,6 +46,11 @@
             .pinned-left {
                 border-right: 1px solid;
             }
+
+            .no-records {
+                text-align: center;
+                height: 52px * 3;
+            }
         }
     }
 }

@@ -152,6 +152,23 @@
 
                 <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
                 <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+
+                <ng-container matColumnDef="__noRecords">
+                    <td
+                        *matFooterCellDef
+                        [colSpan]="displayedColumns.length"
+                        class="no-records mat-body-1"
+                        mat-footer-cell
+                    >
+                        No records
+                    </td>
+                </ng-container>
+
+                <tr
+                    *matFooterRowDef="!progress && data && !data.length ? ['__noRecords'] : []"
+                    [style.display]="!progress && data && !data.length ? 'table-row' : 'none'"
+                    mat-footer-row
+                ></tr>
             </table>
         </mat-card>
     </div>
