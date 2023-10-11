@@ -116,11 +116,8 @@ export class TableComponent<T extends object>
                     .map((c) => c.field),
             ];
         }
-        if (
-            changes.rowSelectable &&
-            (changes.data || (changes.rowSelected && Array.isArray(this.rowSelected)))
-        ) {
-            const newSelected = this.rowSelected.filter((d) => !!this.data?.includes?.(d));
+        if (this.rowSelectable && (changes.data || changes.rowSelected)) {
+            const newSelected = (this.rowSelected || []).filter((d) => !!this.data?.includes?.(d));
             this.selection.deselect(
                 ...this.selection.selected.filter((s) => !newSelected.includes(s)),
             );

@@ -43,6 +43,11 @@
             </div>
         </div>
         <mat-card class="table-card">
+            <mat-progress-bar
+                *ngIf="progress"
+                class="progress-bar"
+                mode="indeterminate"
+            ></mat-progress-bar>
             <table
                 [dataSource]="dataSource"
                 [matSortActive]="sortActive ?? ''"
@@ -55,6 +60,7 @@
                     <th *matHeaderCellDef class="pinned-left" mat-header-cell>
                         <mat-checkbox
                             [checked]="selection.hasValue() && isAllSelected()"
+                            [disabled]="!!progress"
                             [indeterminate]="selection.hasValue() && !isAllSelected()"
                             (change)="$event ? toggleAllRows() : null"
                         >
@@ -63,6 +69,7 @@
                     <td *matCellDef="let row" class="pinned-left" mat-cell>
                         <mat-checkbox
                             [checked]="selection.isSelected(row)"
+                            [disabled]="!!progress"
                             (change)="$event ? selection.toggle(row) : null"
                             (click)="$event.stopPropagation()"
                         >
@@ -146,10 +153,6 @@
                 <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
                 <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
             </table>
-            <mat-progress-bar
-                *ngIf="progress && !data?.length"
-                mode="indeterminate"
-            ></mat-progress-bar>
         </mat-card>
     </div>
     <v-show-more-button
@@ -158,6 +161,7 @@
         [displayedPages]="displayedPages"
         [length]="data?.length ?? 0"
         [pageSize]="size"
+        [progress]="!!progress"
         (more)="showMore()"
     ></v-show-more-button>
 </div>

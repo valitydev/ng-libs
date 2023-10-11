@@ -29,6 +29,11 @@
             width: 100%;
             overflow: auto;
 
+            .progress-bar {
+                position: absolute;
+                z-index: 999;
+            }
+
             .pinned-right,
             .pinned-left {
                 width: 0;
