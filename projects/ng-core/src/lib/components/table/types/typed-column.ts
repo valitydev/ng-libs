@@ -16,7 +16,7 @@ export type MenuColumn<T extends object> = TypedColumn<
     'menu',
     {
         items: {
-            label: string;
+            label: string | ColumnFn<T, string>;
             click: ColumnFn<T, void>;
         }[];
     }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 
-import { ColumnObject } from '../../types';
+import { ColumnFn, ColumnObject } from '../../types';
 
 @Component({
     selector: 'v-table-cell',
@@ -14,4 +14,8 @@ export class TableCellComponent<T extends object> {
     @Input() rowData!: T;
     @Input() colDef!: ColumnObject<T>;
     @Input() index!: number;
+
+    getLabel(label: string | ColumnFn<T, string>, index: number) {
+        return typeof label === 'string' ? label : label(this.rowData, index);
+    }
 }

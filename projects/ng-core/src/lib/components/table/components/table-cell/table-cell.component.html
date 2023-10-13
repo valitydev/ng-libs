@@ -67,7 +67,7 @@
                     mat-menu-item
                     (click)="item.click(rowData, index)"
                 >
-                    {{ item.label }}
+                    {{ getLabel(item.label, index) }}
                 </button>
             </mat-menu>
         </ng-template>
