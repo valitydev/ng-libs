@@ -88,10 +88,10 @@ export class TableComponent<T extends object>
         return !!this.hasMore || this.data?.length > this.size * this.displayedPages;
     }
 
-    private paginator = new VirtualPaginator(this.size);
+    private paginator!: VirtualPaginator;
 
     constructor(private destroyRef: DestroyRef) {
-        this.dataSource.paginator = this.paginator;
+        this.updatePaginator();
     }
 
     ngOnInit() {
@@ -133,6 +133,9 @@ export class TableComponent<T extends object>
             if (changes.sortDirection) {
                 this.sort.direction = this.sortDirection || '';
             }
+        }
+        if (changes.size) {
+            this.updatePaginator();
         }
     }
 
@@ -210,5 +213,9 @@ export class TableComponent<T extends object>
                 if (sort.direction === 'desc') r = r.reverse();
                 this.dataSource.sortData = () => r;
             });
+    }
+
+    private updatePaginator() {
+        this.dataSource.paginator = this.paginator = new VirtualPaginator(this.size);
     }
 }
