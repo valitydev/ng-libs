@@ -11,6 +11,7 @@ import {
     OnInit,
     Output,
     ViewChild,
+    ChangeDetectorRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSort, Sort, SortDirection } from '@angular/material/sort';
@@ -22,14 +23,10 @@ import { Progressable } from '../../types/progressable';
 import { compareDifferentTypes, ComponentChanges, select } from '../../utils';
 
 import { TableActionsComponent } from './components/table-actions.component';
-import { Column, ColumnObject } from './types';
+import { Column, ColumnObject, UpdateOptions } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnField } from './utils/create-internal-column-field';
 import { VirtualPaginator } from './utils/virtual-paginator';
-
-export type UpdateOptions = {
-    size: number;
-};
 
 @Component({
     selector: 'v-table',
@@ -60,7 +57,7 @@ export class TableComponent<T extends object>
     @Output() update = new EventEmitter<UpdateOptions>();
 
     @Input() sortActive?: string;
-    @Input() sortDirection?: SortDirection;
+    @Input() sortDirection: SortDirection = 'asc';
     @Output() sortChange = new EventEmitter<Sort>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
@@ -102,6 +99,7 @@ export class TableComponent<T extends object>
 
     ngAfterViewInit() {
         this.dataSource.sort = this.sort;
+        this.updateSort();
     }
 
     ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
@@ -109,30 +107,17 @@ export class TableComponent<T extends object>
             this.updateColumns();
         }
         if (changes.columns || changes.rowSelectable) {
-            this.displayedColumns = [
-                ...(this.rowSelectable ? [this.selectColField] : []),
-                ...Array.from(this.columnsObjects.values())
-                    .filter((c) => !c.hide)
-                    .map((c) => c.field),
-            ];
+            this.updateDisplayedColumns();
         }
         if (this.rowSelectable && (changes.data || changes.rowSelected)) {
-            const newSelected = (this.rowSelected || []).filter((d) => !!this.data?.includes?.(d));
-            this.selection.deselect(
-                ...this.selection.selected.filter((s) => !newSelected.includes(s)),
-            );
-            this.selection.select(...newSelected);
+            this.updateSelection();
         }
         if (changes.data) {
             this.dataSource.data = this.data;
+            this.tryFrontSort();
         }
-        if (this.sort) {
-            if (changes.sortActive) {
-                this.sort.active = this.sortActive || '';
-            }
-            if (changes.sortDirection) {
-                this.sort.direction = this.sortDirection || '';
-            }
+        if (this.dataSource.sort && (changes.sortActive || changes.sortDirection)) {
+            this.updateSort();
         }
         if (changes.size) {
             this.updatePaginator();
@@ -183,14 +168,18 @@ export class TableComponent<T extends object>
 
     sortChanged(sort: Sort) {
         this.sortChange.emit(sort);
-        if (!this.sortOnFront) {
+        this.tryFrontSort(sort);
+    }
+
+    private tryFrontSort({ active, direction }: Partial<Sort> = this.sort || {}) {
+        if (!this.sortOnFront || !this.data) {
             return;
         }
-        if (!sort.active || !sort.direction) {
+        if (!active || !direction) {
             this.dataSource.sortData = () => this.data;
             return;
         }
-        const colDef = this.columnsObjects.get(sort.active);
+        const colDef = this.columnsObjects.get(active);
         if (!colDef) {
             this.dataSource.sortData = () => this.data;
             return;
@@ -204,18 +193,41 @@ export class TableComponent<T extends object>
                 ? s.pipe(map((value) => ({ value, realIndex, sourceValue })))
                 : of({ value: s, realIndex, sourceValue });
         });
-        return combineLatest(res)
+        combineLatest(res)
             .pipe(take(1), takeUntilDestroyed(this.destroyRef))
             .subscribe((d) => {
-                let r = d
+                let sortedData = d
                     .sort((a, b) => compareDifferentTypes(a.value, b.value))
                     .map((v) => v.sourceValue);
-                if (sort.direction === 'desc') r = r.reverse();
-                this.dataSource.sortData = () => r;
+                if (direction === 'desc') sortedData = sortedData.reverse();
+                this.dataSource.sortData = () => sortedData;
+                // TODO: hack for update
+                this.dataSource.sort = this.sort;
             });
     }
 
     private updatePaginator() {
         this.dataSource.paginator = this.paginator = new VirtualPaginator(this.size);
+    }
+
+    private updateSort() {
+        this.sort.active = this.sortActive || '';
+        this.sort.direction = this.sortDirection || '';
+        this.tryFrontSort();
+    }
+
+    private updateDisplayedColumns() {
+        this.displayedColumns = [
+            ...(this.rowSelectable ? [this.selectColField] : []),
+            ...Array.from(this.columnsObjects.values())
+                .filter((c) => !c.hide)
+                .map((c) => c.field),
+        ];
+    }
+
+    private updateSelection() {
+        const newSelected = (this.rowSelected || []).filter((d) => !!this.data?.includes?.(d));
+        this.selection.deselect(...this.selection.selected.filter((s) => !newSelected.includes(s)));
+        this.selection.select(...newSelected);
     }
 }
