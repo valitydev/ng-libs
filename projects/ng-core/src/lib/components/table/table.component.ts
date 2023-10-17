@@ -177,13 +177,13 @@ export class TableComponent<T extends object>
         if (!this.sortOnFront || !this.data) {
             return;
         }
-        if (!active || !direction) {
-            this.dataSource.sortData = () => this.data;
+        if (!active || !direction || !this.data.length) {
+            this.updateDataSourceSort();
             return;
         }
         const colDef = this.columnsObjects.get(active);
         if (!colDef) {
-            this.dataSource.sortData = () => this.data;
+            this.updateDataSourceSort();
             return;
         }
         const res = this.data.map((sourceValue, realIndex) => {
@@ -202,10 +202,14 @@ export class TableComponent<T extends object>
                     .sort((a, b) => compareDifferentTypes(a.value, b.value))
                     .map((v) => v.sourceValue);
                 if (direction === 'desc') sortedData = sortedData.reverse();
-                this.dataSource.sortData = () => sortedData;
-                // TODO: hack for update
-                this.dataSource.sort = this.sort;
+                this.updateDataSourceSort(sortedData);
             });
+    }
+
+    private updateDataSourceSort(sortedData: T[] = this.data) {
+        this.dataSource.sortData = () => sortedData;
+        // TODO: hack for update
+        this.dataSource.sort = this.sort;
     }
 
     private updatePaginator() {
