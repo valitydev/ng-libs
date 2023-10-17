@@ -1,7 +1,7 @@
 import { MatTableDataSourcePaginator, MatTableDataSourcePageEvent } from '@angular/material/table';
 import { Subject, of } from 'rxjs';
 
-export class VirtualPaginator implements MatTableDataSourcePaginator {
+export class OnePageTableDataSourcePaginator implements MatTableDataSourcePaginator {
     page = new Subject<MatTableDataSourcePageEvent>();
     pageIndex = 0;
     initialized = of(undefined);

@@ -11,12 +11,12 @@ import {
     OnInit,
     Output,
     ViewChild,
-    ChangeDetectorRef,
+    numberAttribute,
+    booleanAttribute,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSort, Sort, SortDirection } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { coerceBoolean } from 'coerce-property';
 import { combineLatest, isObservable, map, of, take } from 'rxjs';
 
 import { Progressable } from '../../types/progressable';
@@ -26,7 +26,7 @@ import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ColumnObject, UpdateOptions } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnField } from './utils/create-internal-column-field';
-import { VirtualPaginator } from './utils/virtual-paginator';
+import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
 
 @Component({
     selector: 'v-table',
@@ -41,24 +41,26 @@ export class TableComponent<T extends object>
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
     @Input() progress?: boolean | number | null = false;
-    @Input() @coerceBoolean sortOnFront: boolean | '' = false;
 
-    @Input() @coerceBoolean noActions: boolean | '' = false;
+    @Input({ transform: booleanAttribute }) noActions: boolean = false;
 
-    @Input() @coerceBoolean rowSelectable: boolean | '' = false;
-    @Input() rowSelected!: T[];
-    @Output() rowSelectionChange = new EventEmitter<T[]>();
-
-    @Input() size: number = 25;
+    @Input({ transform: numberAttribute }) size: number = 25;
     @Input() preloadSize: number = 1000;
 
-    @Input() @coerceBoolean hasMore?: boolean | null | '' = false;
-    @Output() more = new EventEmitter<UpdateOptions>();
+    @Input({ transform: booleanAttribute }) hasMore: boolean = false;
     @Output() update = new EventEmitter<UpdateOptions>();
+    @Output() more = new EventEmitter<UpdateOptions>();
 
+    // Sort
     @Input() sortActive?: string;
     @Input() sortDirection: SortDirection = 'asc';
+    @Input({ transform: booleanAttribute }) sortOnFront: boolean = false;
     @Output() sortChange = new EventEmitter<Sort>();
+
+    // Select
+    @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
+    @Input() rowSelected!: T[];
+    @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
     @ViewChild(MatSort) sort!: MatSort;
@@ -85,7 +87,7 @@ export class TableComponent<T extends object>
         return !!this.hasMore || this.data?.length > this.size * this.displayedPages;
     }
 
-    private paginator!: VirtualPaginator;
+    private paginator!: OnePageTableDataSourcePaginator;
 
     constructor(private destroyRef: DestroyRef) {
         this.updatePaginator();
@@ -207,7 +209,7 @@ export class TableComponent<T extends object>
     }
 
     private updatePaginator() {
-        this.dataSource.paginator = this.paginator = new VirtualPaginator(this.size);
+        this.dataSource.paginator = this.paginator = new OnePageTableDataSourcePaginator(this.size);
     }
 
     private updateSort() {
