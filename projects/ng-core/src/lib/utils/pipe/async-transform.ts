@@ -24,8 +24,12 @@ export abstract class AsyncTransform<T = unknown> implements OnDestroy, PipeTran
     }
 
     protected asyncTransform(value: PossiblyAsync<T>) {
-        if (!isAsync(value)) return value;
-        if (!this.asyncPipe) this.asyncPipe = new AsyncPipe(this.cdr);
+        if (!isAsync(value)) {
+            return value;
+        }
+        if (!this.asyncPipe) {
+            this.asyncPipe = new AsyncPipe(this.cdr);
+        }
         return this.asyncPipe.transform(value);
     }
 }

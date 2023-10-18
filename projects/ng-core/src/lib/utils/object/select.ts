@@ -13,7 +13,7 @@ export function select<TObject extends object, TResult, TParams extends Array<un
     defaultValue?: TResult,
     restParams: TParams[] = [],
 ): TResult | Observable<TResult> {
-    if (typeof selectFn === 'string') return _get(obj, selectFn, defaultValue) as TResult;
+    if (typeof selectFn === 'string') {return _get(obj, selectFn, defaultValue) as TResult;}
     return selectFn(obj, ...(restParams as never));
 }
 

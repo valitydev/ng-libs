@@ -50,8 +50,8 @@
             ></mat-progress-bar>
             <table
                 [dataSource]="dataSource"
-                [matSortActive]="sortActive ?? ''"
-                [matSortDirection]="sortDirection ?? ''"
+                [matSortActive]="sort.active"
+                [matSortDirection]="sort.direction"
                 mat-table
                 matSort
                 (matSortChange)="sortChanged($event)"

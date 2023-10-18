@@ -19,7 +19,7 @@ export class AmountCurrencyPipe implements PipeTransform {
         exponent?: number,
     ): unknown {
         if (typeof amount === 'number')
-            return formatCurrency(amount, currencyCode, format, this._locale, exponent);
+            {return formatCurrency(amount, currencyCode, format, this._locale, exponent);}
         return amount;
     }
 }

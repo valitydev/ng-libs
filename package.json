@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "format": "prettier * --list-different",
-    "format:fix": "prettier * --write --loglevel warn",
+    "format:fix": "prettier * --write --log-level warn",
     "lint": "eslint \"**\" --max-warnings=0",
     "lint:fix": "eslint \"**\" --fix",
     "spell": "cspell --no-progress **",

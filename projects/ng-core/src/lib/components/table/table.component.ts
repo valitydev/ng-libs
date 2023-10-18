@@ -15,7 +15,7 @@ import {
     booleanAttribute,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatSort, Sort, SortDirection } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { combineLatest, isObservable, map, of, take } from 'rxjs';
 
@@ -52,10 +52,10 @@ export class TableComponent<T extends object>
     @Output() more = new EventEmitter<UpdateOptions>();
 
     // Sort
-    @Input() sortActive?: string;
-    @Input() sortDirection: SortDirection = 'asc';
-    @Input({ transform: booleanAttribute }) sortOnFront: boolean = false;
+    @Input() sort: Sort = { active: '', direction: '' };
     @Output() sortChange = new EventEmitter<Sort>();
+    @Input({ transform: booleanAttribute }) sortOnFront: boolean = false;
+    @ViewChild(MatSort) sortComponent!: MatSort;
 
     // Select
     @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
@@ -63,7 +63,6 @@ export class TableComponent<T extends object>
     @Output() rowSelectionChange = new EventEmitter<T[]>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
-    @ViewChild(MatSort) sort!: MatSort;
 
     columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
 
@@ -100,7 +99,7 @@ export class TableComponent<T extends object>
     }
 
     ngAfterViewInit() {
-        this.dataSource.sort = this.sort;
+        this.dataSource.sort = this.sortComponent;
         this.updateSort();
     }
 
@@ -118,7 +117,7 @@ export class TableComponent<T extends object>
             this.dataSource.data = this.data;
             this.tryFrontSort();
         }
-        if (this.dataSource.sort && (changes.sortActive || changes.sortDirection)) {
+        if (this.dataSource.sort && changes.sort) {
             this.updateSort();
         }
         if (changes.size) {
@@ -173,7 +172,7 @@ export class TableComponent<T extends object>
         this.tryFrontSort(sort);
     }
 
-    private tryFrontSort({ active, direction }: Partial<Sort> = this.sort || {}) {
+    private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
         if (!this.sortOnFront || !this.data) {
             return;
         }
@@ -201,7 +200,9 @@ export class TableComponent<T extends object>
                 let sortedData = d
                     .sort((a, b) => compareDifferentTypes(a.value, b.value))
                     .map((v) => v.sourceValue);
-                if (direction === 'desc') sortedData = sortedData.reverse();
+                if (direction === 'desc') {
+                    sortedData = sortedData.reverse();
+                }
                 this.updateDataSourceSort(sortedData);
             });
     }
@@ -209,7 +210,7 @@ export class TableComponent<T extends object>
     private updateDataSourceSort(sortedData: T[] = this.data) {
         this.dataSource.sortData = () => sortedData;
         // TODO: hack for update
-        this.dataSource.sort = this.sort;
+        this.dataSource.sort = this.sortComponent;
     }
 
     private updatePaginator() {
@@ -217,8 +218,8 @@ export class TableComponent<T extends object>
     }
 
     private updateSort() {
-        this.sort.active = this.sortActive || '';
-        this.sort.direction = this.sortDirection || '';
+        this.sortComponent.active = this.sort.active;
+        this.sortComponent.direction = this.sort.direction;
         this.tryFrontSort();
     }
 

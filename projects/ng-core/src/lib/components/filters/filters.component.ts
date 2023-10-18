@@ -49,10 +49,10 @@ export class FiltersComponent {
 
     repeat$ = this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
         map((b) => {
-            if (b.breakpoints[Breakpoints.XLarge]) return 5;
-            if (b.breakpoints[Breakpoints.Large]) return 4;
-            if (b.breakpoints[Breakpoints.Medium]) return 3;
-            if (b.breakpoints[Breakpoints.Small]) return 2;
+            if (b.breakpoints[Breakpoints.XLarge]) {return 5;}
+            if (b.breakpoints[Breakpoints.Large]) {return 4;}
+            if (b.breakpoints[Breakpoints.Medium]) {return 3;}
+            if (b.breakpoints[Breakpoints.Small]) {return 2;}
             return 1;
         }),
     );

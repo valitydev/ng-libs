@@ -24,11 +24,11 @@ export abstract class FormGroupSuperclass<OuterType, InnerType = OuterType>
 
     protected override outerToInnerValue(outer: OuterType): InnerType {
         if (hasControls(this.control)) {
-            if (!outer) return this.emptyValue;
+            if (!outer) {return this.emptyValue;}
             if (
                 Object.keys(outer).length < Object.keys((this.control as FormGroup).controls).length
             )
-                return Object.assign({}, this.emptyValue, outer);
+                {return Object.assign({}, this.emptyValue, outer);}
         }
         return outer as never;
     }
