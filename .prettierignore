@@ -1,6 +1,12 @@
+LICENSE
+
+.idea
+.vscode
+
 package.json
 package-lock.json
 node_modules
+.npmrc
 
 .angular
 .run
@@ -10,3 +16,7 @@ Dockerfile
 *.conf
 
 .*ignore
+*.env
+
+*.ico
+*.ttf
