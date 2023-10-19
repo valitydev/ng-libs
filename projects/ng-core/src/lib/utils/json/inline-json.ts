@@ -16,8 +16,12 @@ export function inlineJson(value: unknown, maxReadableLever = 1): string {
                 : Array.from(value).length
                 ? '…'
                 : '';
-        if (value instanceof Set) {return ['Set(', content, ')'].filter(Boolean).join('');}
-        if (value instanceof Map) {return ['Map(', content, ')'].filter(Boolean).join('');}
+        if (value instanceof Set) {
+            return ['Set(', content, ')'].filter(Boolean).join('');
+        }
+        if (value instanceof Map) {
+            return ['Map(', content, ')'].filter(Boolean).join('');
+        }
         return ['[', content, ']'].filter(Boolean).join('');
     }
     const content =

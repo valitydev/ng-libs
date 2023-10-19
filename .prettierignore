@@ -1,8 +1,10 @@
 package.json
 package-lock.json
 node_modules
-dist
+
 .angular
+.run
+dist
 
 Dockerfile
 *.conf

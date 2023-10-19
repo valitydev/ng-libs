@@ -18,9 +18,13 @@ export const DATE_QUERY_PARAMS_SERIALIZERS: Serializer[] = [
             return { start, end };
         },
         recognize: (value) => {
-            if (typeof value !== 'object') {return false;}
+            if (typeof value !== 'object') {
+                return false;
+            }
             const { start, end, ...other } = value as DateRange<Date>;
-            if (Object.keys(other).length) {return false;}
+            if (Object.keys(other).length) {
+                return false;
+            }
             return start instanceof Date || end instanceof Date;
         },
     },

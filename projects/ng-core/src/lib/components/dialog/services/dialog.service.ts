@@ -16,7 +16,9 @@ export class DialogService {
         @Inject(DIALOG_CONFIG)
         private readonly dialogConfig: DialogConfig,
     ) {
-        if (!dialogConfig) {this.dialogConfig = DEFAULT_DIALOG_CONFIG;}
+        if (!dialogConfig) {
+            this.dialogConfig = DEFAULT_DIALOG_CONFIG;
+        }
     }
 
     open<TDialogComponent, TDialogData, TDialogResponseData, TDialogResponseStatus>(
@@ -43,10 +45,13 @@ export class DialogService {
               ]
     ): MatDialogRef<TDialogComponent, DialogResponse<TDialogResponseData, TDialogResponseStatus>> {
         let config: Partial<MatDialogConfig<TDialogData>>;
-        if (!configOrConfigName) {config = {};}
-        else if (typeof configOrConfigName === 'string')
-            {config = this.dialogConfig[configOrConfigName];}
-        else {config = configOrConfigName;}
+        if (!configOrConfigName) {
+            config = {};
+        } else if (typeof configOrConfigName === 'string') {
+            config = this.dialogConfig[configOrConfigName];
+        } else {
+            config = configOrConfigName;
+        }
 
         return this.dialog.open(dialogComponent as never, {
             data,

@@ -58,7 +58,9 @@ export class QueryParamsService<P extends object> {
     ): { [key: string]: string } {
         return Object.entries(params).reduce(
             (acc, [k, v]) => {
-                if (filter(v, k)) {acc[k] = serializeQueryParam(v, this.serializers);}
+                if (filter(v, k)) {
+                    acc[k] = serializeQueryParam(v, this.serializers);
+                }
                 return acc;
             },
             {} as { [key: string]: string },
