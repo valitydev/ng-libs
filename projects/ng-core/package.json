@@ -8,6 +8,7 @@
     }
   },
   "dependencies": {
+    "@angular/material-date-fns-adapter": "^16.0.0",
     "@ng-matero/extensions": "^16.0.0",
     "@s-libs/js-core": "^16.0.0",
     "@s-libs/micro-dash": "^16.0.0",
