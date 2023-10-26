@@ -15,6 +15,8 @@ export class TableCellComponent<T extends object> {
     @Input() colDef!: ColumnObject<T>;
     @Input() index!: number;
 
+    lazyVisible = false;
+
     getLabel(label: string | ColumnFn<T, string>, index: number) {
         return typeof label === 'string' ? label : label(this.rowData, index);
     }

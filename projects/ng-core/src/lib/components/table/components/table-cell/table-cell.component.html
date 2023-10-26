@@ -1,83 +1,99 @@
-<div class="wrapper">
-    <ng-container
-        *ngIf="rowData | vSelect: colDef.tooltip : '' : [colDef] as tooltip; else linkTemplate"
-    >
-        <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
-            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-        </div>
+<button
+    *ngIf="colDef.lazy && !lazyVisible"
+    class="button"
+    mat-icon-button
+    (click)="lazyVisible = true"
+>
+    <mat-icon>sync</mat-icon>
+</button>
+<ng-container *ngTemplateOutlet="!colDef.lazy || lazyVisible ? content : null"></ng-container>
+
+<ng-template #content>
+    <div class="wrapper">
+        <ng-container
+            *ngIf="rowData | vSelect: colDef.tooltip : '' : [colDef] as tooltip; else linkTemplate"
+        >
+            <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
+                <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+            </div>
+            <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+        </ng-container>
+    </div>
+
+    <ng-template #linkTemplate>
+        <ng-container *ngIf="colDef.link?.(rowData, index) as link; else contentTemplate">
+            <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
+                <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+            </a>
+            <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+        </ng-container>
+    </ng-template>
+
+    <ng-template #contentTemplate>
+        <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
         <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
-    </ng-container>
-</div>
+    </ng-template>
 
-<ng-template #linkTemplate>
-    <ng-container *ngIf="colDef.link?.(rowData, index) as link; else contentTemplate">
-        <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
-            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-        </a>
-        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
-    </ng-container>
-</ng-template>
-
-<ng-template #contentTemplate>
-    <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-    <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
-</ng-template>
-
-<ng-template #valueTemplate>
-    <div
-        *ngLet="rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value"
-        [ngClass]="{ 'value-link': !!colDef.click }"
-        class="value"
-        (click)="colDef.click?.(rowData, index)"
-    >
-        <ng-template [ngIf]="colDef.type === 'datetime'">
-            {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
-        </ng-template>
-        <ng-template [ngIf]="colDef.type === 'tag'">
-            <v-tag *ngIf="colDef.typeParameters.tags[value] ?? {} as tag" [color]="tag.color">
-                {{
-                    tag.label ?? (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
-                }}
-            </v-tag>
-        </ng-template>
-        <ng-template [ngIf]="colDef.type === 'boolean'">
-            <v-tag
-                *ngIf="value === true || value === false"
-                [color]="value ? 'success' : 'neutral'"
-            >
-                {{ value ? 'Yes' : 'No' }}
-            </v-tag>
-        </ng-template>
-        <ng-template [ngIf]="colDef.type === 'currency'">
-            {{
-                value
-                    | amountCurrency
-                        : (rowData | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
-                        : 'long'
-                        : (colDef.typeParameters.isMinor ? undefined : 0)
-            }}
-        </ng-template>
-        <ng-template [ngIf]="colDef.type === 'menu'">
-            <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-                <button
-                    *ngFor="let item of colDef.typeParameters.items; let index = index"
-                    mat-menu-item
-                    (click)="item.click(rowData, index)"
+    <ng-template #valueTemplate>
+        <div
+            *ngLet="
+                rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value
+            "
+            [ngClass]="{ 'value-link': !!colDef.click }"
+            class="value"
+            (click)="colDef.click?.(rowData, index)"
+        >
+            <ng-template [ngIf]="colDef.type === 'datetime'">
+                {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
+            </ng-template>
+            <ng-template [ngIf]="colDef.type === 'tag'">
+                <v-tag *ngIf="colDef.typeParameters.tags[value] ?? {} as tag" [color]="tag.color">
+                    {{
+                        tag.label ??
+                            (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
+                    }}
+                </v-tag>
+            </ng-template>
+            <ng-template [ngIf]="colDef.type === 'boolean'">
+                <v-tag
+                    *ngIf="value === true || value === false"
+                    [color]="value ? 'success' : 'neutral'"
                 >
-                    {{ getLabel(item.label, index) }}
+                    {{ value ? 'Yes' : 'No' }}
+                </v-tag>
+            </ng-template>
+            <ng-template [ngIf]="colDef.type === 'currency'">
+                {{
+                    value
+                        | amountCurrency
+                            : (rowData
+                                  | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
+                            : 'long'
+                            : (colDef.typeParameters.isMinor ? undefined : 0)
+                }}
+            </ng-template>
+            <ng-template [ngIf]="colDef.type === 'menu'">
+                <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
+                    <mat-icon>more_vert</mat-icon>
                 </button>
-            </mat-menu>
-        </ng-template>
-        <ng-template [ngIf]="!colDef.type">
-            {{ value }}
-        </ng-template>
-    </div>
-</ng-template>
-<ng-template #descriptionTemplate>
-    <div class="description mat-caption mat-secondary-text">
-        {{ rowData | vSelect: colDef.description : '' : [colDef] }}
-    </div>
+                <mat-menu #menu="matMenu">
+                    <button
+                        *ngFor="let item of colDef.typeParameters.items; let index = index"
+                        mat-menu-item
+                        (click)="item.click(rowData, index)"
+                    >
+                        {{ getLabel(item.label, index) }}
+                    </button>
+                </mat-menu>
+            </ng-template>
+            <ng-template [ngIf]="!colDef.type">
+                {{ value }}
+            </ng-template>
+        </div>
+    </ng-template>
+    <ng-template #descriptionTemplate>
+        <div class="description mat-caption mat-secondary-text">
+            {{ rowData | vSelect: colDef.description : '' : [colDef] }}
+        </div>
+    </ng-template>
 </ng-template>

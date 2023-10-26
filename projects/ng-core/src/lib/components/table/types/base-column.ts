@@ -38,6 +38,8 @@ export interface BaseColumn<T extends object> {
 
     click?: ColumnFn<T, void>;
 
+    lazy?: boolean;
+
     // TODO: Need to delete
     type?: void;
 }
