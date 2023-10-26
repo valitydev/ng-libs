@@ -61,7 +61,7 @@ export class TableComponent<T extends object>
     // Select
     @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
     @Input() rowSelected!: T[];
-    @Output() rowSelectionChange = new EventEmitter<T[]>();
+    @Output() rowSelectedChange = new EventEmitter<T[]>();
 
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
@@ -95,7 +95,7 @@ export class TableComponent<T extends object>
 
     ngOnInit() {
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-            this.rowSelectionChange.emit(this.selection.selected);
+            this.rowSelectedChange.emit(this.selection.selected);
         });
     }
 
