@@ -41,6 +41,7 @@ export class TableComponent<T extends object>
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
     @Input() progress?: boolean | number | null = false;
+    @Input() preloadedLazyRowsCount = 3;
 
     @Input({ transform: booleanAttribute }) noActions: boolean = false;
 

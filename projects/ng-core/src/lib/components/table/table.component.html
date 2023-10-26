@@ -135,6 +135,7 @@
                             *ngIf="!col.cellTemplate && !cellTemplate[col.field]; else cellTpl"
                             [colDef]="col"
                             [index]="index"
+                            [preloadLazy]="index < preloadedLazyRowsCount"
                             [rowData]="row"
                         ></v-table-cell>
                         <ng-template

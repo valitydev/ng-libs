@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    HostBinding,
+    Input,
+    booleanAttribute,
+} from '@angular/core';
 
 import { ColumnFn, ColumnObject } from '../../types';
 
@@ -14,6 +20,8 @@ export class TableCellComponent<T extends object> {
     @Input() rowData!: T;
     @Input() colDef!: ColumnObject<T>;
     @Input() index!: number;
+
+    @Input({ transform: booleanAttribute }) preloadLazy = false;
 
     lazyVisible = false;
 

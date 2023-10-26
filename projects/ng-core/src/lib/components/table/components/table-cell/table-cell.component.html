@@ -1,12 +1,14 @@
 <button
-    *ngIf="colDef.lazy && !lazyVisible"
+    *ngIf="colDef.lazy && !lazyVisible && !preloadLazy"
     class="button"
     mat-icon-button
     (click)="lazyVisible = true"
 >
     <mat-icon>sync</mat-icon>
 </button>
-<ng-container *ngTemplateOutlet="!colDef.lazy || lazyVisible ? content : null"></ng-container>
+<ng-container
+    *ngTemplateOutlet="preloadLazy || !colDef.lazy || lazyVisible ? content : null"
+></ng-container>
 
 <ng-template #content>
     <div class="wrapper">
