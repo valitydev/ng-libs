@@ -18,6 +18,7 @@ export type MenuColumn<T extends object> = TypedColumn<
         items: {
             label: string | ColumnFn<T, string>;
             click: ColumnFn<T, void>;
+            disabled?: ColumnFn<T, boolean>;
         }[];
     }
 >;
@@ -29,10 +30,15 @@ export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> 
         tags: Record<TTag, { label?: string; color?: Color }>;
     }
 >;
+export type CurrencyColumn<T extends object> = TypedColumn<
+    T,
+    'currency',
+    { currencyCode: FormatterFn<T>; isMinor?: boolean }
+>;
 
 export type TypedColumns<T extends object> =
     | TypedColumn<T, 'datetime'>
-    | TypedColumn<T, 'currency', { currencyCode: FormatterFn<T>; isMinor?: boolean }>
+    | CurrencyColumn<T>
     | TagColumn<T>
     | MenuColumn<T>
     | TypedColumn<T, 'boolean'>;

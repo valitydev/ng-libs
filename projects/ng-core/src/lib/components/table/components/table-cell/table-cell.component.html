@@ -81,6 +81,7 @@
                 <mat-menu #menu="matMenu">
                     <button
                         *ngFor="let item of colDef.typeParameters.items; let index = index"
+                        [disabled]="!!item?.disabled?.(rowData, index)"
                         mat-menu-item
                         (click)="item.click(rowData, index)"
                     >

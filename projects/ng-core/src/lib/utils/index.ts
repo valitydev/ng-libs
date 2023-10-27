@@ -7,7 +7,7 @@ export * from './date';
 export * from './currency';
 export * from './object';
 export * from './enum';
-export * from './pipe';
+export * from './async';
 export * from './clean';
 export * from './empty';
 export * from './compare';
