@@ -58,7 +58,9 @@
                         : data?.length
                         ? data.length + (hasMore ? ' (more available)' : ' (all)')
                         : '0'
-                }}<ng-container *ngIf="selection.selected?.length">
+                }}<ng-container *ngIf="filterControl.value">
+                    | Filtered: {{ filteredDataLength }}</ng-container
+                ><ng-container *ngIf="selection.selected?.length">
                     | <b>Selected: {{ selection.selected.length }}</b></ng-container
                 >
             </div>

@@ -308,6 +308,9 @@ export class TableComponent<T extends object>
             this.updateDataSourceSort();
             return;
         }
+        if (this.filterControl.value) {
+            this.filterControl.setValue('', { emitEvent: false });
+        }
         const colDef = this.columnsObjects.get(active);
         if (!colDef) {
             this.updateDataSourceSort();
