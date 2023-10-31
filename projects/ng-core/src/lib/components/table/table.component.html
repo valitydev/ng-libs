@@ -31,7 +31,8 @@
                 </button>
             </div>
             <v-input-field
-                *ngIf="!noFilter"
+                *ngIf="!noFilter && !standaloneFilter"
+                [formControl]="filterControl"
                 appearance="outline"
                 class="v-table-filter"
                 label="Filter"
@@ -42,8 +43,8 @@
         </div>
     </v-actions>
     <v-input-field
-        *ngIf="noActions && !noFilter"
-        appearance="outline"
+        *ngIf="!noFilter && (standaloneFilter || noActions)"
+        [formControl]="filterControl"
         class="v-table-filter-standalone"
         label="Filter"
     ></v-input-field>
@@ -76,6 +77,19 @@
                 matSort
                 (matSortChange)="sortChanged($event)"
             >
+                <ng-container [matColumnDef]="scoreColField">
+                    <th
+                        *matHeaderCellDef
+                        [mat-sort-header]="scoreColField"
+                        mat-header-cell
+                        style="display: none"
+                    >
+                        Score
+                    </th>
+                    <td *matCellDef="let row; let index = index" mat-cell style="display: none">
+                        {{ scores.get(row)?.score | number: '1.2-2' : 'en' }}
+                    </td>
+                </ng-container>
                 <ng-container *ngIf="rowSelectable" [matColumnDef]="selectColField" sticky>
                     <th *matHeaderCellDef class="pinned-left" mat-header-cell>
                         <mat-checkbox

@@ -15,6 +15,7 @@
     "@s-libs/ng-core": "^16.0.0",
     "@s-libs/rxjs-core": "^16.0.0",
     "dinero.js": "^2.0.0-alpha.14",
+    "fuse.js": "^7.0.0",
     "ng-let": "^16.0.1",
     "tslib": "^2.3.0"
   },
