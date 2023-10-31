@@ -1,4 +1,10 @@
 <div class="table">
+    <v-input-field
+        *ngIf="!noFilter && (standaloneFilter || noActions)"
+        [formControl]="filterControl"
+        class="v-table-filter-standalone"
+        label="Filter"
+    ></v-input-field>
     <v-actions *ngIf="!noActions">
         <v-actions>
             <div *ngIf="update.observed">
@@ -42,12 +48,6 @@
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
-    <v-input-field
-        *ngIf="!noFilter && (standaloneFilter || noActions)"
-        [formControl]="filterControl"
-        class="v-table-filter-standalone"
-        label="Filter"
-    ></v-input-field>
     <div class="table-card-details">
         <div class="details">
             <div>

@@ -23,7 +23,6 @@ import Fuse from 'fuse.js';
 import isNil from 'lodash-es/isNil';
 import {
     combineLatest,
-    isObservable,
     map,
     of,
     take,
@@ -32,8 +31,9 @@ import {
     forkJoin,
     Subject,
     merge,
+    skipWhile,
 } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import { Progressable } from '../../types/progressable';
 import {
@@ -92,6 +92,8 @@ export class TableComponent<T extends object>
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
+    @Input() filter = '';
+    @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
     scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
@@ -142,10 +144,23 @@ export class TableComponent<T extends object>
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.rowSelectedChange.emit(this.selection.selected);
         });
-        merge(this.filterControl.valueChanges, this.dataUpdated$)
+        this.filterControl.valueChanges
             .pipe(
                 debounceTime(250),
+                startWith(null),
                 map(() => this.filterControl.value ?? ''),
+                distinctUntilChanged(),
+                takeUntilDestroyed(this.destroyRef),
+            )
+            .subscribe((value) => {
+                this.filterChange.emit(value);
+            });
+        merge(this.filterControl.valueChanges, this.dataUpdated$)
+            .pipe(
+                skipWhile(() => this.filterChange.observed),
+                debounceTime(250),
+                map(() => this.filterControl.value ?? ''),
+                distinctUntilChanged(),
                 switchMap((filter) => {
                     if (!filter) {
                         return of([]);
@@ -178,7 +193,6 @@ export class TableComponent<T extends object>
                         }),
                     );
                 }),
-                distinctUntilChanged(),
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((filterResult) => {
@@ -220,6 +234,9 @@ export class TableComponent<T extends object>
         }
         if (changes.size) {
             this.updatePaginator();
+        }
+        if (changes.filter) {
+            this.filterControl.setValue(this.filter ?? '');
         }
     }
 
@@ -297,15 +314,14 @@ export class TableComponent<T extends object>
             return;
         }
         combineLatest(
-            data.map((sourceValue, index) => {
-                const selectedValue = select(sourceValue, colDef.formatter ?? colDef.field, '', [
-                    index,
-                    colDef,
-                ] as never);
-                return isObservable(selectedValue)
-                    ? selectedValue.pipe(map((value) => ({ value, sourceValue })))
-                    : of({ value: selectedValue, sourceValue });
-            }),
+            data.map((sourceValue, index) =>
+                getPossiblyAsyncObservable(
+                    select(sourceValue, colDef.formatter ?? colDef.field, '', [
+                        index,
+                        colDef,
+                    ] as never),
+                ).pipe(map((value) => ({ value, sourceValue }))),
+            ),
         )
             .pipe(take(1), takeUntilDestroyed(this.destroyRef))
             .subscribe((loadedData) => {
