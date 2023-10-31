@@ -77,10 +77,10 @@
                 matSort
                 (matSortChange)="sortChanged($event)"
             >
-                <ng-container [matColumnDef]="scoreColField">
+                <ng-container [matColumnDef]="scoreColumnDef">
                     <th
                         *matHeaderCellDef
-                        [mat-sort-header]="scoreColField"
+                        [mat-sort-header]="scoreColumnDef"
                         mat-header-cell
                         style="display: none"
                     >
@@ -90,11 +90,11 @@
                         {{ scores.get(row)?.score | number: '1.2-2' : 'en' }}
                     </td>
                 </ng-container>
-                <ng-container *ngIf="rowSelectable" [matColumnDef]="selectColField" sticky>
+                <ng-container *ngIf="rowSelectable" [matColumnDef]="selectColumnDef" sticky>
                     <th *matHeaderCellDef class="pinned-left" mat-header-cell>
                         <mat-checkbox
                             [checked]="selection.hasValue() && isAllSelected()"
-                            [disabled]="!!progress"
+                            [disabled]="!!progress || (!!filterControl.value && !isAllSelected())"
                             [indeterminate]="selection.hasValue() && !isAllSelected()"
                             (change)="$event ? toggleAllRows() : null"
                         >
@@ -188,20 +188,20 @@
                 <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
                 <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
 
-                <ng-container matColumnDef="__noRecords">
+                <ng-container [matColumnDef]="noRecordsColumnDef">
                     <td
                         *matFooterCellDef
                         [colSpan]="displayedColumns.length"
                         class="no-records mat-body-1"
                         mat-footer-cell
                     >
-                        No records
+                        {{ data.length ? 'No records found' : 'No records' }}
                     </td>
                 </ng-container>
 
                 <tr
-                    *matFooterRowDef="!progress && data && !data.length ? ['__noRecords'] : []"
-                    [style.display]="!progress && data && !data.length ? 'table-row' : 'none'"
+                    *matFooterRowDef="isNoRecords ? [noRecordsColumnDef] : []"
+                    [style.display]="isNoRecords ? 'table-row' : 'none'"
                     mat-footer-row
                 ></tr>
             </table>

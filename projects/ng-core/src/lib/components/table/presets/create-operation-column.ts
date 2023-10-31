@@ -1,5 +1,5 @@
 import { MenuColumn } from '../types';
-import { createInternalColumnField } from '../utils/create-internal-column-field';
+import { createInternalColumnDef } from '../utils/create-internal-column-def';
 
 export function createOperationColumn<T extends object>(
     items: MenuColumn<T>['typeParameters']['items'],
@@ -7,7 +7,7 @@ export function createOperationColumn<T extends object>(
 ): MenuColumn<T> {
     return {
         typeParameters: { ...(other?.typeParameters ?? {}), items },
-        field: createInternalColumnField('operation'),
+        field: createInternalColumnDef('operation'),
         header: '',
         pinned: 'right',
         width: '0',

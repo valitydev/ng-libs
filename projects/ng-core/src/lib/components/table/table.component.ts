@@ -21,17 +21,35 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import Fuse from 'fuse.js';
 import isNil from 'lodash-es/isNil';
-import { combineLatest, isObservable, map, of, take, debounceTime } from 'rxjs';
+import {
+    combineLatest,
+    isObservable,
+    map,
+    of,
+    take,
+    debounceTime,
+    switchMap,
+    forkJoin,
+    Subject,
+    merge,
+} from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
 import { Progressable } from '../../types/progressable';
-import { compareDifferentTypes, ComponentChanges, select } from '../../utils';
+import {
+    compareDifferentTypes,
+    ComponentChanges,
+    select,
+    getPossiblyAsyncObservable,
+} from '../../utils';
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { Column, ColumnObject, UpdateOptions } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
-import { createInternalColumnField } from './utils/create-internal-column-field';
+import { createInternalColumnDef } from './utils/create-internal-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
+
+const COMPLETE_MISMATCH_SCORE = 1;
 
 @Component({
     selector: 'v-table',
@@ -69,15 +87,15 @@ export class TableComponent<T extends object>
     @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectedChange = new EventEmitter<T[]>();
-    selectColField = createInternalColumnField('select');
+    selectColumnDef = createInternalColumnDef('select');
 
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
     filterControl = new FormControl('');
-    scoreColField = createInternalColumnField('score');
+    scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
-    fuse!: Fuse<unknown>;
+    filteredDataLength?: number;
 
     columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
 
@@ -87,6 +105,8 @@ export class TableComponent<T extends object>
     selection = new SelectionModel<T>(true, []);
 
     displayedColumns: string[] = [];
+
+    noRecordsColumnDef = createInternalColumnDef('no-records');
 
     get displayedPages() {
         return this.paginator.displayedPages;
@@ -100,7 +120,16 @@ export class TableComponent<T extends object>
         return this.hasMore || this.data?.length > this.size * this.displayedPages;
     }
 
+    get isNoRecords() {
+        return (
+            !this.progress &&
+            this.data &&
+            (!this.data.length || (!!this.filterControl.value && this.filteredDataLength === 0))
+        );
+    }
+
     private paginator!: OnePageTableDataSourcePaginator;
+    private dataUpdated$ = new Subject<void>();
 
     constructor(
         private destroyRef: DestroyRef,
@@ -113,24 +142,54 @@ export class TableComponent<T extends object>
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.rowSelectedChange.emit(this.selection.selected);
         });
-        this.filterControl.valueChanges
+        merge(this.filterControl.valueChanges, this.dataUpdated$)
             .pipe(
                 debounceTime(250),
-                map((v) => v ?? ''),
+                map(() => this.filterControl.value ?? ''),
+                switchMap((filter) => {
+                    if (!filter) {
+                        return of([]);
+                    }
+                    return forkJoin(
+                        this.data.map((sourceValue, index) =>
+                            combineLatest(
+                                Array.from(this.columnsObjects.values()).map((colDef) =>
+                                    getPossiblyAsyncObservable(
+                                        select(sourceValue, colDef.formatter ?? colDef.field, '', [
+                                            index,
+                                            colDef,
+                                        ] as never),
+                                    ),
+                                ),
+                            ).pipe(take(1)),
+                        ),
+                    ).pipe(
+                        map((formattedValues) => {
+                            const fuseData = this.data.map((item, idx) => ({
+                                // TODO: add weights
+                                value: JSON.stringify(item),
+                                formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
+                            }));
+                            const fuse = new Fuse(fuseData, {
+                                includeScore: true,
+                                keys: Object.keys(fuseData[0]),
+                            });
+                            return fuse.search(filter);
+                        }),
+                    );
+                }),
                 distinctUntilChanged(),
                 takeUntilDestroyed(this.destroyRef),
             )
-            .subscribe((filter) => {
-                this.dataSource.filter = filter;
-                const filterResult = this.fuse.search(filter);
+            .subscribe((filterResult) => {
                 this.scores = new Map(
                     filterResult.map(({ refIndex, score }) => [
                         this.data[refIndex],
-                        { score: score ?? Number.MAX_VALUE },
+                        { score: score ?? COMPLETE_MISMATCH_SCORE },
                     ]),
                 );
-                this.sort = filter
-                    ? { active: this.scoreColField, direction: 'desc' }
+                this.sort = this.filterControl.value
+                    ? { active: this.scoreColumnDef, direction: 'asc' }
                     : { active: '', direction: '' };
                 this.tryFrontSort(this.sort);
                 this.cdr.markForCheck();
@@ -154,11 +213,7 @@ export class TableComponent<T extends object>
         }
         if (changes.data) {
             this.dataSource.data = this.data;
-            this.fuse = new Fuse(
-                (this.data ?? []).map((item) => ({ json: JSON.stringify(item) })),
-                { includeScore: true, keys: ['json'] },
-            );
-            this.tryFrontSort();
+            this.dataUpdated$.next();
         }
         if (this.dataSource.sort && changes.sort) {
             this.updateSort();
@@ -216,28 +271,23 @@ export class TableComponent<T extends object>
     }
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
-        if (!this.data) {
-            this.updateDataSourceSort();
-            return;
-        }
         const data = this.data;
-        if (active === this.scoreColField) {
-            const sorted = data
+        if (active === this.scoreColumnDef) {
+            let sortedData = data
                 .filter((data) => !this.filterControl.value || !isNil(this.scores.get(data)?.score))
-                .slice()
-                .sort((a, b) => {
-                    const scoreA = this.scores.get(a)?.score ?? Infinity;
-                    const scoreB = this.scores.get(b)?.score ?? Infinity;
-                    return scoreA - scoreB;
-                });
-            this.updateDataSourceSort(direction === 'asc' ? sorted : sorted.reverse());
+                .sort(
+                    (a, b) =>
+                        (this.scores.get(a)?.score ?? COMPLETE_MISMATCH_SCORE) -
+                        (this.scores.get(b)?.score ?? COMPLETE_MISMATCH_SCORE),
+                );
+            if (direction === 'desc') {
+                sortedData = sortedData.reverse();
+            }
+            this.filteredDataLength = sortedData.length;
+            this.updateDataSourceSort(sortedData);
             return;
         }
-        if (!this.sortOnFront) {
-            this.updateDataSourceSort();
-            return;
-        }
-        if (!active || !direction || !data.length) {
+        if (!data?.length || !active || !direction || !this.sortOnFront) {
             this.updateDataSourceSort();
             return;
         }
@@ -246,19 +296,20 @@ export class TableComponent<T extends object>
             this.updateDataSourceSort();
             return;
         }
-        const sorted = data.map((sourceValue, realIndex) => {
-            const selectedValue = select(sourceValue, colDef.formatter ?? colDef.field, '', [
-                realIndex,
-                colDef,
-            ] as never);
-            return isObservable(selectedValue)
-                ? selectedValue.pipe(map((value) => ({ value, realIndex, sourceValue })))
-                : of({ value: selectedValue, realIndex, sourceValue });
-        });
-        combineLatest(sorted)
+        combineLatest(
+            data.map((sourceValue, index) => {
+                const selectedValue = select(sourceValue, colDef.formatter ?? colDef.field, '', [
+                    index,
+                    colDef,
+                ] as never);
+                return isObservable(selectedValue)
+                    ? selectedValue.pipe(map((value) => ({ value, sourceValue })))
+                    : of({ value: selectedValue, sourceValue });
+            }),
+        )
             .pipe(take(1), takeUntilDestroyed(this.destroyRef))
-            .subscribe((d) => {
-                let sortedData = d
+            .subscribe((loadedData) => {
+                let sortedData = loadedData
                     .sort((a, b) => compareDifferentTypes(a.value, b.value))
                     .map((v) => v.sourceValue);
                 if (direction === 'desc') {
@@ -286,8 +337,8 @@ export class TableComponent<T extends object>
 
     private updateDisplayedColumns() {
         this.displayedColumns = [
-            this.scoreColField,
-            ...(this.rowSelectable ? [this.selectColField] : []),
+            this.scoreColumnDef,
+            ...(this.rowSelectable ? [this.selectColumnDef] : []),
             ...Array.from(this.columnsObjects.values())
                 .filter((c) => !c.hide)
                 .map((c) => c.field),
