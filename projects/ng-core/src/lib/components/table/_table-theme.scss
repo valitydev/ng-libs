@@ -20,4 +20,8 @@
             color: get-color($theme, primary);
         }
     }
+
+    .v-table-filter {
+        @include mat.private-form-field-density(-5);
+    }
 }

@@ -43,6 +43,8 @@ export class TableComponent<T extends object>
     @Input() progress?: boolean | number | null = false;
     @Input() preloadedLazyRowsCount = 3;
 
+    @Input({ transform: booleanAttribute }) noFilter: boolean = true;
+
     @Input({ transform: booleanAttribute }) noActions: boolean = false;
 
     @Input({ transform: numberAttribute }) size: number = 25;

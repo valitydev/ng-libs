@@ -1,32 +1,52 @@
 <div class="table">
     <v-actions *ngIf="!noActions">
         <v-actions>
-            <ng-container *ngIf="update.observed">
+            <div *ngIf="update.observed">
                 <button
                     [disabled]="!!progress"
-                    mat-stroked-button
+                    mat-icon-button
                     matTooltip="Reload {{ size }} elements"
+                    style="margin: -6px 0"
                     (click)="load()"
                 >
-                    Update
+                    <mat-icon>refresh</mat-icon>
                 </button>
                 <button
-                    *ngIf="rowSelectable"
+                    [color]="isPreload && hasMore ? 'accent' : undefined"
                     [disabled]="!!progress || !hasMore"
-                    mat-button
+                    mat-icon-button
                     matTooltip="Preload {{ preloadSize }}{{
                         isPreload && hasMore ? ' more' : ''
                     }} elements"
+                    style="margin: -6px 0"
                     (click)="preload()"
                 >
-                    {{ isPreload ? (hasMore ? 'Preload more' : 'Preloaded') : 'Preload' }}
+                    <mat-icon>{{
+                        hasMore || progress
+                            ? isPreload && hasMore
+                                ? 'downloading'
+                                : 'download'
+                            : 'download_done'
+                    }}</mat-icon>
                 </button>
-            </ng-container>
+            </div>
+            <v-input-field
+                *ngIf="!noFilter"
+                appearance="outline"
+                class="v-table-filter"
+                label="Filter"
+            ></v-input-field>
         </v-actions>
         <div>
             <ng-content select="v-table-actions"></ng-content>
         </div>
     </v-actions>
+    <v-input-field
+        *ngIf="noActions && !noFilter"
+        appearance="outline"
+        class="v-table-filter-standalone"
+        label="Filter"
+    ></v-input-field>
     <div class="table-card-details">
         <div class="details">
             <div>

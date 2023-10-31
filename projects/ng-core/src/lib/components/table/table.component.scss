@@ -3,6 +3,13 @@
     grid-template-columns: 1fr;
     gap: 24px;
 
+    .v-table-filter,
+    .v-table-filter-standalone {
+        ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+            height: 0;
+        }
+    }
+
     .table-card-details {
         display: grid;
         grid-template-columns: 1fr;

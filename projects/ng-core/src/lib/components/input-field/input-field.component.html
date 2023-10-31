@@ -1,4 +1,10 @@
 <mat-form-field [appearance]="appearance" style="width: 100%">
     <mat-label>{{ label }}</mat-label>
-    <input [formControl]="control" [type]="type" autocomplete="false" matInput />
+    <input
+        [formControl]="control"
+        [placeholder]="placeholder"
+        [type]="type"
+        autocomplete="false"
+        matInput
+    />
 </mat-form-field>
