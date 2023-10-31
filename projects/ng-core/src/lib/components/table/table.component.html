@@ -58,8 +58,11 @@
                         : data?.length
                         ? data.length + (hasMore ? ' (more available)' : ' (all)')
                         : '0'
-                }}<ng-container *ngIf="filterControl.value">
-                    | Filtered: {{ filteredDataLength }}</ng-container
+                }}<ng-container *ngIf="filterControl.value && !filterChange.observed">
+                    | Filtered:
+                    {{
+                        (filterProgress$ | async) ? '...' : filteredDataLength ?? '0'
+                    }}</ng-container
                 ><ng-container *ngIf="selection.selected?.length">
                     | <b>Selected: {{ selection.selected.length }}</b></ng-container
                 >
@@ -67,7 +70,7 @@
         </div>
         <mat-card class="table-card">
             <mat-progress-bar
-                *ngIf="progress"
+                *ngIf="progress || (filterProgress$ | async)"
                 class="progress-bar"
                 mode="indeterminate"
             ></mat-progress-bar>

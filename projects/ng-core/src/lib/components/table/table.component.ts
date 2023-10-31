@@ -32,6 +32,8 @@ import {
     Subject,
     merge,
     skipWhile,
+    BehaviorSubject,
+    tap,
 } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
@@ -98,6 +100,7 @@ export class TableComponent<T extends object>
     scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
     filteredDataLength?: number;
+    filterProgress$ = new BehaviorSubject(false);
 
     columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
 
@@ -148,19 +151,19 @@ export class TableComponent<T extends object>
             .pipe(
                 debounceTime(250),
                 startWith(null),
-                map(() => this.filterControl.value ?? ''),
+                map(() => (this.filterControl.value ?? '')?.trim()),
                 distinctUntilChanged(),
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((value) => {
                 this.filterChange.emit(value);
             });
-        merge(this.filterControl.valueChanges, this.dataUpdated$)
+        merge(this.filterControl.valueChanges.pipe(distinctUntilChanged()), this.dataUpdated$)
             .pipe(
                 skipWhile(() => this.filterChange.observed),
+                tap(() => this.filterProgress$.next(true)),
                 debounceTime(250),
                 map(() => this.filterControl.value ?? ''),
-                distinctUntilChanged(),
                 switchMap((filter) => {
                     if (!filter) {
                         return of([]);
@@ -206,6 +209,7 @@ export class TableComponent<T extends object>
                     ? { active: this.scoreColumnDef, direction: 'asc' }
                     : { active: '', direction: '' };
                 this.tryFrontSort(this.sort);
+                this.filterProgress$.next(false);
                 this.cdr.markForCheck();
             });
     }
