@@ -168,25 +168,47 @@ export class TableComponent<T extends object>
                     if (!filter) {
                         return of([]);
                     }
-                    return forkJoin(
-                        this.data.map((sourceValue, index) =>
-                            combineLatest(
-                                Array.from(this.columnsObjects.values()).map((colDef) =>
-                                    getPossiblyAsyncObservable(
-                                        select(sourceValue, colDef.formatter ?? colDef.field, '', [
-                                            index,
-                                            colDef,
-                                        ] as never),
+                    // TODO: Refactor
+                    return forkJoin([
+                        forkJoin(
+                            this.data.map((sourceValue, index) =>
+                                combineLatest(
+                                    Array.from(this.columnsObjects.values()).map((colDef) =>
+                                        getPossiblyAsyncObservable(
+                                            select(
+                                                sourceValue,
+                                                colDef.formatter ?? colDef.field,
+                                                '',
+                                                [index, colDef] as never,
+                                            ),
+                                        ),
                                     ),
-                                ),
-                            ).pipe(take(1)),
+                                ).pipe(take(1)),
+                            ),
                         ),
-                    ).pipe(
-                        map((formattedValues) => {
+                        forkJoin(
+                            this.data.map((sourceValue, index) =>
+                                combineLatest(
+                                    Array.from(this.columnsObjects.values()).map((colDef) =>
+                                        colDef.description
+                                            ? getPossiblyAsyncObservable(
+                                                  select(sourceValue, colDef.description, '', [
+                                                      index,
+                                                      colDef,
+                                                  ] as never),
+                                              )
+                                            : of(''),
+                                    ),
+                                ).pipe(take(1)),
+                            ),
+                        ),
+                    ]).pipe(
+                        map(([formattedValues, formattedDescription]) => {
                             const fuseData = this.data.map((item, idx) => ({
                                 // TODO: add weights
                                 value: JSON.stringify(item),
                                 formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
+                                formattedDescription: JSON.stringify(formattedDescription[idx]),
                             }));
                             const fuse = new Fuse(fuseData, {
                                 includeScore: true,
