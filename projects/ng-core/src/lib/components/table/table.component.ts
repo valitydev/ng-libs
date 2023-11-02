@@ -20,7 +20,6 @@ import { FormControl } from '@angular/forms';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import Fuse from 'fuse.js';
-import isNil from 'lodash-es/isNil';
 import {
     combineLatest,
     map,
@@ -213,6 +212,8 @@ export class TableComponent<T extends object>
                                 value: JSON.stringify(item),
                                 formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
                                 formattedDescription: JSON.stringify(formattedDescription[idx]),
+                                includeMatches: true,
+                                findAllMatches: true,
                             }));
                             const fuse = new Fuse(fuseData, {
                                 includeScore: true,
@@ -322,7 +323,7 @@ export class TableComponent<T extends object>
         const data = this.data;
         if (active === this.scoreColumnDef) {
             let sortedData = data
-                .filter((data) => !this.filterControl.value || !isNil(this.scores.get(data)?.score))
+                .filter((data) => !this.filterControl.value || !!this.scores.get(data)?.score)
                 .sort(
                     (a, b) =>
                         (this.scores.get(a)?.score ?? COMPLETE_MISMATCH_SCORE) -
