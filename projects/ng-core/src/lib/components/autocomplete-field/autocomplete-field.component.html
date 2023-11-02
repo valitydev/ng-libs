@@ -1,0 +1,22 @@
+<mat-form-field>
+    <mat-label>{{ label }}</mat-label>
+
+    <input
+        [formControl]="control"
+        [matAutocomplete]="auto"
+        [required]="required"
+        [type]="type"
+        matInput
+    />
+    <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+        <mat-option *ngFor="let option of filteredOptions$ | async" [value]="option.value">
+            <div class="label">{{ option.label }}</div>
+            <div *ngIf="option.description" class="description mat-caption mat-secondary-text">
+                {{ option.description }}
+            </div>
+        </mat-option>
+    </mat-autocomplete>
+
+    <mat-hint>{{ hint || (selected$ | async)?.description }}</mat-hint>
+    <mat-error>{{ error }}</mat-error>
+</mat-form-field>
