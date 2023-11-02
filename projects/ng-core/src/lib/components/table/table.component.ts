@@ -174,14 +174,16 @@ export class TableComponent<T extends object>
                             this.data.map((sourceValue, index) =>
                                 combineLatest(
                                     Array.from(this.columnsObjects.values()).map((colDef) =>
-                                        getPossiblyAsyncObservable(
-                                            select(
-                                                sourceValue,
-                                                colDef.formatter ?? colDef.field,
-                                                '',
-                                                [index, colDef] as never,
-                                            ),
-                                        ),
+                                        colDef.lazy
+                                            ? of('')
+                                            : getPossiblyAsyncObservable(
+                                                  select(
+                                                      sourceValue,
+                                                      colDef.formatter ?? colDef.field,
+                                                      '',
+                                                      [index, colDef] as never,
+                                                  ),
+                                              ),
                                     ),
                                 ).pipe(take(1)),
                             ),
@@ -190,7 +192,7 @@ export class TableComponent<T extends object>
                             this.data.map((sourceValue, index) =>
                                 combineLatest(
                                     Array.from(this.columnsObjects.values()).map((colDef) =>
-                                        colDef.description
+                                        colDef.description && !colDef.lazy
                                             ? getPossiblyAsyncObservable(
                                                   select(sourceValue, colDef.description, '', [
                                                       index,
