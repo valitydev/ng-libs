@@ -2,7 +2,7 @@
     *ngIf="colDef.lazy && !lazyVisible && !preloadLazy"
     class="button"
     mat-icon-button
-    (click)="lazyVisible = true"
+    (click)="lazyVisible = true; preloadedLazyChange.emit(true)"
 >
     <mat-icon>sync</mat-icon>
 </button>

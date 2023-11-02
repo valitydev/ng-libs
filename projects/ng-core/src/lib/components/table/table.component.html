@@ -174,8 +174,11 @@
                             *ngIf="!col.cellTemplate && !cellTemplate[col.field]; else cellTpl"
                             [colDef]="col"
                             [index]="index"
-                            [preloadLazy]="index < preloadedLazyRowsCount"
+                            [preloadLazy]="
+                                index < preloadedLazyRowsCount || !!preloadedLazyCells.get(row)
+                            "
                             [rowData]="row"
+                            (preloadedLazyChange)="preloadedLazyCells.set(row, $event)"
                         ></v-table-cell>
                         <ng-template
                             #cellTpl

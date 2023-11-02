@@ -113,6 +113,8 @@ export class TableComponent<T extends object>
 
     noRecordsColumnDef = createInternalColumnDef('no-records');
 
+    preloadedLazyCells = new Map<T, boolean>();
+
     get displayedPages() {
         return this.paginator.displayedPages;
     }
@@ -255,6 +257,7 @@ export class TableComponent<T extends object>
         }
         if (changes.data) {
             this.dataSource.data = this.data;
+            this.preloadedLazyCells = new Map();
             this.dataUpdated$.next();
         }
         if (this.dataSource.sort && changes.sort) {

@@ -4,6 +4,8 @@ import {
     HostBinding,
     Input,
     booleanAttribute,
+    Output,
+    EventEmitter,
 } from '@angular/core';
 
 import { ColumnFn, ColumnObject } from '../../types';
@@ -22,6 +24,8 @@ export class TableCellComponent<T extends object> {
     @Input() index!: number;
 
     @Input({ transform: booleanAttribute }) preloadLazy = false;
+
+    @Output() preloadedLazyChange = new EventEmitter<boolean>();
 
     lazyVisible = false;
 
