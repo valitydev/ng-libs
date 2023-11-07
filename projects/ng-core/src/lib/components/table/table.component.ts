@@ -34,6 +34,7 @@ import {
     skipWhile,
     BehaviorSubject,
     tap,
+    withLatestFrom,
 } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
@@ -99,6 +100,7 @@ export class TableComponent<T extends object>
     @Input() filter = '';
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
+    exactFilter$ = new BehaviorSubject(true);
     scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
     filteredDataLength?: number;
@@ -130,16 +132,12 @@ export class TableComponent<T extends object>
     }
 
     get isNoRecords() {
-        return (
-            !this.progress &&
-            this.data &&
-            (!this.data.length || (!!this.filterControl.value && this.filteredDataLength === 0))
-        );
+        return !this.progress && this.data && (!this.data.length || this.filteredDataLength === 0);
     }
 
     private paginator!: OnePageTableDataSourcePaginator;
     private dataUpdated$ = new Subject<void>();
-    private qp?: QueryParamsNamespace<{ filter: string }>;
+    private qp?: QueryParamsNamespace<{ filter: string; exact?: boolean }>;
 
     constructor(
         private destroyRef: DestroyRef,
@@ -157,25 +155,31 @@ export class TableComponent<T extends object>
             .pipe(
                 debounceTime(250),
                 startWith(null),
-                map(() => (this.filterControl.value ?? '')?.trim()),
+                map(() => (this.filterControl.value || '').trim()),
                 distinctUntilChanged(),
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((value) => {
+                delete this.filteredDataLength;
                 this.filterChange.emit(value);
                 if (this.qp) {
-                    void this.qp.set({ filter: value });
+                    void this.qp.patch({ filter: value });
                 }
             });
-        merge(this.filterControl.valueChanges.pipe(distinctUntilChanged()), this.dataUpdated$)
+        merge(
+            this.filterControl.valueChanges.pipe(distinctUntilChanged()),
+            this.dataUpdated$,
+            this.exactFilter$,
+        )
             .pipe(
                 skipWhile(() => this.filterChange.observed),
                 tap(() => this.filterProgress$.next(true)),
                 debounceTime(250),
-                map(() => this.filterControl.value ?? ''),
-                switchMap((filter) => {
+                map(() => (this.filterControl.value || '').trim()),
+                withLatestFrom(this.exactFilter$),
+                switchMap(([filter, exact]) => {
                     if (!filter) {
-                        return of([]);
+                        return of(new Map());
                     }
                     // TODO: Refactor
                     return forkJoin([
@@ -215,31 +219,49 @@ export class TableComponent<T extends object>
                         ),
                     ]).pipe(
                         map(([formattedValues, formattedDescription]) => {
+                            if (exact) {
+                                return new Map(
+                                    this.data
+                                        .filter((d, idx) =>
+                                            JSON.stringify([
+                                                d,
+                                                formattedValues[idx],
+                                                formattedDescription[idx],
+                                            ])
+                                                .toLowerCase()
+                                                .includes(filter.toLowerCase()),
+                                        )
+                                        .map((d) => [d, { score: 0 }]),
+                                );
+                            }
                             const fuseData = this.data.map((item, idx) => ({
                                 // TODO: add weights
                                 value: JSON.stringify(item),
                                 formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
                                 formattedDescription: JSON.stringify(formattedDescription[idx]),
-                                includeMatches: true,
-                                findAllMatches: true,
                             }));
                             const fuse = new Fuse(fuseData, {
-                                includeScore: true,
                                 keys: Object.keys(fuseData[0]),
+                                includeScore: true,
+                                includeMatches: true,
+                                findAllMatches: true,
+                                ignoreLocation: true,
                             });
-                            return fuse.search(filter);
+                            const filterResult = fuse.search(filter);
+                            return new Map(
+                                filterResult.map(({ refIndex, score }) => [
+                                    this.data[refIndex],
+                                    { score },
+                                ]),
+                            );
                         }),
                     );
                 }),
                 takeUntilDestroyed(this.destroyRef),
             )
-            .subscribe((filterResult) => {
-                this.scores = new Map(
-                    filterResult.map(({ refIndex, score }) => [
-                        this.data[refIndex],
-                        { score: score ?? COMPLETE_MISMATCH_SCORE },
-                    ]),
-                );
+            .subscribe((scores) => {
+                this.qp?.patch?.({ exact: this.exactFilter$.value });
+                this.scores = scores;
                 this.sort = this.filterControl.value
                     ? { active: this.scoreColumnDef, direction: 'asc' }
                     : { active: '', direction: '' };
@@ -286,6 +308,10 @@ export class TableComponent<T extends object>
             const filter = this.qp.params?.filter ?? '';
             if (filter) {
                 this.filterControl.patchValue(filter);
+            }
+            const exact = this.qp.params?.exact ?? this.exactFilter$.value;
+            if (exact !== this.exactFilter$.value) {
+                this.exactFilter$.next(exact);
             }
         }
     }
@@ -343,9 +369,12 @@ export class TableComponent<T extends object>
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
         const data = this.data;
-        if (active === this.scoreColumnDef) {
+        if (active === this.scoreColumnDef && this.filterControl.value) {
+            const maxScore = this.exactFilter$.value ? 0 : COMPLETE_MISMATCH_SCORE - 0.01;
             let sortedData = data
-                .filter((data) => !this.filterControl.value || !!this.scores.get(data)?.score)
+                .filter(
+                    (data) => (this.scores.get(data)?.score ?? COMPLETE_MISMATCH_SCORE) <= maxScore,
+                )
                 .sort(
                     (a, b) =>
                         (this.scores.get(a)?.score ?? COMPLETE_MISMATCH_SCORE) -
