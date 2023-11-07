@@ -14,6 +14,7 @@ import {
     numberAttribute,
     booleanAttribute,
     ChangeDetectorRef,
+    OnDestroy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
@@ -36,6 +37,7 @@ import {
 } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
+import { QueryParamsService, QueryParamsNamespace } from '../../services';
 import { Progressable } from '../../types/progressable';
 import {
     compareDifferentTypes,
@@ -59,7 +61,7 @@ const COMPLETE_MISMATCH_SCORE = 1;
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T extends object>
-    implements OnInit, Progressable, OnChanges, AfterViewInit
+    implements OnInit, Progressable, OnChanges, AfterViewInit, OnDestroy
 {
     @Input() data!: T[];
     @Input() columns!: Column<T>[];
@@ -69,6 +71,7 @@ export class TableComponent<T extends object>
 
     @Input({ transform: numberAttribute }) size: number = 25;
     @Input() preloadSize: number = 1000;
+    @Input() name?: string;
 
     @Input({ transform: booleanAttribute }) hasMore: boolean = false;
     @Output() update = new EventEmitter<UpdateOptions>();
@@ -136,10 +139,12 @@ export class TableComponent<T extends object>
 
     private paginator!: OnePageTableDataSourcePaginator;
     private dataUpdated$ = new Subject<void>();
+    private qp?: QueryParamsNamespace<{ filter: string }>;
 
     constructor(
         private destroyRef: DestroyRef,
         private cdr: ChangeDetectorRef,
+        private queryParamsService: QueryParamsService,
     ) {
         this.updatePaginator();
     }
@@ -158,6 +163,9 @@ export class TableComponent<T extends object>
             )
             .subscribe((value) => {
                 this.filterChange.emit(value);
+                if (this.qp) {
+                    void this.qp.set({ filter: value });
+                }
             });
         merge(this.filterControl.valueChanges.pipe(distinctUntilChanged()), this.dataUpdated$)
             .pipe(
@@ -270,6 +278,20 @@ export class TableComponent<T extends object>
         if (changes.filter) {
             this.filterControl.setValue(this.filter ?? '');
         }
+        if (changes.name && this.name) {
+            if (this.qp) {
+                this.qp.destroy();
+            }
+            this.qp = this.queryParamsService.createNamespace(this.name);
+            const filter = this.qp.params?.filter ?? '';
+            if (filter) {
+                this.filterControl.patchValue(filter);
+            }
+        }
+    }
+
+    ngOnDestroy() {
+        this.qp?.destroy?.();
     }
 
     updateColumns(columns: ColumnObject<T>[] = createColumnsObjects(this.columns)) {
