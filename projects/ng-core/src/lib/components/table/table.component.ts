@@ -13,7 +13,6 @@ import {
     ViewChild,
     numberAttribute,
     booleanAttribute,
-    ChangeDetectorRef,
     OnDestroy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,7 +33,7 @@ import {
     tap,
     Observable,
 } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import { QueryParamsService, QueryParamsNamespace } from '../../services';
 import { Progressable } from '../../types/progressable';
@@ -140,7 +139,6 @@ export class TableComponent<T extends object>
 
     constructor(
         private destroyRef: DestroyRef,
-        private cdr: ChangeDetectorRef,
         private queryParamsService: QueryParamsService,
     ) {
         this.updatePaginator();
@@ -150,19 +148,20 @@ export class TableComponent<T extends object>
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.rowSelectedChange.emit(this.selection.selected);
         });
-        const filterChange$ = this.filterControl.valueChanges.pipe(
-            map(() => (this.filterControl.value || '').trim()),
+        const filter$ = this.filterControl.valueChanges.pipe(
+            startWith(this.filterControl.value),
+            map((value) => (value || '').trim()),
             distinctUntilChanged(),
         );
-        const exactFilter$ = this.exactFilter$.pipe(distinctUntilChanged());
-        filterChange$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
+        filter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
             this.filterChange.emit(filter);
             this.qp?.patch?.({ filter });
         });
+        const exactFilter$ = this.exactFilter$.pipe(distinctUntilChanged());
         exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
             this.qp?.patch?.({ exact });
         });
-        combineLatest([filterChange$, exactFilter$, this.dataUpdated$])
+        combineLatest([filter$, exactFilter$, this.dataUpdated$])
             .pipe(
                 tap(() => this.filterProgress$.next(true)),
                 debounceTime(250),
@@ -208,24 +207,6 @@ export class TableComponent<T extends object>
                         ),
                     ]).pipe(
                         map(([formattedValues, formattedDescription]) => {
-                            if (exact) {
-                                return [
-                                    new Map(
-                                        this.data
-                                            .filter((d, idx) =>
-                                                JSON.stringify([
-                                                    d,
-                                                    formattedValues[idx],
-                                                    formattedDescription[idx],
-                                                ])
-                                                    .toLowerCase()
-                                                    .includes(filter.toLowerCase()),
-                                            )
-                                            .map((d) => [d, { score: 0 }]),
-                                    ),
-                                    filter,
-                                ];
-                            }
                             const fuseData = this.data.map((item, idx) => ({
                                 // TODO: add weights
                                 value: JSON.stringify(item),
@@ -238,13 +219,14 @@ export class TableComponent<T extends object>
                                 includeMatches: true,
                                 findAllMatches: true,
                                 ignoreLocation: true,
+                                minMatchCharLength: exact ? filter.length : 1,
                             });
                             const filterResult = fuse.search(filter);
                             return [
                                 new Map(
                                     filterResult.map(({ refIndex, score }) => [
                                         this.data[refIndex],
-                                        { score: score ?? COMPLETE_MISMATCH_SCORE },
+                                        { score: exact ? 0 : score ?? COMPLETE_MISMATCH_SCORE },
                                     ]),
                                 ),
                                 filter,
@@ -263,8 +245,6 @@ export class TableComponent<T extends object>
                 delete this.filteredDataLength;
                 this.tryFrontSort(this.sort);
                 this.filterProgress$.next(false);
-                console.log('end');
-                this.cdr.markForCheck();
             });
     }
 
