@@ -30,13 +30,11 @@ import {
     switchMap,
     forkJoin,
     Subject,
-    merge,
-    skipWhile,
     BehaviorSubject,
     tap,
-    withLatestFrom,
+    Observable,
 } from 'rxjs';
-import { distinctUntilChanged, startWith } from 'rxjs/operators';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 import { QueryParamsService, QueryParamsNamespace } from '../../services';
 import { Progressable } from '../../types/progressable';
@@ -97,6 +95,7 @@ export class TableComponent<T extends object>
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
+    @Input({ transform: booleanAttribute }) externalFilter: boolean = false;
     @Input() filter = '';
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
@@ -132,7 +131,7 @@ export class TableComponent<T extends object>
     }
 
     get isNoRecords() {
-        return !this.progress && this.data && (!this.data.length || this.filteredDataLength === 0);
+        return !this.data?.length || this.filteredDataLength === 0;
     }
 
     private paginator!: OnePageTableDataSourcePaginator;
@@ -151,35 +150,25 @@ export class TableComponent<T extends object>
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.rowSelectedChange.emit(this.selection.selected);
         });
-        this.filterControl.valueChanges
+        const filterChange$ = this.filterControl.valueChanges.pipe(
+            map(() => (this.filterControl.value || '').trim()),
+            distinctUntilChanged(),
+        );
+        const exactFilter$ = this.exactFilter$.pipe(distinctUntilChanged());
+        filterChange$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
+            this.filterChange.emit(filter);
+            this.qp?.patch?.({ filter });
+        });
+        exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
+            this.qp?.patch?.({ exact });
+        });
+        combineLatest([filterChange$, exactFilter$, this.dataUpdated$])
             .pipe(
-                debounceTime(250),
-                startWith(null),
-                map(() => (this.filterControl.value || '').trim()),
-                distinctUntilChanged(),
-                takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe((value) => {
-                delete this.filteredDataLength;
-                this.filterChange.emit(value);
-                if (this.qp) {
-                    void this.qp.patch({ filter: value });
-                }
-            });
-        merge(
-            this.filterControl.valueChanges.pipe(distinctUntilChanged()),
-            this.dataUpdated$,
-            this.exactFilter$,
-        )
-            .pipe(
-                skipWhile(() => this.filterChange.observed),
                 tap(() => this.filterProgress$.next(true)),
                 debounceTime(250),
-                map(() => (this.filterControl.value || '').trim()),
-                withLatestFrom(this.exactFilter$),
-                switchMap(([filter, exact]) => {
-                    if (!filter) {
-                        return of(new Map());
+                switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
+                    if (!filter || this.externalFilter) {
+                        return of([new Map(), filter]);
                     }
                     // TODO: Refactor
                     return forkJoin([
@@ -220,19 +209,22 @@ export class TableComponent<T extends object>
                     ]).pipe(
                         map(([formattedValues, formattedDescription]) => {
                             if (exact) {
-                                return new Map(
-                                    this.data
-                                        .filter((d, idx) =>
-                                            JSON.stringify([
-                                                d,
-                                                formattedValues[idx],
-                                                formattedDescription[idx],
-                                            ])
-                                                .toLowerCase()
-                                                .includes(filter.toLowerCase()),
-                                        )
-                                        .map((d) => [d, { score: 0 }]),
-                                );
+                                return [
+                                    new Map(
+                                        this.data
+                                            .filter((d, idx) =>
+                                                JSON.stringify([
+                                                    d,
+                                                    formattedValues[idx],
+                                                    formattedDescription[idx],
+                                                ])
+                                                    .toLowerCase()
+                                                    .includes(filter.toLowerCase()),
+                                            )
+                                            .map((d) => [d, { score: 0 }]),
+                                    ),
+                                    filter,
+                                ];
                             }
                             const fuseData = this.data.map((item, idx) => ({
                                 // TODO: add weights
@@ -248,25 +240,30 @@ export class TableComponent<T extends object>
                                 ignoreLocation: true,
                             });
                             const filterResult = fuse.search(filter);
-                            return new Map(
-                                filterResult.map(({ refIndex, score }) => [
-                                    this.data[refIndex],
-                                    { score },
-                                ]),
-                            );
+                            return [
+                                new Map(
+                                    filterResult.map(({ refIndex, score }) => [
+                                        this.data[refIndex],
+                                        { score: score ?? COMPLETE_MISMATCH_SCORE },
+                                    ]),
+                                ),
+                                filter,
+                            ];
                         }),
                     );
                 }),
                 takeUntilDestroyed(this.destroyRef),
             )
-            .subscribe((scores) => {
-                this.qp?.patch?.({ exact: this.exactFilter$.value });
+            .subscribe(([scores, filter]) => {
                 this.scores = scores;
-                this.sort = this.filterControl.value
-                    ? { active: this.scoreColumnDef, direction: 'asc' }
-                    : { active: '', direction: '' };
+                this.sort =
+                    filter && !this.externalFilter
+                        ? { active: this.scoreColumnDef, direction: 'asc' }
+                        : { active: '', direction: '' };
+                delete this.filteredDataLength;
                 this.tryFrontSort(this.sort);
                 this.filterProgress$.next(false);
+                console.log('end');
                 this.cdr.markForCheck();
             });
     }
@@ -313,6 +310,9 @@ export class TableComponent<T extends object>
             if (exact !== this.exactFilter$.value) {
                 this.exactFilter$.next(exact);
             }
+        }
+        if (changes.externalFilter) {
+            this.dataUpdated$.next();
         }
     }
 

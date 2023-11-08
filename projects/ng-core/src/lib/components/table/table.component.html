@@ -3,10 +3,10 @@
         *ngIf="!noFilter && (standaloneFilter || noActions)"
         class="v-table-filter-standalone"
     >
-        <mat-label>{{ filterChange.observed ? 'Search' : 'Filter' }}</mat-label>
+        <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
         <input [formControl]="filterControl" matInput />
         <button
-            *ngIf="!filterChange.observed"
+            *ngIf="!externalFilter"
             [matTooltip]="
                 (exactFilter$ | async)
                     ? 'Switch to partial match filtering'
@@ -60,7 +60,7 @@
                     </button>
                 </ng-container>
                 <button
-                    *ngIf="!noFilter && !standaloneFilter && !filterChange.observed"
+                    *ngIf="!noFilter && !standaloneFilter && !externalFilter"
                     [matTooltip]="
                         (exactFilter$ | async)
                             ? 'Switch to partial match search'
@@ -104,7 +104,7 @@
                         : data?.length
                         ? data.length + (hasMore ? ' (more available)' : ' (all)')
                         : '0'
-                }}<ng-container *ngIf="filterControl.value && !filterChange.observed">
+                }}<ng-container *ngIf="filterControl.value && !externalFilter">
                     | Filtered:
                     {{
                         (filterProgress$ | async) ? '...' : filteredDataLength ?? '0'
@@ -116,7 +116,7 @@
         </div>
         <mat-card class="table-card">
             <mat-progress-bar
-                *ngIf="progress || (filterProgress$ | async)"
+                *ngIf="progress || (!externalFilter && (filterProgress$ | async))"
                 class="progress-bar"
                 mode="indeterminate"
             ></mat-progress-bar>
@@ -249,7 +249,15 @@
                         class="no-records mat-body-1"
                         mat-footer-cell
                     >
-                        {{ data.length ? 'No records found' : 'No records' }}
+                        {{
+                            progress
+                                ? 'Loading...'
+                                : !externalFilter && (filterProgress$ | async)
+                                ? 'Filtering...'
+                                : filteredDataLength === 0
+                                ? 'No records found'
+                                : 'No records'
+                        }}
                     </td>
                 </ng-container>
 
