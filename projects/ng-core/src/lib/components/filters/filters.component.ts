@@ -8,8 +8,8 @@ import {
     Output,
     TemplateRef,
     ViewChild,
+    booleanAttribute,
 } from '@angular/core';
-import { coerceBoolean } from 'coerce-property';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -26,7 +26,7 @@ import { OtherFiltersDirective } from './components/other-filters/other-filters.
 })
 export class FiltersComponent {
     @Input() active = 0;
-    @Input() @coerceBoolean merge: boolean | '' = false;
+    @Input({ transform: booleanAttribute }) merge = false;
     @Output() clear = new EventEmitter<void>();
 
     @ContentChild(TemplateRef, { static: true }) filtersTemplate!: TemplateRef<unknown>;
