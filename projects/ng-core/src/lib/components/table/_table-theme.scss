@@ -2,11 +2,26 @@
 @import '../../styles/utils/get-color';
 
 @mixin theme($theme) {
+    .pinned-right {
+        border-left-color: get-color($theme, neutral, 300) !important;
+    }
+
+    .pinned-left {
+        border-right-color: get-color($theme, neutral, 300) !important;
+    }
+
     .v-table-cell {
         .link {
             .value {
-                color: get-color($theme, accent);
+                color: get-color($theme, primary);
             }
         }
+        .value-link {
+            color: get-color($theme, primary);
+        }
+    }
+
+    .v-table-filter {
+        @include mat.private-form-field-density(-5);
     }
 }

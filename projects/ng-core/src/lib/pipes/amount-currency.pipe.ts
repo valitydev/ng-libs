@@ -18,8 +18,9 @@ export class AmountCurrencyPipe implements PipeTransform {
         format: 'short' | 'long' = 'long',
         exponent?: number,
     ): unknown {
-        if (typeof amount === 'number')
+        if (typeof amount === 'number') {
             return formatCurrency(amount, currencyCode, format, this._locale, exponent);
+        }
         return amount;
     }
 }

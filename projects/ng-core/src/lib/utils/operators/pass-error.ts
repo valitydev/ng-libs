@@ -8,7 +8,9 @@ export function passError<T>(
         source.pipe(
             catchError((err) => {
                 handler(err);
-                if (arguments.length >= 2) return of(value as T);
+                if (arguments.length >= 2) {
+                    return of(value as T);
+                }
                 return EMPTY;
             }),
         );

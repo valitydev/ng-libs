@@ -24,6 +24,8 @@ export class DialogComponent implements Progressable {
     @coerceBoolean @Input() noActions: boolean | string = false;
     @coerceBoolean @Input() noCloseButton: boolean | string = false;
 
+    @Input() @coerceBoolean fullSize: boolean = false;
+
     @Output() cancel = new EventEmitter<void>();
 
     cancelData = {

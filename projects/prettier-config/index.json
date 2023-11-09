@@ -26,5 +26,6 @@
             "files": "*.svg",
             "options": { "parser": "html" }
         }
-    ]
+    ],
+    "endOfLine": "auto"
 }

@@ -8,12 +8,14 @@
     }
   },
   "dependencies": {
+    "@angular/material-date-fns-adapter": "^16.0.0",
     "@ng-matero/extensions": "^16.0.0",
     "@s-libs/js-core": "^16.0.0",
     "@s-libs/micro-dash": "^16.0.0",
     "@s-libs/ng-core": "^16.0.0",
     "@s-libs/rxjs-core": "^16.0.0",
     "dinero.js": "^2.0.0-alpha.14",
+    "fuse.js": "^7.0.0",
     "ng-let": "^16.0.1",
     "tslib": "^2.3.0"
   },

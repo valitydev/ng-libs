@@ -26,7 +26,9 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     searchStr: string = '';
 
     search = (term: string, item: Option<T>) => {
-        if (this.externalSearch) return true;
+        if (this.externalSearch) {
+            return true;
+        }
         const termLowerCase = term.toLowerCase();
         return (
             item.label.toLowerCase().includes(termLowerCase) ||

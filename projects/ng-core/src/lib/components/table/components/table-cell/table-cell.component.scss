@@ -3,6 +3,14 @@
         white-space: nowrap;
     }
 
+    .value-link {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
     .tooltip {
         text-decoration: underline;
         text-decoration-style: dotted;

@@ -114,6 +114,7 @@ module.exports = {
                 ],
                 '@typescript-eslint/no-inferrable-types': 'off',
                 'import/namespace': 'off',
+                curly: 'error',
             },
         },
         ...require('./configs/import-order')().overrides,

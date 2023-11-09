@@ -20,6 +20,13 @@ $max-height-desktop: 90vh;
         max-height: calc(#{$max-height-mobile} - #{$base-padding * 2}) !important;
     }
 
+    &.full-size {
+        min-height: calc(#{$max-height-desktop} - #{$base-padding * 2}) !important;
+        @media screen and (max-width: 959px) {
+            min-height: calc(#{$max-height-mobile} - #{$base-padding * 2}) !important;
+        }
+    }
+
     &-title {
         flex-direction: row;
         box-sizing: border-box;
@@ -55,6 +62,7 @@ $max-height-desktop: 90vh;
         box-sizing: border-box;
         padding: $base-padding;
         overflow: auto;
+        display: grid;
     }
 
     &-actions {

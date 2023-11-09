@@ -1,33 +1,53 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { omit, pick } from 'lodash-es';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
-import { isEmpty } from '../../utils';
+import { isEmpty, clean } from '../../utils';
 
 import { Serializer } from './types/serializer';
 import { deserializeQueryParam } from './utils/deserialize-query-param';
 import { QUERY_PARAMS_SERIALIZERS } from './utils/query-params-serializers';
 import { serializeQueryParam } from './utils/serialize-query-param';
 
-type Options = {
+interface SerializeOptions {
     filter?: (param: unknown, key: string) => boolean;
-};
+}
+
+interface SetOptions extends SerializeOptions {
+    isPatch?: boolean;
+}
+
+interface BaseQueryParams<T extends object> {
+    params$: Observable<T>;
+    params: T;
+    set: (params: T, options?: SerializeOptions) => Promise<boolean>;
+    patch: (params: Partial<T>, options?: SerializeOptions) => Promise<boolean>;
+}
+
+export interface QueryParamsNamespace<T extends object> extends BaseQueryParams<T> {
+    destroy: () => void;
+}
 
 @Injectable({ providedIn: 'root' })
-export class QueryParamsService<P extends object> {
+export class QueryParamsService<P extends object = NonNullable<unknown>>
+    implements BaseQueryParams<P>
+{
     params$: Observable<P> = this.route.queryParams.pipe(
         startWith(this.route.snapshot.queryParams),
         distinctUntilChanged(isEqual),
-        map((params) => this.deserialize(params)),
+        map(() => this.params),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
     get params(): P {
-        return this.deserialize(this.route.snapshot.queryParams);
+        return omit(this.getAllParams(), Array.from(this.namespaces)) as P;
     }
+
+    private namespaces = new Set<string>();
 
     constructor(
         private router: Router,
@@ -40,25 +60,71 @@ export class QueryParamsService<P extends object> {
         }
     }
 
-    async set(params: P, options?: Options): Promise<boolean> {
-        return await this.router.navigate([], { queryParams: this.serialize(params, options) });
+    async set(params: P, options: SerializeOptions = {}): Promise<boolean> {
+        return await this.setParams(params, options);
     }
 
-    async patch(param: Partial<P>): Promise<boolean> {
-        return await this.set({ ...this.params, ...param });
+    async patch(params: Partial<P>, options: SerializeOptions = {}): Promise<boolean> {
+        return await this.setParams(params, { ...options, isPatch: true });
     }
 
-    async init(param: P): Promise<boolean> {
-        return await this.set({ ...param, ...this.params });
+    createNamespace<T extends object>(namespace: string): QueryParamsNamespace<T> {
+        const getNamespaceParams = (): T => {
+            return (this.getAllParams()[namespace as never] || {}) as T;
+        };
+        return {
+            params$: this.route.queryParams.pipe(
+                startWith(this.route.snapshot.queryParams),
+                distinctUntilChanged(isEqual),
+                map(() => getNamespaceParams()),
+                shareReplay({ refCount: true, bufferSize: 1 }),
+            ),
+            get params() {
+                return getNamespaceParams();
+            },
+            set: async (params, options = {}): Promise<boolean> => {
+                return await this.setParams({ [namespace]: clean(params || {}) } as never, {
+                    ...options,
+                    isPatch: true,
+                });
+            },
+            patch: async (params, options = {}): Promise<boolean> => {
+                return await this.setParams(
+                    { [namespace]: clean({ ...getNamespaceParams(), ...(params || {}) }) } as never,
+                    { ...options, isPatch: true },
+                );
+            },
+            destroy: () => {
+                this.namespaces.delete(namespace);
+            },
+        };
     }
 
-    private serialize(
-        params: P,
-        { filter = negate(isEmpty) }: Options = {},
-    ): { [key: string]: string } {
+    private async setParams(params: Partial<P>, options: SetOptions = {}): Promise<boolean> {
+        const allParams = this.getAllParams();
+        let serializeParams: Partial<P>;
+        if (options.isPatch) {
+            serializeParams = { ...allParams, ...params };
+        } else {
+            const namespacesParams = pick(allParams, Array.from(this.namespaces));
+            serializeParams = { ...namespacesParams, ...params };
+        }
+        return await this.router.navigate([], {
+            queryParams: this.serialize(serializeParams, options),
+        });
+    }
+
+    private getAllParams() {
+        return this.deserialize(this.route.snapshot.queryParams);
+    }
+
+    private serialize(params: object, options: SerializeOptions = {}): { [key: string]: string } {
+        const filter = options.filter ?? negate(isEmpty);
         return Object.entries(params).reduce(
             (acc, [k, v]) => {
-                if (filter(v, k)) acc[k] = serializeQueryParam(v, this.serializers);
+                if (filter(v, k)) {
+                    acc[k] = serializeQueryParam(v, this.serializers);
+                }
                 return acc;
             },
             {} as { [key: string]: string },

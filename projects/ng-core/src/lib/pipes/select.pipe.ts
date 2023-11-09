@@ -9,7 +9,7 @@ import { select, SelectFn } from '../utils';
     name: 'vSelect',
     pure: false,
 })
-export class VSelectPipe<TObject extends object, TResult, TParams = void>
+export class VSelectPipe<TObject extends object, TResult, TParams extends Array<unknown> = []>
     implements PipeTransform, OnDestroy
 {
     private asyncPipe?: AsyncPipe;

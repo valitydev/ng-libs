@@ -1,0 +1,9 @@
+<button
+    [disabled]="disabled"
+    class="show-more"
+    mat-button
+    matTooltip="Show {{ pageSize }} more (currently shown {{ shown }})"
+    (click)="more.emit()"
+>
+    {{ progress ? 'Loading...' : 'Show more' }}
+</button>

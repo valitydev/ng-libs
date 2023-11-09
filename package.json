@@ -7,8 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "format": "prettier * --list-different",
-    "format:fix": "prettier * --write --loglevel warn",
+    "format": "prettier \"**\" --list-different",
+    "format:fix": "prettier \"**\" --write --log-level warn",
     "lint": "eslint \"**\" --max-warnings=0",
     "lint:fix": "eslint \"**\" --fix",
     "spell": "cspell --no-progress **",
@@ -47,7 +47,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
     "ng-packagr": "^16.1.0",
-    "prettier": "^3.0.1",
+    "prettier": "^3.0.3",
     "typescript": "~5.1.3"
   }
 }
