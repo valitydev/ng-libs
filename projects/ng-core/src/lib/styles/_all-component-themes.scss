@@ -10,7 +10,8 @@
 // that you are using.
 @mixin all-component-themes($theme) {
     @include mat.all-component-themes($theme);
-    @include mtx.all-component-themes($theme);
+    @include mtx.select-theme($theme);
+
     @include table-theme.theme($theme);
     @include dialog-theme.theme($theme);
     @include tag-theme.theme($theme);
