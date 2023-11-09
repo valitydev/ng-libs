@@ -51,6 +51,9 @@ import { createInternalColumnDef } from './utils/create-internal-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
 
 const COMPLETE_MISMATCH_SCORE = 1;
+const DEFAULT_SORT: Sort = { active: '', direction: '' };
+const DEFAULT_DEBOUNCE_TIME_MS = 250;
+const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
 
 @Component({
     selector: 'v-table',
@@ -80,7 +83,7 @@ export class TableComponent<T extends object>
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
 
     // Sort
-    @Input() sort: Sort = { active: '', direction: '' };
+    @Input() sort: Sort = DEFAULT_SORT;
     @Output() sortChange = new EventEmitter<Sort>();
     @Input({ transform: booleanAttribute }) sortOnFront: boolean = false;
     @ViewChild(MatSort) sortComponent!: MatSort;
@@ -148,9 +151,11 @@ export class TableComponent<T extends object>
         this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
             this.rowSelectedChange.emit(this.selection.selected);
         });
+        const startValue = this.filterControl.value;
         const filter$ = this.filterControl.valueChanges.pipe(
-            startWith(this.filterControl.value),
+            ...((startValue ? [startWith(startValue)] : []) as []),
             map((value) => (value || '').trim()),
+            debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
             distinctUntilChanged(),
         );
         filter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
@@ -164,7 +169,7 @@ export class TableComponent<T extends object>
         combineLatest([filter$, exactFilter$, this.dataUpdated$])
             .pipe(
                 tap(() => this.filterProgress$.next(true)),
-                debounceTime(250),
+                debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
                 switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
                     if (!filter || this.externalFilter) {
                         return of([new Map(), filter]);
@@ -219,14 +224,14 @@ export class TableComponent<T extends object>
                                 includeMatches: true,
                                 findAllMatches: true,
                                 ignoreLocation: true,
-                                minMatchCharLength: exact ? filter.length : 1,
+                                threshold: exact ? 0 : 0.6,
                             });
                             const filterResult = fuse.search(filter);
                             return [
                                 new Map(
                                     filterResult.map(({ refIndex, score }) => [
                                         this.data[refIndex],
-                                        { score: exact ? 0 : score ?? COMPLETE_MISMATCH_SCORE },
+                                        { score: score ?? COMPLETE_MISMATCH_SCORE },
                                     ]),
                                 ),
                                 filter,
@@ -238,12 +243,12 @@ export class TableComponent<T extends object>
             )
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
-                this.sort =
+                delete this.filteredDataLength;
+                this.sortChanged(
                     filter && !this.externalFilter
                         ? { active: this.scoreColumnDef, direction: 'asc' }
-                        : { active: '', direction: '' };
-                delete this.filteredDataLength;
-                this.tryFrontSort(this.sort);
+                        : DEFAULT_SORT,
+                );
                 this.filterProgress$.next(false);
             });
     }
@@ -293,6 +298,9 @@ export class TableComponent<T extends object>
         }
         if (changes.externalFilter) {
             this.dataUpdated$.next();
+        }
+        if (changes.sortOnFront || changes.data) {
+            this.tryFrontSort();
         }
     }
 
@@ -350,10 +358,11 @@ export class TableComponent<T extends object>
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
         const data = this.data;
         if (active === this.scoreColumnDef && this.filterControl.value) {
-            const maxScore = this.exactFilter$.value ? 0 : COMPLETE_MISMATCH_SCORE - 0.01;
             let sortedData = data
                 .filter(
-                    (data) => (this.scores.get(data)?.score ?? COMPLETE_MISMATCH_SCORE) <= maxScore,
+                    (data) =>
+                        (this.scores.get(data)?.score ?? COMPLETE_MISMATCH_SCORE) <
+                        COMPLETE_MISMATCH_SCORE,
                 )
                 .sort(
                     (a, b) =>
@@ -402,7 +411,7 @@ export class TableComponent<T extends object>
     }
 
     private updateDataSourceSort(sortedData?: T[]) {
-        this.dataSource.sortData = sortedData ? () => sortedData : (data) => data;
+        this.dataSource.sortData = sortedData ? () => sortedData : DEFAULT_SORT_DATA;
         // TODO: hack for update
         this.dataSource.sort = this.sortComponent;
     }
