@@ -244,11 +244,17 @@ export class TableComponent<T extends object>
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
                 delete this.filteredDataLength;
-                this.sortChanged(
-                    filter && !this.externalFilter
-                        ? { active: this.scoreColumnDef, direction: 'asc' }
-                        : DEFAULT_SORT,
-                );
+                if (
+                    filter ||
+                    !this.sortComponent.active ||
+                    this.sortComponent.active === this.scoreColumnDef
+                ) {
+                    this.sortChanged(
+                        filter && !this.externalFilter
+                            ? { active: this.scoreColumnDef, direction: 'asc' }
+                            : DEFAULT_SORT,
+                    );
+                }
                 this.filterProgress$.next(false);
             });
     }
@@ -381,7 +387,7 @@ export class TableComponent<T extends object>
             return;
         }
         if (this.filterControl.value) {
-            this.filterControl.setValue('', { emitEvent: false });
+            this.filterControl.setValue('');
         }
         const colDef = this.columnsObjects.get(active);
         if (!colDef) {
