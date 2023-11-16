@@ -2,7 +2,6 @@ name: 'PR'
 
 on:
   pull_request:
-    types: [labeled]
     branches: ['*']
 
 jobs:
@@ -20,25 +19,21 @@ jobs:
       - name: Build
         run: npm run build
       - name: Publish Angular Core
-        if: ${{ github.event.label.name == 'Publish Angular Core' }}
         working-directory: ./projects/ng-core/dist
         run: npm version prerelease --preid rc-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish ESLint Config
-        if: ${{ github.event.label.name == 'Publish ESLint Config' }}
         working-directory: ./projects/eslint-config
         run: npm version prerelease --preid rc-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish CSpell Config
-        if: ${{ github.event.label.name == 'Publish CSpell Config' }}
         working-directory: ./projects/cspell-config
         run: npm version prerelease --preid rc-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish Prettier Config
-        if: ${{ github.event.label.name == 'Publish Prettier Config' }}
         working-directory: ./projects/prettier-config
         run: npm version prerelease --preid rc-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag rc
         env:
