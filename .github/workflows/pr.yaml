@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Publish Angular Core
-        if: contains('ft/', github.ref)
+        if: ${{ contains('ft/', github.ref) }}
         working-directory: ./projects/ng-core/dist
         run: npm version prerelease --preid rc-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag rc
         env:
