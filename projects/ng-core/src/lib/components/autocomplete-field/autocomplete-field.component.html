@@ -1,13 +1,15 @@
-<mat-form-field>
+<mat-form-field style="width: 100%">
     <mat-label>{{ label }}</mat-label>
 
     <input
+        #trigger="matAutocompleteTrigger"
         [formControl]="control"
         [matAutocomplete]="auto"
         [required]="required"
         [type]="type"
         matInput
     />
+
     <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
         <mat-option *ngFor="let option of filteredOptions$ | async" [value]="option.value">
             <div class="label">{{ option.label }}</div>
@@ -17,6 +19,27 @@
         </mat-option>
     </mat-autocomplete>
 
-    <mat-hint>{{ hint || (selected$ | async)?.description }}</mat-hint>
+    <div matSuffix style="display: flex; gap: 4px">
+        <button
+            *ngIf="!required"
+            [disabled]="control.value === null || control.value === undefined"
+            mat-icon-button
+            (click)="control.reset(); $event.stopPropagation()"
+        >
+            <mat-icon>clear</mat-icon>
+        </button>
+        <button
+            *ngIf="options?.length"
+            mat-icon-button
+            (click)="
+                auto.isOpen ? trigger.closePanel() : trigger.openPanel(); $event.stopPropagation()
+            "
+        >
+            <mat-icon>{{ auto.isOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+    </div>
+    <mat-hint>{{
+        (selected$ | async) ? (selected$ | async)?.label + (hint ? ' | ' + hint : '') : hint
+    }}</mat-hint>
     <mat-error>{{ error }}</mat-error>
 </mat-form-field>
