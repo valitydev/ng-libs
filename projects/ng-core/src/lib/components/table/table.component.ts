@@ -45,6 +45,7 @@ import {
 } from '../../utils';
 
 import { TableActionsComponent } from './components/table-actions.component';
+import { TableInputsComponent } from './components/table-inputs.component';
 import { Column, ColumnObject, UpdateOptions } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnDef } from './utils/create-internal-column-def';
@@ -81,6 +82,7 @@ export class TableComponent<T extends object>
     // Actions
     @Input({ transform: booleanAttribute }) noActions: boolean = false;
     @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
+    @ContentChild(TableInputsComponent) inputs!: TableInputsComponent;
 
     // Sort
     @Input() sort: Sort = DEFAULT_SORT;
@@ -129,7 +131,10 @@ export class TableComponent<T extends object>
     }
 
     get hasShowMore() {
-        return this.hasMore || this.data?.length > this.size * this.displayedPages;
+        return (
+            this.hasMore ||
+            (this.filteredDataLength ?? this.data?.length) > this.size * this.displayedPages
+        );
     }
 
     get isNoRecords() {
@@ -244,17 +249,13 @@ export class TableComponent<T extends object>
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
                 delete this.filteredDataLength;
-                if (
-                    filter ||
-                    !this.sortComponent.active ||
-                    this.sortComponent.active === this.scoreColumnDef
-                ) {
-                    this.sortChanged(
-                        filter && !this.externalFilter
-                            ? { active: this.scoreColumnDef, direction: 'asc' }
-                            : DEFAULT_SORT,
-                    );
-                }
+                this.sortChanged(
+                    filter && !this.externalFilter
+                        ? { active: this.scoreColumnDef, direction: 'asc' }
+                        : this.sortComponent.active === this.scoreColumnDef
+                        ? DEFAULT_SORT
+                        : this.sort,
+                );
                 this.filterProgress$.next(false);
             });
     }

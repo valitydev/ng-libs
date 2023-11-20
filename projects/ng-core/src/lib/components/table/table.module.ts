@@ -25,6 +25,7 @@ import { TagModule } from '../tag';
 import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
+import { TableInputsComponent } from './components/table-inputs.component';
 import { TableComponent } from './table.component';
 
 @NgModule({
@@ -56,7 +57,8 @@ import { TableComponent } from './table.component';
         TableActionsComponent,
         TableCellComponent,
         ShowMoreButtonComponent,
+        TableInputsComponent,
     ],
-    exports: [TableComponent, TableActionsComponent],
+    exports: [TableComponent, TableActionsComponent, TableInputsComponent],
 })
 export class TableModule {}

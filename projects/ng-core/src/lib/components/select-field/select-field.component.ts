@@ -1,4 +1,5 @@
 import { booleanAttribute, Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatFormFieldAppearance } from '@angular/material/form-field';
 
 import { createControlProviders, FormControlSuperclass } from '../../utils';
 
@@ -13,6 +14,8 @@ import { Option } from './types/option';
 export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input() options: Option<T>[] = [];
     @Output() searchChange = new EventEmitter<string>();
+
+    @Input() appearance: MatFormFieldAppearance = 'fill';
 
     @Input() label?: string;
     @Input() hint?: string;
