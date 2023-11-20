@@ -1,5 +1,5 @@
 import { booleanAttribute, Component, Input, OnChanges } from '@angular/core';
-import { BehaviorSubject, merge } from 'rxjs';
+import { BehaviorSubject, merge, tap } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
 import { createControlProviders, FormControlSuperclass, ComponentChanges } from '../../utils';
@@ -19,6 +19,7 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     @Input() error?: string;
     @Input() type = 'text';
 
+    @Input({ transform: booleanAttribute }) mono = false;
     @Input({ transform: booleanAttribute }) required = false;
 
     options$ = new BehaviorSubject<Option<T>[]>([]);
@@ -28,6 +29,7 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     );
     filteredOptions$ = merge(this.control.valueChanges, this.options$).pipe(
         map(() => String(this.control.value ?? '').toLowerCase()),
+        tap(console.log),
         map((filter) =>
             (this.options || []).filter(
                 (o) =>

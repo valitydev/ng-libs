@@ -5,15 +5,20 @@
         #trigger="matAutocompleteTrigger"
         [formControl]="control"
         [matAutocomplete]="auto"
+        [ngClass]="{ 'mat-mono': mono }"
         [required]="required"
-        [type]="type"
+        [type]="options?.length ? 'text' : type"
         matInput
     />
 
     <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
         <mat-option *ngFor="let option of filteredOptions$ | async" [value]="option.value">
-            <div class="label">{{ option.label }}</div>
-            <div *ngIf="option.description" class="description mat-caption mat-secondary-text">
+            <div [ngClass]="{ 'mat-mono': mono }" class="label">{{ option.label }}</div>
+            <div
+                *ngIf="option.description"
+                [ngClass]="{ 'mat-mono': mono }"
+                class="description mat-caption mat-secondary-text"
+            >
                 {{ option.description }}
             </div>
         </mat-option>
@@ -41,5 +46,8 @@
     <mat-hint>{{
         (selected$ | async) ? (selected$ | async)?.label + (hint ? ' | ' + hint : '') : hint
     }}</mat-hint>
-    <mat-error>{{ error }}</mat-error>
+    <mat-error>{{
+        error ??
+            ((selected$ | async) ? (selected$ | async)?.label + (hint ? ' | ' + hint : '') : hint)
+    }}</mat-error>
 </mat-form-field>
