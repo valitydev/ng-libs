@@ -1,5 +1,5 @@
 import { booleanAttribute, Component, Input, OnChanges } from '@angular/core';
-import { BehaviorSubject, merge, tap } from 'rxjs';
+import { BehaviorSubject, merge } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
 import { createControlProviders, FormControlSuperclass, ComponentChanges } from '../../utils';
@@ -29,7 +29,6 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     );
     filteredOptions$ = merge(this.control.valueChanges, this.options$).pipe(
         map(() => String(this.control.value ?? '').toLowerCase()),
-        tap(console.log),
         map((filter) =>
             (this.options || []).filter(
                 (o) =>
