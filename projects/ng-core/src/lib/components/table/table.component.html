@@ -4,27 +4,27 @@
         <mat-form-field class="v-table-filter-standalone">
             <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
             <input [formControl]="filterControl" matInput />
-            <button
-                *ngIf="!externalFilter"
-                [matTooltip]="
-                    (exactFilter$ | async)
-                        ? 'Switch to partial match filtering'
-                        : 'Switch to full match filtering'
-                "
-                mat-icon-button
-                matSuffix
-                (click)="exactFilter$.next(!exactFilter$.value)"
-            >
-                <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
-            </button>
-            <button
-                [disabled]="!filterControl.value"
-                mat-icon-button
-                matSuffix
-                (click)="filterControl.setValue('')"
-            >
-                <mat-icon>clear</mat-icon>
-            </button>
+            <div matSuffix style="white-space: nowrap">
+                <button
+                    *ngIf="!externalFilter"
+                    [matTooltip]="
+                        (exactFilter$ | async)
+                            ? 'Switch to partial match filtering'
+                            : 'Switch to full match filtering'
+                    "
+                    mat-icon-button
+                    (click)="exactFilter$.next(!exactFilter$.value)"
+                >
+                    <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
+                </button>
+                <button
+                    [disabled]="!filterControl.value"
+                    mat-icon-button
+                    (click)="filterControl.setValue('')"
+                >
+                    <mat-icon>clear</mat-icon>
+                </button>
+            </div>
         </mat-form-field>
         <div
             *ngIf="noActions && update.observed"
