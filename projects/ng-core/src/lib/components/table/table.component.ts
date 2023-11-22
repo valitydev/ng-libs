@@ -176,7 +176,7 @@ export class TableComponent<T extends object>
                 tap(() => this.filterProgress$.next(true)),
                 debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
                 switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
-                    if (!filter || this.externalFilter) {
+                    if (!filter || this.externalFilter || !this.data?.length) {
                         return of([new Map(), filter]);
                     }
                     // TODO: Refactor
