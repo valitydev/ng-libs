@@ -101,6 +101,7 @@ export class TableComponent<T extends object>
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
     @Input({ transform: booleanAttribute }) externalFilter: boolean = false;
     @Input() filter = '';
+    @Input() filterByColumns?: string[];
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
     exactFilter$ = new BehaviorSubject(true);
@@ -179,43 +180,54 @@ export class TableComponent<T extends object>
                     if (!filter || this.externalFilter || !this.data?.length) {
                         return of([new Map(), filter]);
                     }
+                    const cols = this.filterByColumns
+                        ? this.filterByColumns.map(
+                              (c) => this.columnsObjects.get(c) as ColumnObject<T>,
+                          )
+                        : Array.from(this.columnsObjects.values());
                     // TODO: Refactor
-                    return forkJoin([
-                        forkJoin(
-                            this.data.map((sourceValue, index) =>
-                                combineLatest(
-                                    Array.from(this.columnsObjects.values()).map((colDef) =>
-                                        colDef.lazy
-                                            ? of('')
-                                            : getPossiblyAsyncObservable(
-                                                  select(
-                                                      sourceValue,
-                                                      colDef.formatter ?? colDef.field,
-                                                      '',
-                                                      [index, colDef] as never,
-                                                  ),
+                    return (
+                        cols.length
+                            ? forkJoin([
+                                  forkJoin(
+                                      this.data.map((sourceValue, index) =>
+                                          combineLatest(
+                                              cols.map((colDef) =>
+                                                  colDef.lazy
+                                                      ? of('')
+                                                      : getPossiblyAsyncObservable(
+                                                            select(
+                                                                sourceValue,
+                                                                colDef.formatter ?? colDef.field,
+                                                                '',
+                                                                [index, colDef] as never,
+                                                            ),
+                                                        ),
                                               ),
-                                    ),
-                                ).pipe(take(1)),
-                            ),
-                        ),
-                        forkJoin(
-                            this.data.map((sourceValue, index) =>
-                                combineLatest(
-                                    Array.from(this.columnsObjects.values()).map((colDef) =>
-                                        colDef.description && !colDef.lazy
-                                            ? getPossiblyAsyncObservable(
-                                                  select(sourceValue, colDef.description, '', [
-                                                      index,
-                                                      colDef,
-                                                  ] as never),
-                                              )
-                                            : of(''),
-                                    ),
-                                ).pipe(take(1)),
-                            ),
-                        ),
-                    ]).pipe(
+                                          ).pipe(take(1)),
+                                      ),
+                                  ),
+                                  forkJoin(
+                                      this.data.map((sourceValue, index) =>
+                                          combineLatest(
+                                              cols.map((colDef) =>
+                                                  colDef.description && !colDef.lazy
+                                                      ? getPossiblyAsyncObservable(
+                                                            select(
+                                                                sourceValue,
+                                                                colDef.description,
+                                                                '',
+                                                                [index, colDef] as never,
+                                                            ),
+                                                        )
+                                                      : of(''),
+                                              ),
+                                          ).pipe(take(1)),
+                                      ),
+                                  ),
+                              ])
+                            : of([[] as unknown[], [] as unknown[]])
+                    ).pipe(
                         map(([formattedValues, formattedDescription]) => {
                             const fuseData = this.data.map((item, idx) => ({
                                 // TODO: add weights
