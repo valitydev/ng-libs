@@ -176,7 +176,7 @@ export class TableComponent<T extends object>
         });
         combineLatest([filter$, exactFilter$, this.dataUpdated$.pipe(startWith(null))])
             .pipe(
-                tap((x) => {
+                tap(() => {
                     this.filterProgress$.next(true);
                     delete this.filteredDataLength;
                 }),
