@@ -174,9 +174,10 @@ export class TableComponent<T extends object>
         exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
             this.qp?.patch?.({ exact });
         });
-        combineLatest([filter$, exactFilter$, this.dataUpdated$])
+        combineLatest([filter$, exactFilter$, this.dataUpdated$.pipe(startWith(null))])
             .pipe(
-                tap(() => {
+                tap((x) => {
+                    console.log(x);
                     this.filterProgress$.next(true);
                     delete this.filteredDataLength;
                 }),

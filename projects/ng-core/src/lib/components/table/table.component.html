@@ -85,10 +85,7 @@
                         ? data.length + (hasMore ? ' (more available)' : ' (all)')
                         : '0'
                 }}<ng-container *ngIf="filterControl.value && !externalFilter">
-                    | Filtered:
-                    {{
-                        (filterProgress$ | async) ? '...' : filteredDataLength ?? '0'
-                    }}</ng-container
+                    | Filtered: {{ filteredDataLength ?? '...' }}</ng-container
                 ><ng-container *ngIf="selection.selected?.length">
                     | <b>Selected: {{ selection.selected.length }}</b></ng-container
                 >
