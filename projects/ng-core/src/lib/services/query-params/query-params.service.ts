@@ -3,14 +3,14 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { omit, pick } from 'lodash-es';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
-import { Observable } from 'rxjs';
+import { Observable, defer, skipWhile } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
 import { isEmpty, clean } from '../../utils';
 
 import { Serializer } from './types/serializer';
+import { QUERY_PARAMS_SERIALIZERS } from './utils';
 import { deserializeQueryParam } from './utils/deserialize-query-param';
-import { QUERY_PARAMS_SERIALIZERS } from './utils/query-params-serializers';
 import { serializeQueryParam } from './utils/serialize-query-param';
 
 interface SerializeOptions {
@@ -36,9 +36,7 @@ export interface QueryParamsNamespace<T extends object> extends BaseQueryParams<
 export class QueryParamsService<P extends object = NonNullable<unknown>>
     implements BaseQueryParams<P>
 {
-    params$: Observable<P> = this.route.queryParams.pipe(
-        startWith(this.route.snapshot.queryParams),
-        distinctUntilChanged(isEqual),
+    params$: Observable<P> = defer(() => this.allParams$).pipe(
         map(() => this.params),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -47,6 +45,14 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         return omit(this.getAllParams(), Array.from(this.namespaces)) as P;
     }
 
+    private allParams$ = this.router.events.pipe(
+        startWith(null),
+        skipWhile(() => !this.router.navigated),
+        map(() => JSON.stringify(this.route.snapshot.queryParams)),
+        distinctUntilChanged(isEqual),
+        map(() => this.getAllParams()),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     private namespaces = new Set<string>();
 
     constructor(
@@ -54,7 +60,6 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         private route: ActivatedRoute,
         @Optional() @Inject(QUERY_PARAMS_SERIALIZERS) private readonly serializers?: Serializer[],
     ) {
-        // Angular @Optional not support TS syntax: `serializers: Serializer[] = []`
         if (!this.serializers) {
             this.serializers = [];
         }
@@ -73,9 +78,7 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
             return (this.getAllParams()[namespace as never] || {}) as T;
         };
         return {
-            params$: this.route.queryParams.pipe(
-                startWith(this.route.snapshot.queryParams),
-                distinctUntilChanged(isEqual),
+            params$: this.allParams$.pipe(
                 map(() => getNamespaceParams()),
                 shareReplay({ refCount: true, bufferSize: 1 }),
             ),
@@ -132,6 +135,9 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
     }
 
     private deserialize(params: Params): P {
+        if (!params) {
+            return {} as P;
+        }
         return Object.entries(params).reduce((acc, [k, v]) => {
             try {
                 acc[k as keyof P] = deserializeQueryParam<P[keyof P]>(v, this.serializers);
