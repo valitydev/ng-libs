@@ -6,9 +6,11 @@
     .toolbar {
         display: flex;
         gap: 8px;
+        flex-wrap: wrap;
 
         ::ng-deep & > * {
             flex: 1;
+            flex-basis: 200px;
         }
     }
 
