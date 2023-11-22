@@ -101,6 +101,7 @@ export class TableComponent<T extends object>
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
     @Input({ transform: booleanAttribute }) externalFilter: boolean = false;
     @Input() filter = '';
+    // TODO: filter by rendered column fields, it will be useful if you save the render in memory
     @Input() filterByColumns?: string[];
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
