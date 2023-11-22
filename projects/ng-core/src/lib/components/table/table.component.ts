@@ -32,6 +32,7 @@ import {
     BehaviorSubject,
     tap,
     Observable,
+    catchError,
 } from 'rxjs';
 import { distinctUntilChanged, startWith } from 'rxjs/operators';
 
@@ -175,7 +176,10 @@ export class TableComponent<T extends object>
         });
         combineLatest([filter$, exactFilter$, this.dataUpdated$])
             .pipe(
-                tap(() => this.filterProgress$.next(true)),
+                tap(() => {
+                    this.filterProgress$.next(true);
+                    delete this.filteredDataLength;
+                }),
                 debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
                 switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
                     if (!filter || this.externalFilter || !this.data?.length) {
@@ -203,7 +207,7 @@ export class TableComponent<T extends object>
                                                                 '',
                                                                 [index, colDef] as never,
                                                             ),
-                                                        ),
+                                                        ).pipe(catchError(() => of(''))),
                                               ),
                                           ).pipe(take(1)),
                                       ),
@@ -220,7 +224,7 @@ export class TableComponent<T extends object>
                                                                 '',
                                                                 [index, colDef] as never,
                                                             ),
-                                                        )
+                                                        ).pipe(catchError(() => of('')))
                                                       : of(''),
                                               ),
                                           ).pipe(take(1)),
@@ -261,7 +265,6 @@ export class TableComponent<T extends object>
             )
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
-                delete this.filteredDataLength;
                 this.sortChanged(
                     filter && !this.externalFilter
                         ? { active: this.scoreColumnDef, direction: 'asc' }
