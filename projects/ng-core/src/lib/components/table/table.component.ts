@@ -163,8 +163,8 @@ export class TableComponent<T extends object>
         const filter$ = this.filterControl.valueChanges.pipe(
             ...((startValue ? [startWith(startValue)] : []) as []),
             map((value) => (value || '').trim()),
-            debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
             distinctUntilChanged(),
+            debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
         );
         filter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
             this.filterChange.emit(filter);
