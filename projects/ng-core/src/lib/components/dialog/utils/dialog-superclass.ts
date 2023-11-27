@@ -1,4 +1,4 @@
-import { Directive, Injector } from '@angular/core';
+import { Directive, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { DEFAULT_DIALOG_CONFIG } from '../tokens';
@@ -14,13 +14,14 @@ export class DialogSuperclass<
 > {
     static defaultDialogConfig = DEFAULT_DIALOG_CONFIG.medium;
 
-    dialogData: TDialogData = this.injector.get(MAT_DIALOG_DATA) as TDialogData;
-    dialogRef = this.injector.get(MatDialogRef) as MatDialogRef<
-        TDialogComponent,
-        DialogResponse<TDialogResponseData, TDialogResponseStatus>
-    >;
-
-    constructor(private injector: Injector) {}
+    dialogData = inject<TDialogData>(MAT_DIALOG_DATA);
+    dialogRef =
+        inject<
+            MatDialogRef<
+                TDialogComponent,
+                DialogResponse<TDialogResponseData, TDialogResponseStatus>
+            >
+        >(MatDialogRef);
 
     closeWithCancellation(data?: TDialogResponseData) {
         this.dialogRef.close({
