@@ -380,6 +380,10 @@ export class TableComponent<T extends object>
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
         const data = this.data;
+        if (!data?.length || !active || !direction) {
+            this.updateDataSourceSort();
+            return;
+        }
         if (active === this.scoreColumnDef && this.filterControl.value) {
             let sortedData = data
                 .filter(
@@ -399,7 +403,7 @@ export class TableComponent<T extends object>
             this.updateDataSourceSort(sortedData);
             return;
         }
-        if (!data?.length || !active || !direction || !this.sortOnFront) {
+        if (!this.sortOnFront) {
             this.updateDataSourceSort();
             return;
         }
