@@ -106,7 +106,7 @@ export class TableComponent<T extends object>
     @Input() filterByColumns?: string[];
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
-    exactFilter$ = new BehaviorSubject(true);
+    exactFilterControl = new FormControl(1);
     scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
     filteredDataLength?: number;
@@ -170,7 +170,11 @@ export class TableComponent<T extends object>
             this.filterChange.emit(filter);
             this.qp?.patch?.({ filter });
         });
-        const exactFilter$ = this.exactFilter$.pipe(distinctUntilChanged());
+        const exactFilter$ = this.exactFilterControl.valueChanges.pipe(
+            startWith(this.exactFilterControl.value),
+            map(Boolean),
+            distinctUntilChanged(),
+        );
         exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
             this.qp?.patch?.({ exact });
         });
@@ -314,9 +318,9 @@ export class TableComponent<T extends object>
             if (filter) {
                 this.filterControl.patchValue(filter);
             }
-            const exact = this.qp.params?.exact ?? this.exactFilter$.value;
-            if (exact !== this.exactFilter$.value) {
-                this.exactFilter$.next(exact);
+            const exact = this.qp.params?.exact ?? this.exactFilterControl.value;
+            if (exact !== this.exactFilterControl.value) {
+                this.exactFilterControl.setValue(1);
             }
         }
         if (changes.externalFilter) {

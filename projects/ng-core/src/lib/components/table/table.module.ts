@@ -20,6 +20,7 @@ import { NgLetModule } from 'ng-let';
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
 import { InputFieldModule } from '../input-field';
+import { SwitchButtonModule } from '../switch-button';
 import { TagModule } from '../tag';
 
 import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
@@ -51,6 +52,7 @@ import { TableComponent } from './table.component';
         MatSortModule,
         InputFieldModule,
         ReactiveFormsModule,
+        SwitchButtonModule,
     ],
     declarations: [
         TableComponent,

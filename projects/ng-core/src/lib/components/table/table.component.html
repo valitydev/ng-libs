@@ -5,18 +5,7 @@
             <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
             <input [formControl]="filterControl" matInput />
             <div matSuffix style="white-space: nowrap">
-                <button
-                    *ngIf="!externalFilter"
-                    [matTooltip]="
-                        (exactFilter$ | async)
-                            ? 'Switch to partial match filtering'
-                            : 'Switch to full match filtering'
-                    "
-                    mat-icon-button
-                    (click)="exactFilter$.next(!exactFilter$.value)"
-                >
-                    <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
-                </button>
+                <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
                 <button
                     [disabled]="!filterControl.value"
                     mat-icon-button
@@ -35,23 +24,13 @@
     </div>
     <v-actions *ngIf="!noActions">
         <v-actions>
-            <div>
+            <div style="display: flex">
                 <ng-container
                     *ngTemplateOutlet="update.observed ? updateButtonsTpl : null"
                 ></ng-container>
-                <button
-                    *ngIf="!noFilter && !standaloneFilter && !externalFilter"
-                    [matTooltip]="
-                        (exactFilter$ | async)
-                            ? 'Switch to partial match search'
-                            : 'Switch to full match search'
-                    "
-                    mat-icon-button
-                    style="margin: -6px 0"
-                    (click)="exactFilter$.next(!exactFilter$.value)"
-                >
-                    <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
-                </button>
+                <div *ngIf="!noFilter && !standaloneFilter" style="margin: -6px 0">
+                    <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
+                </div>
             </div>
             <div *ngIf="!noFilter && !standaloneFilter" style="display: flex">
                 <v-input-field
@@ -283,4 +262,15 @@
                 : 'download_done'
         }}</mat-icon>
     </button>
+</ng-template>
+
+<ng-template #exactButtonTpl>
+    <v-switch-button
+        *ngIf="!externalFilter"
+        [formControl]="exactFilterControl"
+        [states]="[
+            { label: 'partial match search', icon: 'remove_moderator' },
+            { label: 'full match search', icon: 'policy' }
+        ]"
+    ></v-switch-button>
 </ng-template>
