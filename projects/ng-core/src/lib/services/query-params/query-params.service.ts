@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { omit, pick } from 'lodash-es';
+import { omit } from 'lodash-es';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
 import { Observable, defer, skipWhile } from 'rxjs';
@@ -22,8 +22,8 @@ interface SetOptions extends SerializeOptions {
 }
 
 interface BaseQueryParams<T extends object> {
-    params$: Observable<T>;
-    params: T;
+    params$: Observable<Partial<T>>;
+    params: Partial<T>;
     set: (params: T, options?: SerializeOptions) => Promise<boolean>;
     patch: (params: Partial<T>, options?: SerializeOptions) => Promise<boolean>;
 }
@@ -31,6 +31,8 @@ interface BaseQueryParams<T extends object> {
 export interface QueryParamsNamespace<T extends object> extends BaseQueryParams<T> {
     destroy: () => void;
 }
+
+const NS_PARAM_ID = '_$NS';
 
 @Injectable({ providedIn: 'root' })
 export class QueryParamsService<P extends object = NonNullable<unknown>>
@@ -42,7 +44,7 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
     );
 
     get params(): P {
-        return omit(this.getAllParams(), Array.from(this.namespaces)) as P;
+        return omit(this.getAllParams(), NS_PARAM_ID) as P;
     }
 
     private allParams$ = this.router.events.pipe(
@@ -53,7 +55,6 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         map(() => this.getAllParams()),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    private namespaces = new Set<string>();
 
     constructor(
         private router: Router,
@@ -73,10 +74,10 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         return await this.setParams(params, { ...options, isPatch: true });
     }
 
-    createNamespace<T extends object>(namespace: string): QueryParamsNamespace<T> {
-        const getNamespaceParams = (): T => {
-            return (this.getAllParams()[namespace as never] || {}) as T;
-        };
+    createNamespace<TNamespaceParams extends object>(
+        ns: string,
+    ): QueryParamsNamespace<TNamespaceParams> {
+        const getNamespaceParams = (): Partial<TNamespaceParams> => this.getNsParams(ns);
         return {
             params$: this.allParams$.pipe(
                 map(() => getNamespaceParams()),
@@ -86,19 +87,13 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
                 return getNamespaceParams();
             },
             set: async (params, options = {}): Promise<boolean> => {
-                return await this.setParams({ [namespace]: clean(params || {}) } as never, {
-                    ...options,
-                    isPatch: true,
-                });
+                return await this.setNsParams(params, ns, options);
             },
             patch: async (params, options = {}): Promise<boolean> => {
-                return await this.setParams(
-                    { [namespace]: clean({ ...getNamespaceParams(), ...(params || {}) }) } as never,
-                    { ...options, isPatch: true },
-                );
+                return await this.setNsParams(params, ns, { ...options, isPatch: true });
             },
-            destroy: () => {
-                this.namespaces.delete(namespace);
+            destroy: async () => {
+                await this.setNsParams({}, ns);
             },
         };
     }
@@ -109,15 +104,53 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         if (options.isPatch) {
             serializeParams = { ...allParams, ...params };
         } else {
-            const namespacesParams = pick(allParams, Array.from(this.namespaces));
-            serializeParams = { ...namespacesParams, ...params };
+            const namespacesParams: P = (allParams as never)?.[NS_PARAM_ID];
+            serializeParams = Object.assign(
+                {},
+                params,
+                !!namespacesParams && { [NS_PARAM_ID]: namespacesParams },
+            );
         }
         return await this.router.navigate([], {
             queryParams: this.serialize(serializeParams, options),
         });
     }
 
-    private getAllParams() {
+    private async setNsParams<TNamespaceParams extends object, Namespace extends string = string>(
+        params: Partial<TNamespaceParams>,
+        ns: Namespace,
+        options: SetOptions = {},
+    ): Promise<boolean> {
+        const allParams = this.getAllParams();
+        const allNsParams = (allParams?.[NS_PARAM_ID] ?? {}) as Record<
+            Namespace,
+            Partial<TNamespaceParams>
+        >;
+        let serializeParams: Partial<TNamespaceParams>;
+        if (options.isPatch) {
+            const nsParams = allNsParams[ns] || {};
+            serializeParams = { ...nsParams, ...params };
+        } else {
+            serializeParams = params;
+        }
+        return await this.router.navigate([], {
+            queryParams: this.serialize(
+                {
+                    ...allParams,
+                    [NS_PARAM_ID]: clean({ ...allNsParams, [ns]: serializeParams }, true, true),
+                },
+                options,
+            ),
+        });
+    }
+
+    private getNsParams<TNamespaceParams extends object>(ns: string): Partial<TNamespaceParams> {
+        return (
+            (this.getAllParams()[NS_PARAM_ID]?.[ns as never] as never) ?? ({} as TNamespaceParams)
+        );
+    }
+
+    private getAllParams(): P & { [N in typeof NS_PARAM_ID]?: object } {
         return this.deserialize(this.route.snapshot.queryParams);
     }
 
@@ -134,7 +167,7 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
         );
     }
 
-    private deserialize(params: Params): P {
+    private deserialize(params: Params): P & { [N in typeof NS_PARAM_ID]?: object } {
         if (!params) {
             return {} as P;
         }
