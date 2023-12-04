@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { lowerFirst } from 'lodash-es';
 import isNil from 'lodash-es/isNil';
 
@@ -16,7 +16,10 @@ export interface State<T = unknown> {
     styles: [],
     providers: createControlProviders(() => SwitchButtonComponent),
 })
-export class SwitchButtonComponent<T = number> extends FormControlSuperclass<T> {
+export class SwitchButtonComponent<T = number>
+    extends FormControlSuperclass<T>
+    implements OnChanges
+{
     @Input() states: State<T>[] = [];
 
     private hasChangeValue = false;
