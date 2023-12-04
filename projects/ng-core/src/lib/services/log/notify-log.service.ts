@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { capitalize } from 'lodash-es';
-import { first, of, timeout, Observer } from 'rxjs';
+import { first, timeout, Observer } from 'rxjs';
 
-import { isAsync, PossiblyAsync } from '../../utils';
+import { PossiblyAsync, getPossiblyAsyncObservable } from '../../utils';
 
 import { DEFAULT_ERROR_NAME, LogError } from './log-error';
 import { Operation } from './types/operation';
@@ -90,7 +90,7 @@ export class NotifyLogService {
         possiblyAsync: PossiblyAsync<T>,
         subscribe: Partial<Observer<T>> | Observer<T>['next'],
     ) {
-        (isAsync(possiblyAsync) ? possiblyAsync : of(possiblyAsync))
+        getPossiblyAsyncObservable(possiblyAsync)
             .pipe(first(), timeout(DEFAULT_TIMEOUT_MS))
             .subscribe(subscribe);
     }
