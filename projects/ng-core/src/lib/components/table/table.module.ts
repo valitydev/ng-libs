@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -53,6 +54,8 @@ import { TableComponent } from './table.component';
         InputFieldModule,
         ReactiveFormsModule,
         SwitchButtonModule,
+        CdkDrag,
+        CdkDropList,
     ],
     declarations: [
         TableComponent,

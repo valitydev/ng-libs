@@ -77,13 +77,29 @@
                 mode="indeterminate"
             ></mat-progress-bar>
             <table
+                #table
+                [cdkDropListDisabled]="dragDisabled"
                 [dataSource]="dataSource"
                 [matSortActive]="sort.active"
                 [matSortDirection]="sort.direction"
+                cdkDropList
+                cdkDropListData="dataSource"
                 mat-table
                 matSort
+                (cdkDropListDropped)="drop($event)"
                 (matSortChange)="sortChanged($event)"
             >
+                <ng-container [matColumnDef]="dragColumnDef" sticky>
+                    <th *matHeaderCellDef mat-header-cell></th>
+                    <td *matCellDef="let row; let index = index" mat-cell>
+                        <div class="position">
+                            <mat-icon class="dragCursor" (mousedown)="dragDisabled = false"
+                                >reorder</mat-icon
+                            >
+                            <!--                            <span>{{ index + 1 }}</span>-->
+                        </div>
+                    </td>
+                </ng-container>
                 <ng-container [matColumnDef]="scoreColumnDef">
                     <th
                         *matHeaderCellDef
@@ -196,7 +212,12 @@
                 </ng-container>
 
                 <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+                <tr
+                    *matRowDef="let row; columns: displayedColumns"
+                    [cdkDragData]="row"
+                    cdkDrag
+                    mat-row
+                ></tr>
 
                 <ng-container [matColumnDef]="noRecordsColumnDef">
                     <td

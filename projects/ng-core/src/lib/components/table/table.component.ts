@@ -1,4 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -18,7 +19,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { MatSort, Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable } from '@angular/material/table';
 import Fuse from 'fuse.js';
 import {
     combineLatest,
@@ -56,6 +57,12 @@ const COMPLETE_MISMATCH_SCORE = 1;
 const DEFAULT_SORT: Sort = { active: '', direction: '' };
 const DEFAULT_DEBOUNCE_TIME_MS = 250;
 const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
+
+export interface DragDrop<T> {
+    previousIndex: number;
+    currentIndex: number;
+    item: T;
+}
 
 @Component({
     selector: 'v-table',
@@ -107,10 +114,13 @@ export class TableComponent<T extends object>
     @Output() filterChange = new EventEmitter<string>();
     filterControl = new FormControl('');
     exactFilterControl = new FormControl(1);
-    scoreColumnDef = createInternalColumnDef('score');
     scores = new Map<T, { score: number }>();
     filteredDataLength?: number;
     filterProgress$ = new BehaviorSubject(false);
+
+    @Input({ transform: booleanAttribute }) rowDragDrop = false;
+    @Output() rowDropped = new EventEmitter<DragDrop<T>>();
+    dragDisabled = true;
 
     columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
 
@@ -121,9 +131,13 @@ export class TableComponent<T extends object>
 
     displayedColumns: string[] = [];
 
+    scoreColumnDef = createInternalColumnDef('score');
     noRecordsColumnDef = createInternalColumnDef('no-records');
+    dragColumnDef = createInternalColumnDef('drag');
 
     preloadedLazyCells = new Map<T, boolean>();
+
+    @ViewChild('table', { static: true }) table!: MatTable<T>;
 
     get displayedPages() {
         return this.paginator.displayedPages;
@@ -289,7 +303,7 @@ export class TableComponent<T extends object>
         if (changes.columns) {
             this.updateColumns();
         }
-        if (changes.columns || changes.rowSelectable) {
+        if (changes.columns || changes.rowSelectable || changes.rowDragDrop) {
             this.updateDisplayedColumns();
         }
         if (this.rowSelectable && (changes.data || changes.rowSelected)) {
@@ -382,6 +396,18 @@ export class TableComponent<T extends object>
         this.tryFrontSort(sort);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    drop(event: CdkDragDrop<any>) {
+        this.dragDisabled = true;
+        const curr = this.dataSource.sortData(this.data, this.sortComponent)[event.currentIndex];
+        const dragDrop = {
+            previousIndex: this.data.findIndex((d) => d === event.item.data),
+            currentIndex: this.data.findIndex((d) => d === curr),
+            item: event.item.data,
+        };
+        this.rowDropped.emit(dragDrop);
+    }
+
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
         const data = this.data;
         if (!data?.length || !active || !direction) {
@@ -459,6 +485,7 @@ export class TableComponent<T extends object>
 
     private updateDisplayedColumns() {
         this.displayedColumns = [
+            ...(this.rowDragDrop ? [this.dragColumnDef] : []),
             this.scoreColumnDef,
             ...(this.rowSelectable ? [this.selectColumnDef] : []),
             ...Array.from(this.columnsObjects.values())
