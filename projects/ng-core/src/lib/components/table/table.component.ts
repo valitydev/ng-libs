@@ -59,9 +59,14 @@ const DEFAULT_DEBOUNCE_TIME_MS = 250;
 const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
 
 export interface DragDrop<T> {
+    item: T;
+    // Indexes in previous data
     previousIndex: number;
     currentIndex: number;
-    item: T;
+    previousData: T[];
+    // Indexes in current data
+    currentDataIndex: number;
+    currentData: T[];
 }
 
 @Component({
@@ -399,13 +404,28 @@ export class TableComponent<T extends object>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     drop(event: CdkDragDrop<any>) {
         this.dragDisabled = true;
-        const curr = this.dataSource.sortData(this.data, this.sortComponent)[event.currentIndex];
-        const dragDrop = {
-            previousIndex: this.data.findIndex((d) => d === event.item.data),
-            currentIndex: this.data.findIndex((d) => d === curr),
-            item: event.item.data,
-        };
-        this.rowDropped.emit(dragDrop);
+        const item = event.item.data;
+        const { previousIndex, currentIndex } = event;
+        const previousData = this.dataSource.sortData(this.data, this.sortComponent);
+        const currentData = previousData.slice();
+        let currentDataIndex = 0;
+        if (previousIndex > currentIndex) {
+            currentData.splice(previousIndex, 1);
+            currentData.splice(currentIndex, 0, event.item.data);
+            currentDataIndex = currentIndex;
+        } else {
+            currentData.splice(currentIndex, 0, event.item.data);
+            currentData.splice(previousIndex, 1);
+            currentDataIndex = currentIndex - 1;
+        }
+        this.rowDropped.emit({
+            previousIndex,
+            currentIndex,
+            item,
+            previousData,
+            currentData,
+            currentDataIndex,
+        });
     }
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
