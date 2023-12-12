@@ -67,6 +67,8 @@ export interface DragDrop<T> {
     // Indexes in current data
     currentDataIndex: number;
     currentData: T[];
+
+    sort: Sort;
 }
 
 @Component({
@@ -123,7 +125,15 @@ export class TableComponent<T extends object>
     filteredDataLength?: number;
     filterProgress$ = new BehaviorSubject(false);
 
-    @Input({ transform: booleanAttribute }) rowDragDrop = false;
+    @Input({
+        transform: (v: boolean | string[]) => {
+            if (Array.isArray(v)) {
+                return v;
+            }
+            return booleanAttribute(v);
+        },
+    })
+    rowDragDrop: boolean | string[] = false;
     @Output() rowDropped = new EventEmitter<DragDrop<T>>();
     dragDisabled = true;
 
@@ -399,6 +409,7 @@ export class TableComponent<T extends object>
     sortChanged(sort: Sort) {
         this.sortChange.emit(sort);
         this.tryFrontSort(sort);
+        this.updateDisplayedColumns();
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -425,6 +436,7 @@ export class TableComponent<T extends object>
             previousData,
             currentData,
             currentDataIndex,
+            sort: this?.sortComponent,
         });
     }
 
@@ -505,7 +517,14 @@ export class TableComponent<T extends object>
 
     private updateDisplayedColumns() {
         this.displayedColumns = [
-            ...(this.rowDragDrop ? [this.dragColumnDef] : []),
+            ...((
+                Array.isArray(this.rowDragDrop)
+                    ? (this.sortComponent?.direction ?? this.sort?.direction) &&
+                      this.rowDragDrop.includes(this.sortComponent?.active ?? this.sort?.active)
+                    : this.rowDragDrop
+            )
+                ? [this.dragColumnDef]
+                : []),
             this.scoreColumnDef,
             ...(this.rowSelectable ? [this.selectColumnDef] : []),
             ...Array.from(this.columnsObjects.values())
