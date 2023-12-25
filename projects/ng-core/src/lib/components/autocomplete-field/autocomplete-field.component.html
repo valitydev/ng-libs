@@ -26,8 +26,7 @@
 
     <div matSuffix style="display: flex; gap: 4px">
         <button
-            *ngIf="!required"
-            [disabled]="control.value === null || control.value === undefined"
+            *ngIf="control.value"
             mat-icon-button
             (click)="control.reset(); $event.stopPropagation()"
         >
@@ -44,7 +43,9 @@
         </button>
     </div>
     <mat-hint>{{
-        (selected$ | async) ? (selected$ | async)?.label + (hint ? ' | ' + hint : '') : hint
+        (selected$ | async)
+            ? ((selected$ | async)?.description ?? '') + (hint ? ' | ' + hint : '')
+            : hint
     }}</mat-hint>
     <mat-error>{{
         error ??

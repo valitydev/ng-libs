@@ -28,6 +28,20 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
 
     searchStr: string = '';
 
+    get option() {
+        return this.options?.find?.((o) => o.value === this.control.value);
+    }
+
+    get hintText() {
+        if (this.hint) {
+            return this.hint;
+        }
+        if (this.multiple && this.options && this.options.length > 1) {
+            return (this.control.value?.length || 0) + '/' + this.options.length;
+        }
+        return this.option?.description;
+    }
+
     search = (term: string, item: Option<T>) => {
         if (this.externalSearch) {
             return true;
