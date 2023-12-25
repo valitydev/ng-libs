@@ -1,12 +1,13 @@
-import { MatTableDataSourcePaginator, MatTableDataSourcePageEvent } from '@angular/material/table';
-import { Subject, of } from 'rxjs';
+import { EventEmitter } from '@angular/core';
+import { PageEvent, MatPaginator } from '@angular/material/paginator';
+import { BehaviorSubject } from 'rxjs';
 
-export class OnePageTableDataSourcePaginator implements MatTableDataSourcePaginator {
-    page = new Subject<MatTableDataSourcePageEvent>();
+export class OnePageTableDataSourcePaginator implements Partial<MatPaginator> {
     pageIndex = 0;
-    initialized = of(undefined);
     length = 0;
     pageSize = 0;
+    page = new EventEmitter<PageEvent>();
+    initialized = new BehaviorSubject(undefined);
 
     get displayedPages() {
         return this.pageSize / this.partSize;
@@ -14,14 +15,6 @@ export class OnePageTableDataSourcePaginator implements MatTableDataSourcePagina
 
     constructor(private partSize = 25) {
         this.pageSize = partSize;
-    }
-
-    firstPage() {
-        return 0;
-    }
-
-    lastPage() {
-        return 0;
     }
 
     reload() {

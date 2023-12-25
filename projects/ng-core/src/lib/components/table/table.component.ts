@@ -506,7 +506,8 @@ export class TableComponent<T extends object>
     }
 
     private updatePaginator() {
-        this.dataSource.paginator = this.paginator = new OnePageTableDataSourcePaginator(this.size);
+        this.paginator = new OnePageTableDataSourcePaginator(this.size);
+        this.dataSource.paginator = this.paginator as never;
     }
 
     private updateSort() {
