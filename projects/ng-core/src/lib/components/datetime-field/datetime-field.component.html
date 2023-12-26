@@ -14,7 +14,9 @@
         <mat-datepicker-toggle [for]="picker" matSuffix></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
-    <mat-form-field *ngIf="datetime" class="time">
+    @if (datetime) {
+    <mat-form-field class="time">
         <input [value]="time" matInput type="time" (input)="timeChanged($event)" />
     </mat-form-field>
+    }
 </div>

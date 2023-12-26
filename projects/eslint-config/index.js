@@ -10,6 +10,7 @@ module.exports = {
         '**/*.ico',
         'Dockerfile',
         'dist',
+        'coverage',
     ],
     parser: '@typescript-eslint/parser',
     parserOptions: {

@@ -3,29 +3,30 @@
         <div>
             <h2 class="title">{{ title }}</h2>
         </div>
+        @if (!noCloseButton) {
         <mat-icon
-            *ngIf="!noCloseButton"
             [matDialogClose]="cancelData"
             class="dialog-title-close"
             inline
             (click)="cancelDialog()"
             >clear</mat-icon
         >
+        }
     </div>
 
-    <ng-container *ngIf="!noContent">
-        <mat-divider *ngIf="hasDivider"></mat-divider>
-        <div class="dialog-content">
-            <ng-content></ng-content>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="!noActions">
-        <mat-divider *ngIf="hasDivider"></mat-divider>
-        <div class="dialog-actions">
-            <ng-content select="v-dialog-actions"></ng-content>
-        </div>
-    </ng-container>
+    @if (!noContent) { @if (hasDivider) {
+    <mat-divider></mat-divider>
+    }
+    <div class="dialog-content">
+        <ng-content></ng-content>
+    </div>
+    } @if (!noActions) { @if (hasDivider) {
+    <mat-divider></mat-divider>
+    }
+    <div class="dialog-actions">
+        <ng-content select="v-dialog-actions"></ng-content>
+    </div>
+    }
 
     <v-progress [progress]="progress"></v-progress>
 </div>
