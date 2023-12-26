@@ -20,6 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import Fuse from 'fuse.js';
 import {
     combineLatest,
