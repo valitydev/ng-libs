@@ -11,8 +11,8 @@ export function inlineJson(value: unknown, maxReadableLever = 1, isRoot = true):
                       .map((v) => inlineJson(v, maxReadableLever, false))
                       .join(', ')
                 : Array.from(value).length
-                ? '…'
-                : '';
+                  ? '…'
+                  : '';
         if (value instanceof Set) {
             return `Set(${content})`;
         }

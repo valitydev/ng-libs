@@ -302,8 +302,8 @@ export class TableComponent<T extends object>
                     filter && !this.externalFilter
                         ? { active: this.scoreColumnDef, direction: 'asc' }
                         : this.sortComponent.active === this.scoreColumnDef
-                        ? DEFAULT_SORT
-                        : this.sort,
+                          ? DEFAULT_SORT
+                          : this.sort,
                 );
                 this.filterProgress$.next(false);
             });

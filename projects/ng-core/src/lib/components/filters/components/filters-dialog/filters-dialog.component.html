@@ -7,13 +7,14 @@
         ]"
     >
         @if (isShowMainFilters) {
-        <ng-container *ngTemplateOutlet="dialogData.filters.mainFiltersTemplate"></ng-container>
-        } @if (dialogData.filters.otherFiltersTemplate) {
-        <div class="other-filters">
-            <ng-container
-                *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate"
-            ></ng-container>
-        </div>
+            <ng-container *ngTemplateOutlet="dialogData.filters.mainFiltersTemplate"></ng-container>
+        }
+        @if (dialogData.filters.otherFiltersTemplate) {
+            <div class="other-filters">
+                <ng-container
+                    *ngTemplateOutlet="dialogData.filters.otherFiltersTemplate"
+                ></ng-container>
+            </div>
         }
     </div>
 </v-dialog>

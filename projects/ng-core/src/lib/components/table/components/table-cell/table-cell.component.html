@@ -1,7 +1,11 @@
 @if (colDef.lazy && !lazyVisible && !preloadLazy) {
-<button class="button" mat-icon-button (click)="lazyVisible = true; preloadedLazyChange.emit(true)">
-    <mat-icon>sync</mat-icon>
-</button>
+    <button
+        class="button"
+        mat-icon-button
+        (click)="lazyVisible = true; preloadedLazyChange.emit(true)"
+    >
+        <mat-icon>sync</mat-icon>
+    </button>
 }
 <ng-container
     *ngTemplateOutlet="preloadLazy || !colDef.lazy || lazyVisible ? content : null"
@@ -10,19 +14,21 @@
 <ng-template #content>
     <div class="wrapper">
         @if (rowData | vSelect: colDef.tooltip : '' : [colDef]; as tooltip) {
-        <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
-            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-        </div>
-        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
-        } @else { @if (colDef.link?.(rowData, index); as link) {
-        <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
-            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-        </a>
-        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+            <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
+                <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+            </div>
+            <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
         } @else {
-        <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-        <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
-        } }
+            @if (colDef.link?.(rowData, index); as link) {
+                <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
+                    <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                </a>
+                <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+            } @else {
+                <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+            }
+        }
     </div>
 
     <ng-template #valueTemplate>
@@ -35,42 +41,53 @@
             (click)="colDef.click?.(rowData, index)"
         >
             @if (colDef.type === 'datetime') {
-            {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
-            } @if (colDef.type === 'tag') { @if (colDef.typeParameters.tags[value] ?? {}; as tag) {
-            <v-tag [color]="tag.color">
-                {{
-                    tag.label ?? (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
-                }}
-            </v-tag>
-            } } @if (colDef.type === 'boolean') { @if (value === true || value === false) {
-            <v-tag [color]="value ? 'success' : 'neutral'">
-                {{ value ? 'Yes' : 'No' }}
-            </v-tag>
-            } } @if (colDef.type === 'currency') {
-            {{
-                value
-                    | amountCurrency
-                        : (rowData | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
-                        : 'long'
-                        : (colDef.typeParameters.isMinor ? undefined : 0)
-            }}
-            } @if (colDef.type === 'menu') {
-            <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-                @for (item of colDef.typeParameters.items; track item; let index = $index) {
-                <button
-                    [disabled]="!!item?.disabled?.(rowData, index)"
-                    mat-menu-item
-                    (click)="item.click(rowData, index)"
-                >
-                    {{ getLabel(item.label, index) }}
-                </button>
+                {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
+            }
+            @if (colDef.type === 'tag') {
+                @if (colDef.typeParameters.tags[value] ?? {}; as tag) {
+                    <v-tag [color]="tag.color">
+                        {{
+                            tag.label ??
+                                (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
+                        }}
+                    </v-tag>
                 }
-            </mat-menu>
-            } @if (!colDef.type) {
-            {{ value }}
+            }
+            @if (colDef.type === 'boolean') {
+                @if (value === true || value === false) {
+                    <v-tag [color]="value ? 'success' : 'neutral'">
+                        {{ value ? 'Yes' : 'No' }}
+                    </v-tag>
+                }
+            }
+            @if (colDef.type === 'currency') {
+                {{
+                    value
+                        | amountCurrency
+                            : (rowData
+                                  | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
+                            : 'long'
+                            : (colDef.typeParameters.isMinor ? undefined : 0)
+                }}
+            }
+            @if (colDef.type === 'menu') {
+                <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                    @for (item of colDef.typeParameters.items; track item; let index = $index) {
+                        <button
+                            [disabled]="!!item?.disabled?.(rowData, index)"
+                            mat-menu-item
+                            (click)="item.click(rowData, index)"
+                        >
+                            {{ getLabel(item.label, index) }}
+                        </button>
+                    }
+                </mat-menu>
+            }
+            @if (!colDef.type) {
+                {{ value }}
             }
         </div>
     </ng-template>
