@@ -1,4 +1,4 @@
-import * as Currencies from '@dinero.js/currencies';
+import * as currencies from '@dinero.js/currencies';
 
 export const getCurrencyExponent = (currencyCode: string): number =>
-    Currencies[currencyCode as keyof typeof Currencies]?.exponent;
+    currencies[currencyCode as keyof typeof currencies]?.exponent;

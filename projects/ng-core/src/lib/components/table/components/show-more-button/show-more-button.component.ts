@@ -1,5 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { coerceBoolean } from 'coerce-property';
+import { Component, EventEmitter, Input, Output, booleanAttribute } from '@angular/core';
 
 @Component({
     selector: 'v-show-more-button',
@@ -7,8 +6,8 @@ import { coerceBoolean } from 'coerce-property';
     styleUrls: ['./show-more-button.component.scss'],
 })
 export class ShowMoreButtonComponent {
-    @Input() @coerceBoolean disabled = false;
-    @Input() @coerceBoolean progress = false;
+    @Input({ transform: booleanAttribute }) disabled = false;
+    @Input({ transform: booleanAttribute }) progress = false;
     @Input() displayedPages = 0;
     @Input() pageSize = 0;
     @Input() length = 0;

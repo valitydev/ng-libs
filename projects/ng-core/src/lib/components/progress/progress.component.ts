@@ -13,8 +13,8 @@ export class ProgressComponent implements Progressable {
         return typeof this.progress === 'number' && this.progress <= 1 && this.progress > 0
             ? 'determinate'
             : !!this.progress || this.progress === ''
-            ? 'indeterminate'
-            : undefined;
+              ? 'indeterminate'
+              : undefined;
     }
 
     get value(): number {

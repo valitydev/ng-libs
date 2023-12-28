@@ -53,5 +53,7 @@ module.exports = {
         'IBAN',
         'chargeback',
         'chargebacks',
+
+        'subdir',
     ],
 };

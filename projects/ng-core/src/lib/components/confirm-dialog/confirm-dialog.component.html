@@ -3,13 +3,17 @@
     [title]="dialogData?.['title'] ?? 'Confirm this action?'"
     noCloseButton
 >
-    <div *ngIf="dialogData && dialogData.description" class="mat-body-1">
-        {{ dialogData.description }}
-    </div>
-    <mat-form-field *ngIf="dialogData && dialogData.hasReason" style="width: 100%">
-        <mat-label>Reason</mat-label>
-        <input [formControl]="control" matInput />
-    </mat-form-field>
+    @if (dialogData && dialogData.description) {
+        <div class="mat-body-1">
+            {{ dialogData.description }}
+        </div>
+    }
+    @if (dialogData && dialogData.hasReason) {
+        <mat-form-field style="width: 100%">
+            <mat-label>Reason</mat-label>
+            <input [formControl]="control" matInput />
+        </mat-form-field>
+    }
     <v-dialog-actions>
         <button mat-button (click)="closeWithCancellation()">Cancel</button>
         <button color="primary" mat-flat-button (click)="confirm()">

@@ -1,35 +1,46 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectorRef, Inject, Injectable, OnDestroy, PipeTransform } from '@angular/core';
-import { Observable } from 'rxjs';
+import { ChangeDetectorRef, Injectable, OnDestroy, inject } from '@angular/core';
+import { ReplaySubject, defer, switchMap, Observable, combineLatest, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import { isAsync, PossiblyAsync } from './is-async';
+import { getPossiblyAsyncObservable } from './get-possibly-async-observable';
+import { PossiblyAsync } from './is-async';
+
+export type AsyncTransformParameters = never;
 
 @Injectable()
-export abstract class AsyncTransform<T = unknown> implements OnDestroy, PipeTransform {
-    private asyncPipe?: AsyncPipe;
-    private cdr = Inject(ChangeDetectorRef);
+export abstract class AsyncTransform<
+    TValue = unknown,
+    TParams extends unknown[] = [],
+    TResult = string | null,
+> implements OnDestroy
+{
+    protected abstract result$: Observable<TResult>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    transform(value: any, ...args: any[]): any {
-        return this.asyncTransform(this.getValue(value, ...args));
+    protected params$: Observable<[TValue, ...TParams]> = defer(() => this.args$).pipe(
+        switchMap((args) =>
+            combineLatest([
+                getPossiblyAsyncObservable(args[0] as TValue),
+                of(args.slice(1) as TParams),
+            ]),
+        ),
+        map(([value, params]) => [value, ...params] as [TValue, ...TParams]),
+    );
+
+    private asyncPipe!: AsyncPipe;
+    private cdr = inject(ChangeDetectorRef);
+    private args$ = new ReplaySubject<[PossiblyAsync<TValue>, ...TParams]>(1);
+
+    constructor() {
+        this.asyncPipe = new AsyncPipe(this.cdr);
     }
 
     ngOnDestroy() {
-        this.asyncPipe?.ngOnDestroy?.();
+        this.asyncPipe.ngOnDestroy();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected getValue(value: any, ..._args: any[]): Observable<T> {
-        return value;
-    }
-
-    protected asyncTransform(value: PossiblyAsync<T>) {
-        if (!isAsync(value)) {
-            return value;
-        }
-        if (!this.asyncPipe) {
-            this.asyncPipe = new AsyncPipe(this.cdr);
-        }
-        return this.asyncPipe.transform(value);
+    protected asyncTransform(args: [PossiblyAsync<TValue>, ...TParams]): TResult | null {
+        this.args$.next(args);
+        return this.asyncPipe.transform(this.result$);
     }
 }

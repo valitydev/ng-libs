@@ -4,7 +4,7 @@ import { shareReplay, startWith } from 'rxjs/operators';
 import { inProgressFrom, progressTo } from '../../utils';
 
 export interface Action<TParams> {
-    type: 'load' | 'more';
+    type: 'load' | 'reload' | 'more';
     params?: TParams;
     size?: number;
 }
@@ -81,6 +81,10 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
 
     load(params: TParams, options: LoadOptions = {}): void {
         this.fetch$.next({ type: 'load', params, size: options.size });
+    }
+
+    reload(options: LoadOptions = {}): void {
+        this.fetch$.next({ type: 'reload', size: options.size });
     }
 
     more(): void {

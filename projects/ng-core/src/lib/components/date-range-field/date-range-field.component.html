@@ -12,14 +12,15 @@
     <mat-date-range-picker #picker>
         <mat-date-range-picker-actions>
             <v-actions class="actions">
-                <button
-                    *ngIf="!required"
-                    [disabled]="!control.value?.start && !control.value?.end"
-                    mat-button
-                    (click)="control.reset(); picker.close()"
-                >
-                    Reset
-                </button>
+                @if (!required) {
+                    <button
+                        [disabled]="!control.value?.start && !control.value?.end"
+                        mat-button
+                        (click)="control.reset(); picker.close()"
+                    >
+                        Reset
+                    </button>
+                }
                 <button color="primary" mat-flat-button matDateRangePickerApply>Apply</button>
             </v-actions>
         </mat-date-range-picker-actions>

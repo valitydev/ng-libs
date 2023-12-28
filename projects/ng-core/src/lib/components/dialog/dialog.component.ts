@@ -1,5 +1,11 @@
-import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
-import { coerceBoolean } from 'coerce-property';
+import {
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    Output,
+    booleanAttribute,
+} from '@angular/core';
 
 import { Progressable } from '../../types/progressable';
 
@@ -15,16 +21,16 @@ export class DialogComponent implements Progressable {
 
     @Input() title!: string;
 
-    @coerceBoolean @Input() disabled: boolean | string = false;
+    @Input({ transform: booleanAttribute }) disabled: boolean = false;
     @Input() progress?: Progressable['progress'];
 
-    @coerceBoolean @Input() hasDivider: boolean | string = true;
+    @Input({ transform: booleanAttribute }) hasDivider: boolean = true;
 
-    @coerceBoolean @Input() noContent: boolean | string = false;
-    @coerceBoolean @Input() noActions: boolean | string = false;
-    @coerceBoolean @Input() noCloseButton: boolean | string = false;
+    @Input({ transform: booleanAttribute }) noContent: boolean = false;
+    @Input({ transform: booleanAttribute }) noActions: boolean = false;
+    @Input({ transform: booleanAttribute }) noCloseButton: boolean = false;
 
-    @Input() @coerceBoolean fullSize: boolean = false;
+    @Input({ transform: booleanAttribute }) fullSize: boolean = false;
 
     @Output() cancel = new EventEmitter<void>();
 

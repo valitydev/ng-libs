@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -20,11 +21,13 @@ import { NgLetModule } from 'ng-let';
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
 import { InputFieldModule } from '../input-field';
+import { SwitchButtonModule } from '../switch-button';
 import { TagModule } from '../tag';
 
 import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
+import { TableInputsComponent } from './components/table-inputs.component';
 import { TableComponent } from './table.component';
 
 @NgModule({
@@ -50,13 +53,17 @@ import { TableComponent } from './table.component';
         MatSortModule,
         InputFieldModule,
         ReactiveFormsModule,
+        SwitchButtonModule,
+        CdkDrag,
+        CdkDropList,
     ],
     declarations: [
         TableComponent,
         TableActionsComponent,
         TableCellComponent,
         ShowMoreButtonComponent,
+        TableInputsComponent,
     ],
-    exports: [TableComponent, TableActionsComponent],
+    exports: [TableComponent, TableActionsComponent, TableInputsComponent],
 })
 export class TableModule {}

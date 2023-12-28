@@ -19,6 +19,7 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     @Input() error?: string;
     @Input() type = 'text';
 
+    @Input({ transform: booleanAttribute }) mono = false;
     @Input({ transform: booleanAttribute }) required = false;
 
     options$ = new BehaviorSubject<Option<T>[]>([]);

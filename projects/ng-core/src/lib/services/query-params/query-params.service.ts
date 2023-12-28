@@ -1,16 +1,15 @@
 import { Inject, Injectable, Optional } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { omit, pick } from 'lodash-es';
 import isEqual from 'lodash-es/isEqual';
 import negate from 'lodash-es/negate';
-import { Observable } from 'rxjs';
+import { Observable, defer, skipWhile, concat, take } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
-import { isEmpty, clean } from '../../utils';
+import { isEmpty } from '../../utils';
 
 import { Serializer } from './types/serializer';
+import { QUERY_PARAMS_SERIALIZERS } from './utils';
 import { deserializeQueryParam } from './utils/deserialize-query-param';
-import { QUERY_PARAMS_SERIALIZERS } from './utils/query-params-serializers';
 import { serializeQueryParam } from './utils/serialize-query-param';
 
 interface SerializeOptions {
@@ -21,9 +20,14 @@ interface SetOptions extends SerializeOptions {
     isPatch?: boolean;
 }
 
+interface SourceParams {
+    main: Params;
+    namespaces: Record<string, string>;
+}
+
 interface BaseQueryParams<T extends object> {
-    params$: Observable<T>;
-    params: T;
+    params$: Observable<Partial<T>>;
+    params: Partial<T>;
     set: (params: T, options?: SerializeOptions) => Promise<boolean>;
     patch: (params: Partial<T>, options?: SerializeOptions) => Promise<boolean>;
 }
@@ -32,106 +36,147 @@ export interface QueryParamsNamespace<T extends object> extends BaseQueryParams<
     destroy: () => void;
 }
 
+const NS_PARAM_PREFIX = '__';
+
 @Injectable({ providedIn: 'root' })
 export class QueryParamsService<P extends object = NonNullable<unknown>>
     implements BaseQueryParams<P>
 {
-    params$: Observable<P> = this.route.queryParams.pipe(
-        startWith(this.route.snapshot.queryParams),
+    params$: Observable<P> = defer(() => this.sourceParams$).pipe(
+        map(({ main }) => main),
         distinctUntilChanged(isEqual),
-        map(() => this.params),
+        map((params) => this.deserialize(params)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
     get params(): P {
-        return omit(this.getAllParams(), Array.from(this.namespaces)) as P;
+        return this.deserialize(this.getSourceParams().main);
     }
 
-    private namespaces = new Set<string>();
+    private sourceParams$: Observable<SourceParams> = concat(
+        this.router.events.pipe(
+            startWith(null),
+            skipWhile(() => !this.router.navigated),
+            map(() => this.route.snapshot.queryParams),
+            take(1),
+        ),
+        this.route.queryParams,
+    ).pipe(
+        distinctUntilChanged(isEqual),
+        map((p) => this.getSourceParams(p)),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         @Optional() @Inject(QUERY_PARAMS_SERIALIZERS) private readonly serializers?: Serializer[],
     ) {
-        // Angular @Optional not support TS syntax: `serializers: Serializer[] = []`
         if (!this.serializers) {
             this.serializers = [];
         }
     }
 
     async set(params: P, options: SerializeOptions = {}): Promise<boolean> {
-        return await this.setParams(params, options);
+        return await this.setParams(params, undefined, options);
     }
 
     async patch(params: Partial<P>, options: SerializeOptions = {}): Promise<boolean> {
-        return await this.setParams(params, { ...options, isPatch: true });
+        return await this.setParams(params, undefined, { ...options, isPatch: true });
     }
 
-    createNamespace<T extends object>(namespace: string): QueryParamsNamespace<T> {
-        const getNamespaceParams = (): T => {
-            return (this.getAllParams()[namespace as never] || {}) as T;
-        };
+    createNamespace<TNamespaceParams extends object>(
+        ns: string,
+    ): QueryParamsNamespace<TNamespaceParams> {
+        const getNamespaceSourceParams = (sourceParams = this.getSourceParams()): Partial<string> =>
+            sourceParams.namespaces[NS_PARAM_PREFIX + ns];
+        const getNamespaceParams = (): Partial<TNamespaceParams> =>
+            this.deserializeNamespace(getNamespaceSourceParams());
         return {
-            params$: this.route.queryParams.pipe(
-                startWith(this.route.snapshot.queryParams),
+            params$: this.sourceParams$.pipe(
+                map((sourceParams) => getNamespaceSourceParams(sourceParams)),
                 distinctUntilChanged(isEqual),
-                map(() => getNamespaceParams()),
+                map((params) => this.deserializeNamespace(params)),
                 shareReplay({ refCount: true, bufferSize: 1 }),
             ),
             get params() {
                 return getNamespaceParams();
             },
             set: async (params, options = {}): Promise<boolean> => {
-                return await this.setParams({ [namespace]: clean(params || {}) } as never, {
-                    ...options,
-                    isPatch: true,
-                });
+                return await this.setParams(params, ns, options);
             },
             patch: async (params, options = {}): Promise<boolean> => {
-                return await this.setParams(
-                    { [namespace]: clean({ ...getNamespaceParams(), ...(params || {}) }) } as never,
-                    { ...options, isPatch: true },
-                );
+                return await this.setParams(params, ns, { ...options, isPatch: true });
             },
-            destroy: () => {
-                this.namespaces.delete(namespace);
+            destroy: async () => {
+                await this.setParams({}, ns);
             },
         };
     }
 
-    private async setParams(params: Partial<P>, options: SetOptions = {}): Promise<boolean> {
-        const allParams = this.getAllParams();
-        let serializeParams: Partial<P>;
-        if (options.isPatch) {
-            serializeParams = { ...allParams, ...params };
+    private async setParams<TParams extends object>(
+        params: Partial<TParams>,
+        ns?: string,
+        options: SetOptions = {},
+    ): Promise<boolean> {
+        const sourceParams = this.getSourceParams();
+        let queryParams: Params;
+        if (ns) {
+            const nsKey = NS_PARAM_PREFIX + ns;
+            const serializedNamespace = this.serializeNamespace(
+                Object.assign(
+                    {},
+                    options.isPatch && this.deserializeNamespace(sourceParams.namespaces[nsKey]),
+                    params,
+                ),
+            );
+            const otherNamespaces = sourceParams.namespaces;
+            delete otherNamespaces[nsKey];
+            queryParams = Object.assign(
+                {},
+                sourceParams.main,
+                otherNamespaces,
+                !!serializedNamespace && { [nsKey]: serializedNamespace },
+            );
         } else {
-            const namespacesParams = pick(allParams, Array.from(this.namespaces));
-            serializeParams = { ...namespacesParams, ...params };
+            queryParams = Object.assign(
+                {},
+                options.isPatch && sourceParams.main,
+                this.serialize(params),
+                sourceParams.namespaces,
+            );
         }
-        return await this.router.navigate([], {
-            queryParams: this.serialize(serializeParams, options),
-        });
+        return await this.router.navigate([], { queryParams });
     }
 
-    private getAllParams() {
-        return this.deserialize(this.route.snapshot.queryParams);
-    }
-
-    private serialize(params: object, options: SerializeOptions = {}): { [key: string]: string } {
-        const filter = options.filter ?? negate(isEmpty);
-        return Object.entries(params).reduce(
+    private getSourceParams(source: Params = this.route.snapshot.queryParams): SourceParams {
+        return Object.entries(source).reduce(
             (acc, [k, v]) => {
-                if (filter(v, k)) {
-                    acc[k] = serializeQueryParam(v, this.serializers);
+                if (k.startsWith(NS_PARAM_PREFIX)) {
+                    acc.namespaces[k] = v;
+                } else {
+                    acc.main[k] = v;
                 }
                 return acc;
             },
-            {} as { [key: string]: string },
+            { main: {}, namespaces: {} } as SourceParams,
         );
     }
 
+    private serialize(params: object, options: SerializeOptions = {}): Params {
+        const filter = options.filter ?? negate(isEmpty);
+        return Object.entries(params).reduce((acc, [k, v]) => {
+            if (filter(v, k)) {
+                acc[k] = serializeQueryParam(v, this.serializers);
+            }
+            return acc;
+        }, {} as Params);
+    }
+
     private deserialize(params: Params): P {
+        if (!params) {
+            return {} as P;
+        }
         return Object.entries(params).reduce((acc, [k, v]) => {
             try {
                 acc[k as keyof P] = deserializeQueryParam<P[keyof P]>(v, this.serializers);
@@ -140,5 +185,15 @@ export class QueryParamsService<P extends object = NonNullable<unknown>>
             }
             return acc;
         }, {} as P);
+    }
+
+    private serializeNamespace<TNamespaceParams extends object>(params?: TNamespaceParams): string {
+        return params && Object.keys(params).length ? JSON.stringify(params) : '';
+    }
+
+    private deserializeNamespace<TNamespaceParams extends object>(
+        strParams?: string,
+    ): TNamespaceParams {
+        return strParams ? JSON.parse(strParams) : {};
     }
 }

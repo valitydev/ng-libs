@@ -1,99 +1,66 @@
 <div class="table">
-    <mat-form-field
-        *ngIf="!noFilter && (standaloneFilter || noActions)"
-        class="v-table-filter-standalone"
-    >
-        <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
-        <input [formControl]="filterControl" matInput />
-        <button
-            *ngIf="!externalFilter"
-            [matTooltip]="
-                (exactFilter$ | async)
-                    ? 'Switch to partial match filtering'
-                    : 'Switch to full match filtering'
-            "
-            mat-icon-button
-            matSuffix
-            (click)="exactFilter$.next(!exactFilter$.value)"
-        >
-            <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
-        </button>
-        <button
-            [disabled]="!filterControl.value"
-            mat-icon-button
-            matSuffix
-            (click)="filterControl.setValue('')"
-        >
-            <mat-icon>clear</mat-icon>
-        </button>
-    </mat-form-field>
-    <v-actions *ngIf="!noActions">
+    @if (!noFilter && (standaloneFilter || noActions)) {
+        <div class="toolbar">
+            <ng-content select="v-table-inputs"></ng-content>
+            <mat-form-field class="v-table-filter-standalone">
+                <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
+                <input [formControl]="filterControl" matInput />
+                <div matSuffix style="white-space: nowrap">
+                    <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
+                    <button
+                        [disabled]="!filterControl.value"
+                        mat-icon-button
+                        (click)="filterControl.setValue('')"
+                    >
+                        <mat-icon>clear</mat-icon>
+                    </button>
+                </div>
+            </mat-form-field>
+            @if (noActions && update.observed) {
+                <div style="flex: 0; white-space: nowrap; padding-top: 12px">
+                    <ng-container *ngTemplateOutlet="updateButtonsTpl"></ng-container>
+                </div>
+            }
+        </div>
+    }
+    @if (!noActions) {
         <v-actions>
+            <v-actions>
+                <div style="display: flex">
+                    <ng-container
+                        *ngTemplateOutlet="update.observed ? updateButtonsTpl : null"
+                    ></ng-container>
+                    @if (!noFilter && !standaloneFilter) {
+                        <div style="margin: -6px 0">
+                            <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
+                        </div>
+                    }
+                </div>
+                @if (!noFilter && !standaloneFilter) {
+                    <div style="display: flex">
+                        <v-input-field
+                            [formControl]="filterControl"
+                            appearance="outline"
+                            class="v-table-filter"
+                            label="Filter"
+                        ></v-input-field>
+                        @if (filterControl.value) {
+                            <button
+                                mat-icon-button
+                                style="margin: -6px 0"
+                                (click)="filterControl.setValue('')"
+                            >
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        }
+                    </div>
+                }
+            </v-actions>
             <div>
-                <ng-container *ngIf="update.observed">
-                    <button
-                        [disabled]="!!progress"
-                        mat-icon-button
-                        matTooltip="Reload {{ size }} elements"
-                        style="margin: -6px 0"
-                        (click)="load()"
-                    >
-                        <mat-icon>refresh</mat-icon>
-                    </button>
-                    <button
-                        [color]="isPreload && hasMore ? 'accent' : undefined"
-                        [disabled]="!!progress || !hasMore"
-                        mat-icon-button
-                        matTooltip="Preload {{ preloadSize }}{{
-                            isPreload && hasMore ? ' more' : ''
-                        }} elements"
-                        style="margin: -6px 0"
-                        (click)="preload()"
-                    >
-                        <mat-icon>{{
-                            hasMore || progress
-                                ? isPreload && hasMore
-                                    ? 'downloading'
-                                    : 'download'
-                                : 'download_done'
-                        }}</mat-icon>
-                    </button>
-                </ng-container>
-                <button
-                    *ngIf="!noFilter && !standaloneFilter && !externalFilter"
-                    [matTooltip]="
-                        (exactFilter$ | async)
-                            ? 'Switch to partial match search'
-                            : 'Switch to full match search'
-                    "
-                    mat-icon-button
-                    style="margin: -6px 0"
-                    (click)="exactFilter$.next(!exactFilter$.value)"
-                >
-                    <mat-icon>{{ (exactFilter$ | async) ? 'policy' : 'manage_search' }}</mat-icon>
-                </button>
-            </div>
-            <div *ngIf="!noFilter && !standaloneFilter" style="display: flex">
-                <v-input-field
-                    [formControl]="filterControl"
-                    appearance="outline"
-                    class="v-table-filter"
-                    label="Filter"
-                ></v-input-field>
-                <button
-                    *ngIf="filterControl.value"
-                    mat-icon-button
-                    style="margin: -6px 0"
-                    (click)="filterControl.setValue('')"
-                >
-                    <mat-icon>clear</mat-icon>
-                </button>
+                <ng-content select="v-table-actions"></ng-content>
             </div>
         </v-actions>
-        <div>
-            <ng-content select="v-table-actions"></ng-content>
-        </div>
-    </v-actions>
+    }
     <div class="table-card-details">
         <div class="details">
             <div>
@@ -102,32 +69,46 @@
                     progress
                         ? '...'
                         : data?.length
-                        ? data.length + (hasMore ? ' (more available)' : ' (all)')
-                        : '0'
-                }}<ng-container *ngIf="filterControl.value && !externalFilter">
-                    | Filtered:
-                    {{
-                        (filterProgress$ | async) ? '...' : filteredDataLength ?? '0'
-                    }}</ng-container
-                ><ng-container *ngIf="selection.selected?.length">
-                    | <b>Selected: {{ selection.selected.length }}</b></ng-container
-                >
+                          ? data.length + (hasMore ? ' (more available)' : ' (all)')
+                          : '0'
+                }}
+                @if (filterControl.value && !externalFilter) {
+                    | Filtered: {{ filteredDataLength ?? '...' }}
+                }
+                @if (selection.selected?.length) {
+                    |
+                    <b>Selected: {{ selection.selected.length }}</b>
+                }
             </div>
         </div>
         <mat-card class="table-card">
-            <mat-progress-bar
-                *ngIf="progress || (!externalFilter && (filterProgress$ | async))"
-                class="progress-bar"
-                mode="indeterminate"
-            ></mat-progress-bar>
+            @if (progress || (!externalFilter && (filterProgress$ | async))) {
+                <mat-progress-bar class="progress-bar" mode="indeterminate"></mat-progress-bar>
+            }
             <table
+                #table
+                [cdkDropListDisabled]="dragDisabled"
                 [dataSource]="dataSource"
                 [matSortActive]="sort.active"
                 [matSortDirection]="sort.direction"
+                cdkDropList
+                cdkDropListData="dataSource"
                 mat-table
                 matSort
+                (cdkDropListDropped)="drop($event)"
                 (matSortChange)="sortChanged($event)"
             >
+                <ng-container [matColumnDef]="dragColumnDef" sticky>
+                    <th *matHeaderCellDef mat-header-cell></th>
+                    <td *matCellDef="let row; let index = index" mat-cell>
+                        <div class="position">
+                            <mat-icon class="dragCursor" (mousedown)="dragDisabled = false"
+                                >reorder</mat-icon
+                            >
+                            <!--                            <span>{{ index + 1 }}</span>-->
+                        </div>
+                    </td>
+                </ng-container>
                 <ng-container [matColumnDef]="scoreColumnDef">
                     <th
                         *matHeaderCellDef
@@ -141,54 +122,72 @@
                         {{ scores.get(row)?.score | number: '1.2-2' : 'en' }}
                     </td>
                 </ng-container>
-                <ng-container *ngIf="rowSelectable" [matColumnDef]="selectColumnDef" sticky>
-                    <th *matHeaderCellDef class="pinned-left" mat-header-cell>
-                        <mat-checkbox
-                            [checked]="selection.hasValue() && isAllSelected()"
-                            [disabled]="!!progress || (!!filterControl.value && !isAllSelected())"
-                            [indeterminate]="selection.hasValue() && !isAllSelected()"
-                            (change)="$event ? toggleAllRows() : null"
-                        >
-                        </mat-checkbox>
-                    </th>
-                    <td *matCellDef="let row" class="pinned-left" mat-cell>
-                        <mat-checkbox
-                            [checked]="selection.isSelected(row)"
-                            [disabled]="!!progress"
-                            (change)="$event ? selection.toggle(row) : null"
-                            (click)="$event.stopPropagation()"
-                        >
-                        </mat-checkbox>
-                    </td>
-                </ng-container>
-
-                <ng-container
-                    *ngFor="let col of columnsObjects.values()"
-                    [matColumnDef]="col.field"
-                    [sticky]="col.pinned === 'left'"
-                    [stickyEnd]="col.pinned === 'right'"
-                >
-                    <ng-container *ngIf="col.sortable; else noSort">
-                        <th
-                            *matHeaderCellDef
-                            [mat-sort-header]="col.field"
-                            [ngClass]="{
-                                'pinned-left': col.pinned === 'left',
-                                'pinned-right': col.pinned === 'right'
-                            }"
-                            [ngStyle]="{
-                                width: col.width,
-                                'min-width': col.minWidth,
-                                'max-width': col.maxWidth
-                            }"
-                            mat-header-cell
-                        >
-                            {{ col.header }}
+                @if (rowSelectable) {
+                    <ng-container [matColumnDef]="selectColumnDef" sticky>
+                        <th *matHeaderCellDef class="pinned-left" mat-header-cell>
+                            <mat-checkbox
+                                [checked]="selection.hasValue() && isAllSelected()"
+                                [disabled]="
+                                    !!progress || (!!filterControl.value && !isAllSelected())
+                                "
+                                [indeterminate]="selection.hasValue() && !isAllSelected()"
+                                (change)="$event ? toggleAllRows() : null"
+                            >
+                            </mat-checkbox>
                         </th>
+                        <td *matCellDef="let row" class="pinned-left" mat-cell>
+                            <mat-checkbox
+                                [checked]="selection.isSelected(row)"
+                                [disabled]="!!progress"
+                                (change)="$event ? selection.toggle(row) : null"
+                                (click)="$event.stopPropagation()"
+                            >
+                            </mat-checkbox>
+                        </td>
                     </ng-container>
-                    <ng-template #noSort>
-                        <th
-                            *matHeaderCellDef
+                }
+                @for (col of columnsObjects.values(); track col) {
+                    <ng-container
+                        [matColumnDef]="col.field"
+                        [sticky]="col.pinned === 'left'"
+                        [stickyEnd]="col.pinned === 'right'"
+                    >
+                        @if (col.sortable) {
+                            <th
+                                *matHeaderCellDef
+                                [mat-sort-header]="col.field"
+                                [ngClass]="{
+                                    'pinned-left': col.pinned === 'left',
+                                    'pinned-right': col.pinned === 'right'
+                                }"
+                                [ngStyle]="{
+                                    width: col.width,
+                                    'min-width': col.minWidth,
+                                    'max-width': col.maxWidth
+                                }"
+                                mat-header-cell
+                            >
+                                {{ col.header }}
+                            </th>
+                        } @else {
+                            <th
+                                *matHeaderCellDef
+                                [ngClass]="{
+                                    'pinned-left': col.pinned === 'left',
+                                    'pinned-right': col.pinned === 'right'
+                                }"
+                                [ngStyle]="{
+                                    width: col.width,
+                                    'min-width': col.minWidth,
+                                    'max-width': col.maxWidth
+                                }"
+                                mat-header-cell
+                            >
+                                {{ col.header }}
+                            </th>
+                        }
+                        <td
+                            *matCellDef="let row; let index = index"
                             [ngClass]="{
                                 'pinned-left': col.pinned === 'left',
                                 'pinned-right': col.pinned === 'right'
@@ -198,49 +197,31 @@
                                 'min-width': col.minWidth,
                                 'max-width': col.maxWidth
                             }"
-                            mat-header-cell
+                            mat-cell
                         >
-                            {{ col.header }}
-                        </th>
-                    </ng-template>
-                    <td
-                        *matCellDef="let row; let index = index"
-                        [ngClass]="{
-                            'pinned-left': col.pinned === 'left',
-                            'pinned-right': col.pinned === 'right'
-                        }"
-                        [ngStyle]="{
-                            width: col.width,
-                            'min-width': col.minWidth,
-                            'max-width': col.maxWidth
-                        }"
-                        mat-cell
-                    >
-                        <v-table-cell
-                            *ngIf="!col.cellTemplate && !cellTemplate[col.field]; else cellTpl"
-                            [colDef]="col"
-                            [index]="index"
-                            [preloadLazy]="
-                                index < preloadedLazyRowsCount || !!preloadedLazyCells.get(row)
-                            "
-                            [rowData]="row"
-                            (preloadedLazyChange)="preloadedLazyCells.set(row, $event)"
-                        ></v-table-cell>
-                        <ng-template
-                            #cellTpl
-                            [ngTemplateOutlet]="$any(col.cellTemplate ?? cellTemplate[col.field])"
-                            [ngTemplateOutletContext]="{
-                                $implicit: row,
-                                colDef: col,
-                                index: index,
-                                rowData: row
-                            }"
-                        ></ng-template>
-                    </td>
-                </ng-container>
+                            @if (!col.cellTemplate && !cellTemplate[col.field]) {
+                                <v-table-cell
+                                    [colDef]="col"
+                                    [index]="index"
+                                    [preloadLazy]="
+                                        index < preloadedLazyRowsCount ||
+                                        !!preloadedLazyCells.get(row)
+                                    "
+                                    [rowData]="row"
+                                    (preloadedLazyChange)="preloadedLazyCells.set(row, $event)"
+                                ></v-table-cell>
+                            } @else {}
+                        </td>
+                    </ng-container>
+                }
 
                 <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+                <tr
+                    *matRowDef="let row; columns: displayedColumns"
+                    [cdkDragData]="row"
+                    cdkDrag
+                    mat-row
+                ></tr>
 
                 <ng-container [matColumnDef]="noRecordsColumnDef">
                     <td
@@ -253,10 +234,10 @@
                             progress
                                 ? 'Loading...'
                                 : !externalFilter && (filterProgress$ | async)
-                                ? 'Filtering...'
-                                : filteredDataLength === 0
-                                ? 'No records found'
-                                : 'No records'
+                                  ? 'Filtering...'
+                                  : filteredDataLength === 0
+                                    ? 'No records found'
+                                    : 'No records'
                         }}
                     </td>
                 </ng-container>
@@ -269,13 +250,54 @@
             </table>
         </mat-card>
     </div>
-    <v-show-more-button
-        *ngIf="hasShowMore"
-        [disabled]="!!progress"
-        [displayedPages]="displayedPages"
-        [length]="data?.length ?? 0"
-        [pageSize]="size"
-        [progress]="!!progress"
-        (more)="showMore()"
-    ></v-show-more-button>
+    @if (hasShowMore) {
+        <v-show-more-button
+            [disabled]="!!progress"
+            [displayedPages]="displayedPages"
+            [length]="data?.length ?? 0"
+            [pageSize]="size"
+            [progress]="!!progress"
+            (more)="showMore()"
+        ></v-show-more-button>
+    }
 </div>
+
+<ng-template #updateButtonsTpl>
+    <button
+        [disabled]="!!progress"
+        mat-icon-button
+        matTooltip="Reload {{ size }} elements"
+        style="margin: -6px 0"
+        (click)="load()"
+    >
+        <mat-icon>refresh</mat-icon>
+    </button>
+    <button
+        [color]="isPreload && hasMore ? 'accent' : undefined"
+        [disabled]="!!progress || !hasMore"
+        mat-icon-button
+        matTooltip="Preload {{ preloadSize }}{{ isPreload && hasMore ? ' more' : '' }} elements"
+        style="margin: -6px 0"
+        (click)="preload()"
+    >
+        <mat-icon>{{
+            hasMore || progress
+                ? isPreload && hasMore
+                    ? 'downloading'
+                    : 'download'
+                : 'download_done'
+        }}</mat-icon>
+    </button>
+</ng-template>
+
+<ng-template #exactButtonTpl>
+    @if (!externalFilter) {
+        <v-switch-button
+            [formControl]="exactFilterControl"
+            [states]="[
+                { label: 'partial match search', icon: 'remove_moderator' },
+                { label: 'full match search', icon: 'policy' }
+            ]"
+        ></v-switch-button>
+    }
+</ng-template>
