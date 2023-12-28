@@ -10,7 +10,7 @@
     }
   },
   "peerDependencies": {
-    "cspell": "^7.0.0"
+    "cspell": "^7.0.0 || ^8.0.0"
   },
   "dependencies": {
     "@cspell/dict-ru_ru": "^2.1.0"
