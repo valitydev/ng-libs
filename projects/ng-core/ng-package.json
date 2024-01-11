@@ -11,6 +11,7 @@
         "ng-let",
         "@ng-matero/*",
         "@angular/material-date-fns-adapter",
-        "fuse.js"
+        "fuse.js",
+        "short-uuid"
     ]
 }
