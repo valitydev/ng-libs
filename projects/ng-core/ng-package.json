@@ -8,7 +8,6 @@
     "allowedNonPeerDependencies": [
         "@s-libs/*",
         "dinero.js",
-        "ng-let",
         "@ng-matero/*",
         "@angular/material-date-fns-adapter",
         "fuse.js",

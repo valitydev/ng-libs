@@ -16,7 +16,6 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { NgLetModule } from 'ng-let';
 
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
@@ -45,7 +44,6 @@ import { TableComponent } from './table.component';
         MatTooltipModule,
         MatChipsModule,
         PipesModule,
-        NgLetModule,
         TagModule,
         RouterLink,
         MatProgressBarModule,

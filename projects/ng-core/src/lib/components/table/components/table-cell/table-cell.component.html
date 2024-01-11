@@ -31,11 +31,14 @@
         }
     </div>
 
-    <ng-template #valueTemplate>
+    <ng-template
+        #valueTemplate
+        [ngTemplateOutletContext]="{
+            value: rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef]
+        }"
+        let-value="value"
+    >
         <div
-            *ngLet="
-                rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value
-            "
             [ngClass]="{ 'value-link': !!colDef.click }"
             class="value"
             (click)="colDef.click?.(rowData, index)"
