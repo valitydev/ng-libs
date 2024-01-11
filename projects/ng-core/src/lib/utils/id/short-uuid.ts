@@ -1,5 +1,5 @@
-import * as short from 'short-uuid';
+import * as shortUuidLib from 'short-uuid';
 
 export function shortUuid() {
-    return short().generate();
+    return shortUuidLib().generate();
 }
