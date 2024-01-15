@@ -5,6 +5,7 @@ import { map, shareReplay } from 'rxjs/operators';
 import { createControlProviders, FormControlSuperclass, ComponentChanges } from '../../../utils';
 import { Option } from '../types';
 import { searchOptions } from '../utils';
+import { getHintText } from '../utils/get-hint-text';
 
 @Component({
     selector: 'v-autocomplete-field',
@@ -22,6 +23,10 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
 
     @Input({ transform: booleanAttribute }) mono = false;
     @Input({ transform: booleanAttribute }) required = false;
+
+    get hintText() {
+        return getHintText(this.options, [this.control.value], this.hint, { showLabel: true });
+    }
 
     options$ = new BehaviorSubject<Option<T>[]>([]);
     selected$ = merge(this.control.valueChanges, this.options$).pipe(

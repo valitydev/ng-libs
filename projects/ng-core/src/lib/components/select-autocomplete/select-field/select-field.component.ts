@@ -4,6 +4,7 @@ import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { createControlProviders, FormControlSuperclass } from '../../../utils';
 import { Option } from '../types';
 import { isSearchOption } from '../utils';
+import { getHintText } from '../utils/get-hint-text';
 
 @Component({
     selector: 'v-select-field',
@@ -28,18 +29,10 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
 
     searchStr: string = '';
 
-    get option() {
-        return this.options?.find?.((o) => o.value === this.control.value);
-    }
-
     get hintText() {
-        if (this.hint) {
-            return this.hint;
-        }
-        if (this.multiple && this.options && this.options.length > 1) {
-            return (this.control.value?.length || 0) + '/' + this.options.length;
-        }
-        return this.option?.description;
+        return getHintText(this.options, this.control.value, this.hint, {
+            multiple: this.multiple,
+        });
     }
 
     search = (term: string, item: Option<T>) => {

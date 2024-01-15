@@ -45,11 +45,7 @@
             </button>
         }
     </div>
-    <mat-hint>{{
-        (selected$ | async)
-            ? ((selected$ | async)?.description ?? '') + (hint ? ' | ' + hint : '')
-            : hint
-    }}</mat-hint>
+    <mat-hint>{{ hintText }}</mat-hint>
     <mat-error>{{
         error ??
             ((selected$ | async) ? (selected$ | async)?.label + (hint ? ' | ' + hint : '') : hint)
