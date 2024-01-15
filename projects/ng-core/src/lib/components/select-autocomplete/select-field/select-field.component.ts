@@ -1,9 +1,9 @@
 import { booleanAttribute, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 
-import { createControlProviders, FormControlSuperclass } from '../../utils';
-
-import { Option } from './types/option';
+import { createControlProviders, FormControlSuperclass } from '../../../utils';
+import { Option } from '../types';
+import { isSearchOption } from '../utils';
 
 @Component({
     selector: 'v-select-field',
@@ -43,13 +43,6 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     }
 
     search = (term: string, item: Option<T>) => {
-        if (this.externalSearch) {
-            return true;
-        }
-        const termLowerCase = term.toLowerCase();
-        return (
-            item.label.toLowerCase().includes(termLowerCase) ||
-            !!item.description?.includes?.(termLowerCase)
-        );
+        return this.externalSearch || isSearchOption(item, term.toLowerCase());
     };
 }
