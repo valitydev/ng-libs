@@ -14,6 +14,9 @@ export function getHintText<T>(
     if (opts.multiple && options?.length > 1) {
         return (selected?.length || 0) + '/' + options.length;
     }
+    if (!selected?.length) {
+        return '';
+    }
     const option = findOptionByValue(options, selected[0]);
     return opts.showLabel ? option?.label : option?.description;
 }
