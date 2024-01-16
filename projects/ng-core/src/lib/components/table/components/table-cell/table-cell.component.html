@@ -50,18 +50,20 @@
                 }
                 @if (colDef.type === 'tag') {
                     @if (colDef.typeParameters.tags[value] ?? {}; as tag) {
-                        <v-tag [color]="tag.color">
-                            {{
-                                tag.label ??
-                                    (rowData
-                                        | vSelect: colDef.typeParameters.label : value : [colDef])
-                            }}
-                        </v-tag>
+                        @if (
+                            tag.label ??
+                                (rowData | vSelect: colDef.typeParameters.label : value : [colDef]);
+                            as tagLabel
+                        ) {
+                            <v-tag [color]="tag.color">
+                                {{ tagLabel }}
+                            </v-tag>
+                        }
                     }
                 }
                 @if (colDef.type === 'boolean') {
                     @if (value === true || value === false) {
-                        <v-tag [color]="value ? 'success' : 'neutral'">
+                        <v-tag [color]="value ? 'success' : 'warn'">
                             {{ value ? 'Yes' : 'No' }}
                         </v-tag>
                     }
