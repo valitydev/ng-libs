@@ -10,5 +10,5 @@ export function isSearchOption<T>(option: Option<T>, termLowerCase: string) {
 
 export function searchOptions<T>(options: Option<T>[], term: string) {
     const termLowerCase = term.toLowerCase();
-    return options.filter((option) => isSearchOption(option, termLowerCase));
+    return options?.filter?.((option) => isSearchOption(option, termLowerCase));
 }
