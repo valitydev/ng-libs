@@ -9,8 +9,8 @@ export abstract class FormComponentSuperclass<OuterType>
     extends BaseFormComponentSuperclass<OuterType>
     implements Validator, OnInit
 {
-    private cdr = inject(ChangeDetectorRef);
-    private destroyRef = inject(DestroyRef);
+    private _cdr = inject(ChangeDetectorRef);
+    private _destroyRef = inject(DestroyRef);
 
     validate(_control: AbstractControl): ValidationErrors | null {
         return null;
@@ -18,10 +18,10 @@ export abstract class FormComponentSuperclass<OuterType>
 
     ngOnInit() {
         concat(timer(0), timer(100))
-            .pipe(takeUntilDestroyed(this.destroyRef))
+            .pipe(takeUntilDestroyed(this._destroyRef))
             .subscribe(() => {
                 this.onValidatorChange();
-                this.cdr.markForCheck();
+                this._cdr.markForCheck();
             });
     }
 
