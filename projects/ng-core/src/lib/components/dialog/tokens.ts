@@ -14,7 +14,15 @@ export const BASE_CONFIG: ValuesType<DialogConfig> = {
 };
 
 export const DEFAULT_DIALOG_CONFIG: DialogConfig = {
-    small: { ...BASE_CONFIG, width: '360px' },
+    small: {
+        ...BASE_CONFIG,
+        width: '360px',
+    },
     medium: BASE_CONFIG,
-    large: { ...BASE_CONFIG, width: '800px' },
+    large: {
+        ...BASE_CONFIG,
+        width: '1000px',
+    },
 };
+
+export const DEFAULT_DIALOG_CONFIG_FULL_HEIGHT = 'calc(90vh - 48px)';
