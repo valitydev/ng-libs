@@ -15,8 +15,10 @@ import {
     numberAttribute,
     booleanAttribute,
     OnDestroy,
+    input,
+    Injector,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
@@ -30,7 +32,6 @@ import {
     debounceTime,
     switchMap,
     forkJoin,
-    Subject,
     BehaviorSubject,
     tap,
     Observable,
@@ -81,7 +82,8 @@ export interface DragDrop<T> {
 export class TableComponent<T extends object>
     implements OnInit, Progressable, OnChanges, AfterViewInit, OnDestroy
 {
-    @Input() data!: T[];
+    data = input<T[]>([]);
+
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
     @Input() progress?: boolean | number | null = false;
@@ -115,7 +117,7 @@ export class TableComponent<T extends object>
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
-    @Input({ transform: booleanAttribute }) externalFilter: boolean = false;
+    externalFilter = input(false, { transform: booleanAttribute });
     @Input() filter = '';
     // TODO: filter by rendered column fields, it will be useful if you save the render in memory
     @Input() filterByColumns?: string[];
@@ -166,21 +168,21 @@ export class TableComponent<T extends object>
     get hasShowMore() {
         return (
             this.hasMore ||
-            (this.filteredDataLength ?? this.data?.length) > this.size * this.displayedPages
+            (this.filteredDataLength ?? this.data()?.length) > this.size * this.displayedPages
         );
     }
 
     get isNoRecords() {
-        return !this.data?.length || this.filteredDataLength === 0;
+        return !this.data()?.length || this.filteredDataLength === 0;
     }
 
     private paginator!: OnePageTableDataSourcePaginator;
-    private dataUpdated$ = new Subject<void>();
     private qp?: QueryParamsNamespace<{ filter: string; exact?: boolean }>;
 
     constructor(
         private destroyRef: DestroyRef,
         private queryParamsService: QueryParamsService,
+        private injector: Injector,
     ) {
         this.updatePaginator();
     }
@@ -208,7 +210,12 @@ export class TableComponent<T extends object>
         exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
             this.qp?.patch?.({ exact });
         });
-        combineLatest([filter$, exactFilter$, this.dataUpdated$.pipe(startWith(null))])
+        combineLatest([
+            filter$,
+            exactFilter$,
+            toObservable(this.data, { injector: this.injector }),
+            toObservable(this.externalFilter, { injector: this.injector }),
+        ])
             .pipe(
                 tap(() => {
                     this.filterProgress$.next(true);
@@ -216,7 +223,7 @@ export class TableComponent<T extends object>
                 }),
                 debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
                 switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
-                    if (!filter || this.externalFilter || !this.data?.length) {
+                    if (!filter || this.externalFilter() || !this.data()?.length) {
                         return of([new Map(), filter]);
                     }
                     const cols = this.filterByColumns
@@ -229,7 +236,7 @@ export class TableComponent<T extends object>
                         cols.length
                             ? forkJoin([
                                   forkJoin(
-                                      this.data.map((sourceValue, index) =>
+                                      this.data().map((sourceValue, index) =>
                                           combineLatest(
                                               cols.map((colDef) =>
                                                   colDef.lazy
@@ -247,7 +254,7 @@ export class TableComponent<T extends object>
                                       ),
                                   ),
                                   forkJoin(
-                                      this.data.map((sourceValue, index) =>
+                                      this.data().map((sourceValue, index) =>
                                           combineLatest(
                                               cols.map((colDef) =>
                                                   colDef.description && !colDef.lazy
@@ -268,7 +275,7 @@ export class TableComponent<T extends object>
                             : of([[] as unknown[], [] as unknown[]])
                     ).pipe(
                         map(([formattedValues, formattedDescription]) => {
-                            const fuseData = this.data.map((item, idx) => ({
+                            const fuseData = this.data().map((item, idx) => ({
                                 // TODO: add weights
                                 value: JSON.stringify(item),
                                 formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
@@ -286,7 +293,7 @@ export class TableComponent<T extends object>
                             return [
                                 new Map(
                                     filterResult.map(({ refIndex, score }) => [
-                                        this.data[refIndex],
+                                        this.data()[refIndex],
                                         { score: score ?? COMPLETE_MISMATCH_SCORE },
                                     ]),
                                 ),
@@ -300,7 +307,7 @@ export class TableComponent<T extends object>
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
                 this.sortChanged(
-                    filter && !this.externalFilter
+                    filter && !this.externalFilter()
                         ? { active: this.scoreColumnDef, direction: 'asc' }
                         : this.sortComponent.active === this.scoreColumnDef
                           ? DEFAULT_SORT
@@ -326,9 +333,8 @@ export class TableComponent<T extends object>
             this.updateSelection();
         }
         if (changes.data) {
-            this.dataSource.data = this.data;
+            this.dataSource.data = this.data();
             this.preloadedLazyCells = new Map();
-            this.dataUpdated$.next();
         }
         if (this.dataSource.sort && changes.sort) {
             this.updateSort();
@@ -352,9 +358,6 @@ export class TableComponent<T extends object>
             if (exact !== this.exactFilterControl.value) {
                 this.exactFilterControl.setValue(1);
             }
-        }
-        if (changes.externalFilter) {
-            this.dataUpdated$.next();
         }
         if (changes.sortOnFront || changes.data) {
             this.tryFrontSort();
@@ -387,7 +390,7 @@ export class TableComponent<T extends object>
 
     showMore() {
         this.paginator.more();
-        if (this.hasMore && this.displayedPages * this.size > this.data?.length) {
+        if (this.hasMore && this.displayedPages * this.size > this.data()?.length) {
             this.more.emit({ size: this.currentSize });
         }
     }
@@ -418,7 +421,7 @@ export class TableComponent<T extends object>
         this.dragDisabled = true;
         const item = event.item.data;
         const { previousIndex, currentIndex } = event;
-        const previousData = this.dataSource.sortData(this.data, this.sortComponent);
+        const previousData = this.dataSource.sortData(this.data(), this.sortComponent);
         const currentData = previousData.slice();
         let currentDataIndex = 0;
         if (previousIndex > currentIndex) {
@@ -442,7 +445,7 @@ export class TableComponent<T extends object>
     }
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
-        const data = this.data;
+        const data = this.data();
         if (!data?.length || !active || !direction) {
             this.updateDataSourceSort();
             return;
@@ -536,7 +539,7 @@ export class TableComponent<T extends object>
     }
 
     private updateSelection() {
-        const newSelected = (this.rowSelected || []).filter((d) => !!this.data?.includes?.(d));
+        const newSelected = (this.rowSelected || []).filter((d) => !!this.data()?.includes?.(d));
         this.selection.deselect(...this.selection.selected.filter((s) => !newSelected.includes(s)));
         this.selection.select(...newSelected);
     }

@@ -3,7 +3,7 @@
         <div class="toolbar">
             <ng-content select="v-table-inputs"></ng-content>
             <mat-form-field class="v-table-filter-standalone">
-                <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
+                <mat-label>{{ externalFilter() ? 'Search' : 'Filter' }}</mat-label>
                 <input [formControl]="filterControl" matInput />
                 <div matSuffix style="white-space: nowrap">
                     <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
@@ -68,11 +68,11 @@
                 {{
                     progress
                         ? '...'
-                        : data?.length
-                          ? data.length + (hasMore ? ' (more available)' : ' (all)')
+                        : data()?.length
+                          ? data().length + (hasMore ? ' (more available)' : ' (all)')
                           : '0'
                 }}
-                @if (filterControl.value && !externalFilter) {
+                @if (filterControl.value && !externalFilter()) {
                     | Filtered: {{ filteredDataLength ?? '...' }}
                 }
                 @if (selection.selected?.length) {
@@ -82,7 +82,7 @@
             </div>
         </div>
         <mat-card class="table-card">
-            @if (progress || (!externalFilter && (filterProgress$ | async))) {
+            @if (progress || (!externalFilter() && (filterProgress$ | async))) {
                 <mat-progress-bar class="progress-bar" mode="indeterminate"></mat-progress-bar>
             }
             <table
@@ -233,7 +233,7 @@
                         {{
                             progress
                                 ? 'Loading...'
-                                : !externalFilter && (filterProgress$ | async)
+                                : !externalFilter() && (filterProgress$ | async)
                                   ? 'Filtering...'
                                   : filteredDataLength === 0
                                     ? 'No records found'
@@ -254,7 +254,7 @@
         <v-show-more-button
             [disabled]="!!progress"
             [displayedPages]="displayedPages"
-            [length]="data?.length ?? 0"
+            [length]="data()?.length ?? 0"
             [pageSize]="size"
             [progress]="!!progress"
             (more)="showMore()"
@@ -291,7 +291,7 @@
 </ng-template>
 
 <ng-template #exactButtonTpl>
-    @if (!externalFilter) {
+    @if (!externalFilter()) {
         <v-switch-button
             [formControl]="exactFilterControl"
             [states]="[
