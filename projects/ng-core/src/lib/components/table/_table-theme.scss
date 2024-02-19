@@ -22,6 +22,6 @@
     }
 
     .v-table-filter {
-        @include mat.private-form-field-density(-5);
+        @include mat.form-field-density(-5);
     }
 }
