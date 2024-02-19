@@ -33,7 +33,7 @@ export type TagColumn<T extends object, TTag extends PropertyKey = PropertyKey> 
 export type CurrencyColumn<T extends object> = TypedColumn<
     T,
     'currency',
-    { currencyCode: FormatterFn<T>; isMinor?: boolean }
+    { currencyCode: FormatterFn<T>; isMinor?: boolean; exponent?: FormatterFn<T> }
 >;
 
 export type TypedColumns<T extends object> =

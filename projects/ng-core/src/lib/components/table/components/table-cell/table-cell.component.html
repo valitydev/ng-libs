@@ -78,7 +78,9 @@
                                           : ''
                                           : [colDef])
                                 : 'long'
-                                : (colDef.typeParameters.isMinor ? undefined : 0)
+                                : (rowData
+                                      | vSelect: colDef?.typeParameters?.exponent : 2 : [colDef])
+                                : !colDef?.typeParameters?.isMinor
                     }}
                 }
                 @if (colDef.type === 'menu') {

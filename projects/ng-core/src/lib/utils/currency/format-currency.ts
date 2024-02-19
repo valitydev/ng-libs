@@ -9,12 +9,13 @@ export function formatCurrency(
     format: 'short' | 'long' = 'long',
     locale = 'en-GB',
     exponent: number = getCurrencyExponent(currencyCode),
+    isMajor: boolean = false,
 ): string {
     return ngFormatCurrency(
-        toMajorByExponent(amount, exponent),
+        isMajor ? amount : toMajorByExponent(amount, exponent),
         locale,
         getCurrencySymbol(currencyCode, 'narrow', locale),
         currencyCode,
-        format === 'short' ? `0.0-${exponent}` : undefined,
+        format === 'short' ? `1.0-${exponent}` : `1.${exponent}-${exponent}`,
     );
 }
