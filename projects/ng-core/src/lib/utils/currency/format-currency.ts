@@ -8,9 +8,12 @@ export function formatCurrency(
     currencyCode: string = 'USD',
     format: 'short' | 'long' = 'long',
     locale = 'en-GB',
-    exponent: number = getCurrencyExponent(currencyCode),
+    exponent?: number,
     isMajor: boolean = false,
 ): string {
+    if (!exponent) {
+        exponent = getCurrencyExponent(currencyCode) || 0;
+    }
     return ngFormatCurrency(
         isMajor ? amount : toMajorByExponent(amount, exponent),
         locale,
