@@ -23,8 +23,8 @@ export interface BaseColumn<T extends object> {
     hide?: boolean;
     pinned?: ColumnPinValue;
     width?: string;
-    minWidth?: number;
-    maxWidth?: number;
+    minWidth?: string;
+    maxWidth?: string;
     sortable?: boolean | string;
     cellTemplate?: TemplateRef<unknown>;
     formatter?: FormatterFn<T>;

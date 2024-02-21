@@ -190,7 +190,8 @@
                             *matCellDef="let row; let index = index"
                             [ngClass]="{
                                 'pinned-left': col.pinned === 'left',
-                                'pinned-right': col.pinned === 'right'
+                                'pinned-right': col.pinned === 'right',
+                                td: true
                             }"
                             [ngStyle]="{
                                 width: col.width,

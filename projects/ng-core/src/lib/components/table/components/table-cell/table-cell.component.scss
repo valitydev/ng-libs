@@ -3,6 +3,12 @@
         white-space: nowrap;
     }
 
+    .value,
+    .description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .value-link {
         cursor: pointer;
 

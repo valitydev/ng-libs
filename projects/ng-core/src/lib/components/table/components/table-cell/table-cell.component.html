@@ -42,6 +42,7 @@
         >
             <div
                 [ngClass]="{ 'value-link': !!colDef.click }"
+                [title]="value"
                 class="value"
                 (click)="colDef.click?.(rowData, index)"
             >
@@ -106,8 +107,12 @@
         </ng-template>
     </ng-template>
     <ng-template #descriptionTemplate>
-        <div class="description mat-caption mat-secondary-text">
-            {{ rowData | vSelect: colDef.description : '' : [colDef] }}
+        <div
+            *ngIf="rowData | vSelect: colDef.description : '' : [colDef] as description"
+            [title]="description"
+            class="description mat-caption mat-secondary-text"
+        >
+            {{ description }}
         </div>
     </ng-template>
 </ng-template>
