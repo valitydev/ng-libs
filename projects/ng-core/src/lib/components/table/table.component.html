@@ -75,9 +75,9 @@
                 @if (filterControl.value && !externalFilter()) {
                     | Filtered: {{ filteredDataLength ?? '...' }}
                 }
-                @if (selection.selected?.length) {
+                @if (selected?.length) {
                     |
-                    <b>Selected: {{ selection.selected.length }}</b>
+                    <b>Selected: {{ selected.length }}</b>
                 }
             </div>
         </div>
@@ -98,14 +98,14 @@
                 (cdkDropListDropped)="drop($event)"
                 (matSortChange)="sortChanged($event)"
             >
-                <ng-container [matColumnDef]="dragColumnDef" sticky>
+                <ng-container [matColumnDef]="dragColumnDef" [sticky]="true">
                     <th *matHeaderCellDef mat-header-cell></th>
                     <td *matCellDef="let row; let index = index" mat-cell>
                         <div class="position">
                             <mat-icon class="dragCursor" (mousedown)="dragDisabled = false"
                                 >reorder</mat-icon
                             >
-                            <!--                            <span>{{ index + 1 }}</span>-->
+                            <!-- <span>{{ index + 1 }}</span>-->
                         </div>
                     </td>
                 </ng-container>
@@ -123,28 +123,14 @@
                     </td>
                 </ng-container>
                 @if (rowSelectable) {
-                    <ng-container [matColumnDef]="selectColumnDef" sticky>
-                        <th *matHeaderCellDef class="pinned-left" mat-header-cell>
-                            <mat-checkbox
-                                [checked]="selection.hasValue() && isAllSelected()"
-                                [disabled]="
-                                    !!progress || (!!filterControl.value && !isAllSelected())
-                                "
-                                [indeterminate]="selection.hasValue() && !isAllSelected()"
-                                (change)="$event ? toggleAllRows() : null"
-                            >
-                            </mat-checkbox>
-                        </th>
-                        <td *matCellDef="let row" class="pinned-left" mat-cell>
-                            <mat-checkbox
-                                [checked]="selection.isSelected(row)"
-                                [disabled]="!!progress"
-                                (change)="$event ? selection.toggle(row) : null"
-                                (click)="$event.stopPropagation()"
-                            >
-                            </mat-checkbox>
-                        </td>
-                    </ng-container>
+                    <v-select-column
+                        [data]="data()"
+                        [filtered]="!!filterControl.value"
+                        [name]="selectColumnDef"
+                        [progress]="progress"
+                        [selected]="rowSelected"
+                        (selectedChange)="rowSelectedChange.emit($event); selected = $event"
+                    ></v-select-column>
                 }
                 @for (col of columnsObjects.values(); track col) {
                     <ng-container

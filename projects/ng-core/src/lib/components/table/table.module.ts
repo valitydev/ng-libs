@@ -23,6 +23,7 @@ import { InputFieldModule } from '../input-field';
 import { SwitchButtonModule } from '../switch-button';
 import { TagModule } from '../tag';
 
+import { SelectColumnComponent } from './components/select-column.component';
 import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
@@ -55,6 +56,7 @@ import { TableComponent } from './table.component';
         SwitchButtonModule,
         CdkDrag,
         CdkDropList,
+        SelectColumnComponent,
     ],
     declarations: [
         TableComponent,

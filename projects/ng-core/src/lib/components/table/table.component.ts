@@ -1,4 +1,3 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
@@ -101,6 +100,7 @@ export class TableComponent<T extends object>
     @Input() rowSelected!: T[];
     @Output() rowSelectedChange = new EventEmitter<T[]>();
     selectColumnDef = createInternalColumnDef('select');
+    selected: T[] = [];
 
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
@@ -133,7 +133,6 @@ export class TableComponent<T extends object>
     isPreload = false;
 
     dataSource = new MatTableDataSource<T>();
-    selection = new SelectionModel<T>(true, []);
 
     displayedColumns: string[] = [];
 
@@ -176,9 +175,6 @@ export class TableComponent<T extends object>
     }
 
     ngOnInit() {
-        this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-            this.rowSelectedChange.emit(this.selection.selected);
-        });
         const startValue = this.filterControl.value;
         const filter$ = this.filterControl.valueChanges.pipe(
             ...((startValue ? [startWith(startValue)] : []) as []),
@@ -317,9 +313,6 @@ export class TableComponent<T extends object>
         if (changes.columns || changes.rowSelectable || changes.rowDragDrop) {
             this.updateDisplayedColumns();
         }
-        if (this.rowSelectable && (changes.data || changes.rowSelected)) {
-            this.updateSelection();
-        }
         if (changes.data) {
             this.dataSource.data = this.data();
             this.preloadedLazyCells = new Map();
@@ -381,21 +374,6 @@ export class TableComponent<T extends object>
         if (this.hasMore && this.displayedPages * this.size > this.data()?.length) {
             this.more.emit({ size: this.currentSize });
         }
-    }
-
-    isAllSelected() {
-        const numSelected = this.selection.selected.length;
-        const numRows = this.dataSource.data.length;
-        return numSelected === numRows;
-    }
-
-    toggleAllRows() {
-        if (this.isAllSelected()) {
-            this.selection.clear(true);
-            return;
-        }
-
-        this.selection.select(...this.dataSource.data);
     }
 
     sortChanged(sort: Sort) {
@@ -524,11 +502,5 @@ export class TableComponent<T extends object>
                 .filter((c) => !c.hide)
                 .map((c) => c.field),
         ];
-    }
-
-    private updateSelection() {
-        const newSelected = (this.rowSelected || []).filter((d) => !!this.data()?.includes?.(d));
-        this.selection.deselect(...this.selection.selected.filter((s) => !newSelected.includes(s)));
-        this.selection.select(...newSelected);
     }
 }
