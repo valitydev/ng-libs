@@ -13,3 +13,4 @@ export * from './select-autocomplete';
 export * from './file-upload';
 export * from './datetime-field';
 export * from './switch-button';
+export * from './value';

@@ -1,0 +1,42 @@
+@if (value(); as v) {
+    @if (isLoaded) {
+        @if (v.template) {
+            <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
+        } @else {
+            @switch (v.type) {
+                @case ('datetime') {
+                    <v-datetime-value [value]="v"></v-datetime-value>
+                }
+                @case ('currency') {
+                    <v-currency-amount-value [value]="v"></v-currency-amount-value>
+                }
+                @case ('menu') {
+                    <v-menu-value [value]="v"></v-menu-value>
+                }
+                @default {
+                    <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                }
+            }
+            <ng-template #valueTemplate>
+                <v-tag [color]="v.color">
+                    <ng-container *ngTemplateOutlet="baseValueTemplate"></ng-container>
+                </v-tag>
+            </ng-template>
+            <ng-template #baseValueTemplate>
+                <span [matTooltip]="v.tooltip">
+                    {{ v.value }}
+                </span>
+            </ng-template>
+        }
+
+        @if (v.description) {
+            <div [title]="v.description" class="description mat-caption mat-secondary-text">
+                {{ v.description }}
+            </div>
+        }
+    } @else {
+        <button class="button" mat-icon-button (click)="this.toggleLazyVisible()">
+            <mat-icon>sync</mat-icon>
+        </button>
+    }
+}
