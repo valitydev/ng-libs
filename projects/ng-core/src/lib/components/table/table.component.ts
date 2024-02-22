@@ -50,15 +50,16 @@ import {
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableInputsComponent } from './components/table-inputs.component';
+import {
+    DEFAULT_DEBOUNCE_TIME_MS,
+    DEFAULT_SORT,
+    COMPLETE_MISMATCH_SCORE,
+    DEFAULT_SORT_DATA,
+} from './consts';
 import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnDef } from './utils/create-internal-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
-
-const COMPLETE_MISMATCH_SCORE = 1;
-const DEFAULT_SORT: Sort = { active: '', direction: '' };
-const DEFAULT_DEBOUNCE_TIME_MS = 250;
-const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
 
 @Component({
     selector: 'v-table',

@@ -1,5 +1,5 @@
 @if (value(); as v) {
-    @if (isLoaded) {
+    @if (isLoaded()) {
         @if (v.template) {
             <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
         } @else {
@@ -23,7 +23,7 @@
                 </v-tag>
             </ng-template>
             <ng-template #baseValueTemplate>
-                <span [matTooltip]="v.tooltip">
+                <span [matTooltip]="v.tooltip ?? ''">
                     {{ v.value }}
                 </span>
             </ng-template>
