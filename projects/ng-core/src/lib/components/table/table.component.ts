@@ -50,7 +50,7 @@ import {
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableInputsComponent } from './components/table-inputs.component';
-import { Column, ColumnObject, UpdateOptions } from './types';
+import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnDef } from './utils/create-internal-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
@@ -59,19 +59,6 @@ const COMPLETE_MISMATCH_SCORE = 1;
 const DEFAULT_SORT: Sort = { active: '', direction: '' };
 const DEFAULT_DEBOUNCE_TIME_MS = 250;
 const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
-
-export interface DragDrop<T> {
-    item: T;
-    // Indexes in previous data
-    previousIndex: number;
-    currentIndex: number;
-    previousData: T[];
-    // Indexes in current data
-    currentDataIndex: number;
-    currentData: T[];
-
-    sort: Sort;
-}
 
 @Component({
     selector: 'v-table',
