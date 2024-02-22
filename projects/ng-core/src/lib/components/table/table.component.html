@@ -109,19 +109,7 @@
                         </div>
                     </td>
                 </ng-container>
-                <ng-container [matColumnDef]="scoreColumnDef">
-                    <th
-                        *matHeaderCellDef
-                        [mat-sort-header]="scoreColumnDef"
-                        mat-header-cell
-                        style="display: none"
-                    >
-                        Score
-                    </th>
-                    <td *matCellDef="let row; let index = index" mat-cell style="display: none">
-                        {{ scores.get(row)?.score | number: '1.2-2' : 'en' }}
-                    </td>
-                </ng-container>
+                <v-score-column [name]="scoreColumnDef" [scores]="scores"></v-score-column>
                 @if (rowSelectable) {
                     <v-select-column
                         [data]="data()"

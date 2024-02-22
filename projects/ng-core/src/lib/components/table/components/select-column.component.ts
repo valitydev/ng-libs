@@ -81,8 +81,7 @@ export class SelectColumnComponent<T extends object>
         });
     }
 
-    override ngOnChanges(changes: ComponentChanges<SelectColumnComponent<T>>) {
-        super.ngOnChanges(changes);
+    ngOnChanges(changes: ComponentChanges<SelectColumnComponent<T>>) {
         if (changes.data || changes.selected) {
             this.updateSelection();
         }
