@@ -27,6 +27,7 @@ import { ShowMoreButtonComponent } from './components/show-more-button/show-more
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
 import { TableInputsComponent } from './components/table-inputs.component';
+import { Table2Component } from './components/table2';
 import { TableComponent } from './table.component';
 
 @NgModule({
@@ -57,6 +58,7 @@ import { TableComponent } from './table.component';
     ],
     declarations: [
         TableComponent,
+        Table2Component,
         TableActionsComponent,
         TableCellComponent,
         ShowMoreButtonComponent,
