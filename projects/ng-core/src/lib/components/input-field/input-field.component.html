@@ -1,4 +1,8 @@
-<mat-form-field [appearance]="appearance" style="width: 100%">
+<mat-form-field
+    [appearance]="appearance"
+    [ngClass]="{ 'v-field__small': size === 'small' }"
+    class="v-input-field"
+>
     <mat-label>{{ label }}</mat-label>
     <input
         [formControl]="control"

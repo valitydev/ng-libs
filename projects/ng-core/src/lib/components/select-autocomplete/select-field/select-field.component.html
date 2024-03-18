@@ -1,4 +1,4 @@
-<mat-form-field [appearance]="appearance">
+<mat-form-field [appearance]="appearance" [ngClass]="{ 'v-field__small': size === 'small' }">
     <mat-label>{{ label }}</mat-label>
 
     <mtx-select

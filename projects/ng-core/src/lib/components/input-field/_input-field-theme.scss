@@ -1,0 +1,7 @@
+@use '@angular/material' as mat;
+
+@mixin theme($theme) {
+    .v-field__small {
+        @include mat.form-field-density(-5);
+    }
+}

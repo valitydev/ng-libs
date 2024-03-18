@@ -1,3 +1,5 @@
+import isNil from 'lodash-es/isNil';
+
 import { Option } from '../types';
 
 import { findOptionByValue } from './find-option-by-value';
@@ -8,7 +10,7 @@ export function getHintText<T>(
     hint?: string,
     opts: { multiple?: boolean; showLabel?: boolean } = {},
 ) {
-    if (hint) {
+    if (!isNil(hint)) {
         return hint;
     }
     if (opts.multiple && options?.length > 1) {

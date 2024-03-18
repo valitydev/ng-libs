@@ -27,12 +27,19 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input({ transform: booleanAttribute }) multiple = false;
     @Input({ transform: booleanAttribute }) required = false;
 
+    @Input() size?: 'small' | '';
+
     searchStr: string = '';
 
     get hintText() {
-        return getHintText(this.options, this.control.value, this.hint, {
-            multiple: this.multiple,
-        });
+        return getHintText(
+            this.options,
+            this.multiple ? this.control.value : [this.control.value as T],
+            this.hint,
+            {
+                multiple: this.multiple,
+            },
+        );
     }
 
     search = (term: string, item: Option<T>) => {
