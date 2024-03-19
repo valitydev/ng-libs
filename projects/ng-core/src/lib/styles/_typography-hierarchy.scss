@@ -24,4 +24,31 @@
             font-family: 'Roboto Mono', monospace;
         }
     }
+
+    .mat-action,
+    #{$selector} .mat-action {
+        &#{&} {
+            cursor: pointer;
+            color: get-color($theme, primary);
+
+            &:hover {
+                color: get-color($theme, primary, darker);
+                text-decoration: underline;
+                text-decoration-style: dotted;
+            }
+        }
+    }
+
+    .mat-link,
+    #{$selector} .mat-link {
+        &#{&} {
+            cursor: pointer;
+            color: get-color($theme, primary);
+
+            &:hover {
+                color: get-color($theme, primary, darker);
+                text-decoration: underline;
+            }
+        }
+    }
 }
