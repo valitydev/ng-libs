@@ -14,4 +14,4 @@ export * from './file-upload';
 export * from './datetime-field';
 export * from './switch-button';
 export * from './value';
-export * from './table-of-contents';
+export * from './nav';
