@@ -1,0 +1,12 @@
+<div class="wrapper">
+    @for (link of links(); track link) {
+        <div
+            [ngClass]="{ item__active: (activeLink$ | async) === link }"
+            [routerLink]="link.url"
+            [title]="link.label"
+            class="mat-body-2 item"
+        >
+            {{ link.label }}
+        </div>
+    }
+</div>
