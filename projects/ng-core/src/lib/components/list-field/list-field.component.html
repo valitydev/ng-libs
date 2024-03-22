@@ -2,6 +2,6 @@
     <mat-label>{{ label }}</mat-label>
     <input #input="matInput" [formControl]="control" autocomplete="false" matInput type="string" />
     @if (input.focused) {
-        <mat-hint class="mat-secondary-text">item_1, item_2</mat-hint>
+        <mat-hint class="mat-secondary-text">{{ focusedHint || 'item_1, item_2' }}</mat-hint>
     }
 </mat-form-field>

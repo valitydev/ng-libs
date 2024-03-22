@@ -9,6 +9,7 @@ import { createControlProviders, FormControlSuperclass, splitBySeparators } from
 })
 export class ListFieldComponent extends FormControlSuperclass<string[], string> {
     @Input() label?: string;
+    @Input() focusedHint?: string;
 
     protected override innerToOuterValue(inner: string): string[] {
         return splitBySeparators(inner || '');

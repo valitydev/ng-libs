@@ -1,4 +1,4 @@
-const SEPARATORS = ',.;';
+const SEPARATORS = ',;';
 
 export function splitBySeparators(ids: string, separators = SEPARATORS): string[] {
     if (!ids) {
