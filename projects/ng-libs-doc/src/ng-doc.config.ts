@@ -1,8 +1,10 @@
 import { NgDocConfiguration } from '@ng-doc/builder';
 
+import * as packageJson from '../../../package.json';
+
 const Config: NgDocConfiguration = {
     repoConfig: {
-        url: 'https://github.com/valitydev/ng-libs',
+        url: packageJson.repository.url,
         mainBranch: 'master',
         releaseBranch: 'master',
     },

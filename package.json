@@ -21,6 +21,10 @@
   "workspaces": [
     "./projects/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/valitydev/ng-libs"
+  },
   "dependencies": {
     "@angular/animations": "^17.2.1",
     "@angular/common": "^17.2.1",

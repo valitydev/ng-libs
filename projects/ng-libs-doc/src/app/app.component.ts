@@ -12,6 +12,8 @@ import {
     NgDocIconComponent,
 } from '@ng-doc/ui-kit';
 
+import * as packageJson from '../../../../package.json';
+
 @Component({
     selector: 'app-root',
     standalone: true,
@@ -30,5 +32,5 @@ import {
     styleUrl: './app.component.scss',
 })
 export class AppComponent {
-    githubUrl = 'https://github.com/valitydev/ng-libs';
+    githubUrl = packageJson.repository.url;
 }
