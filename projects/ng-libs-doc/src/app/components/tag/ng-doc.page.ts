@@ -2,11 +2,9 @@ import { NgDocPage } from '@ng-doc/core';
 
 import ComponentsCategory from '../ng-doc.category';
 
-import {
-    DemoComponent,
-    DemoThemeColorsComponent,
-    DemoStatusColorsComponent,
-} from './demo.component';
+import { DemoStatusColorsComponent } from './demo-status-colors.component';
+import { DemoThemeColorsComponent } from './demo-theme-colors.component';
+import { DemoComponent } from './demo.component';
 
 const TagPage: NgDocPage = {
     title: `Tag`,

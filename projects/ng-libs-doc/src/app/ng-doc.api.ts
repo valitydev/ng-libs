@@ -1,8 +1,7 @@
 import { NgDocApi } from '@ng-doc/core';
 
 const Api: NgDocApi = {
-    title: 'API References',
-    keyword: 'ApiReferences',
+    title: 'Core API',
     scopes: [
         ...['components', 'services', 'pipes', 'utils', 'types', 'styles'].map((path) => ({
             name: `@vality/ng-core ${path}`,
