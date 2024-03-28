@@ -17,11 +17,10 @@ import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        provideRouter(routes),
         provideAnimations(),
         provideHttpClient(withInterceptorsFromDi()),
         provideRouter(
-            NG_DOC_ROUTING,
+            [...routes, ...NG_DOC_ROUTING],
             withInMemoryScrolling({
                 scrollPositionRestoration: 'enabled',
                 anchorScrolling: 'enabled',

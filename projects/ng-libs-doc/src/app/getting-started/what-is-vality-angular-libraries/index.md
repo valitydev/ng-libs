@@ -1,7 +1,7 @@
 # {{ NgDocPage.title }}
 
--   [Core](/projects/ng-core)
+-   [Core](/libraries/core)
 -   Configs
-    -   [Prettier Config](/projects/prettier-config)
-    -   [ESLint Config](/projects/eslint-config)
-    -   [CSpell Config](/projects/cspell-config)
+    -   [Prettier Config](/libraries/prettier-config)
+    -   [ESLint Config](/libraries/eslint-config)
+    -   [CSpell Config](/libraries/cspell-config)
