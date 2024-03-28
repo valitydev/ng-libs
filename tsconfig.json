@@ -12,6 +12,8 @@
         "noFallthroughCasesInSwitch": true,
         "sourceMap": true,
         "paths": {
+            "@ng-doc/generated": ["./ng-doc/ng-libs-doc/index.ts"],
+            "@ng-doc/generated/*": ["./ng-doc/ng-libs-doc/*"],
             "ng-core": ["dist/ng-core"]
         },
         "declaration": false,
