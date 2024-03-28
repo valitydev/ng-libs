@@ -14,7 +14,7 @@
         "paths": {
             "@ng-doc/generated": ["./ng-doc/ng-libs-doc/index.ts"],
             "@ng-doc/generated/*": ["./ng-doc/ng-libs-doc/*"],
-            "ng-core": ["dist/ng-core"]
+            "@vality/ng-core": ["./projects/ng-core/dist"]
         },
         "declaration": false,
         "downlevelIteration": true,
