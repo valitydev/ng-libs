@@ -4,12 +4,9 @@ import { startWith, map } from 'rxjs/operators';
 
 import { getValue } from './get-value';
 
-export function getValueChanges<T>(
-    form: AbstractControl<FormControlState<T> | T>,
-    hasStart = true,
-): Observable<T> {
+export function getValueChanges<T>(form: AbstractControl<FormControlState<T> | T>): Observable<T> {
     return form.valueChanges.pipe(
-        ...((hasStart ? [startWith(form.value)] : []) as []),
+        startWith(form.value),
         map(() => getValue(form)),
     ) as Observable<T>;
 }

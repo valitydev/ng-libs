@@ -3,7 +3,7 @@
         <div class="toolbar">
             <ng-content select="v-table-inputs"></ng-content>
             <mat-form-field class="v-table-filter-standalone">
-                <mat-label>{{ externalFilter ? 'Search' : 'Filter' }}</mat-label>
+                <mat-label>{{ externalFilter() ? 'Search' : 'Filter' }}</mat-label>
                 <input [formControl]="filterControl" matInput />
                 <div matSuffix style="white-space: nowrap">
                     <ng-container *ngTemplateOutlet="exactButtonTpl"></ng-container>
@@ -68,21 +68,21 @@
                 {{
                     progress
                         ? '...'
-                        : data?.length
-                          ? data.length + (hasMore ? ' (more available)' : ' (all)')
+                        : data()?.length
+                          ? data().length + (hasMore ? ' (more available)' : ' (all)')
                           : '0'
                 }}
-                @if (filterControl.value && !externalFilter) {
+                @if (filterControl.value && !externalFilter()) {
                     | Filtered: {{ filteredDataLength ?? '...' }}
                 }
-                @if (selection.selected?.length) {
+                @if (selected?.length) {
                     |
-                    <b>Selected: {{ selection.selected.length }}</b>
+                    <b>Selected: {{ selected.length }}</b>
                 }
             </div>
         </div>
         <mat-card class="table-card">
-            @if (progress || (!externalFilter && (filterProgress$ | async))) {
+            @if (progress || (!externalFilter() && (filterProgress$ | async))) {
                 <mat-progress-bar class="progress-bar" mode="indeterminate"></mat-progress-bar>
             }
             <table
@@ -98,53 +98,27 @@
                 (cdkDropListDropped)="drop($event)"
                 (matSortChange)="sortChanged($event)"
             >
-                <ng-container [matColumnDef]="dragColumnDef" sticky>
+                <ng-container [matColumnDef]="dragColumnDef" [sticky]="true">
                     <th *matHeaderCellDef mat-header-cell></th>
                     <td *matCellDef="let row; let index = index" mat-cell>
                         <div class="position">
                             <mat-icon class="dragCursor" (mousedown)="dragDisabled = false"
                                 >reorder</mat-icon
                             >
-                            <!--                            <span>{{ index + 1 }}</span>-->
+                            <!-- <span>{{ index + 1 }}</span>-->
                         </div>
                     </td>
                 </ng-container>
-                <ng-container [matColumnDef]="scoreColumnDef">
-                    <th
-                        *matHeaderCellDef
-                        [mat-sort-header]="scoreColumnDef"
-                        mat-header-cell
-                        style="display: none"
-                    >
-                        Score
-                    </th>
-                    <td *matCellDef="let row; let index = index" mat-cell style="display: none">
-                        {{ scores.get(row)?.score | number: '1.2-2' : 'en' }}
-                    </td>
-                </ng-container>
+                <v-score-column [name]="scoreColumnDef" [scores]="scores"></v-score-column>
                 @if (rowSelectable) {
-                    <ng-container [matColumnDef]="selectColumnDef" sticky>
-                        <th *matHeaderCellDef class="pinned-left" mat-header-cell>
-                            <mat-checkbox
-                                [checked]="selection.hasValue() && isAllSelected()"
-                                [disabled]="
-                                    !!progress || (!!filterControl.value && !isAllSelected())
-                                "
-                                [indeterminate]="selection.hasValue() && !isAllSelected()"
-                                (change)="$event ? toggleAllRows() : null"
-                            >
-                            </mat-checkbox>
-                        </th>
-                        <td *matCellDef="let row" class="pinned-left" mat-cell>
-                            <mat-checkbox
-                                [checked]="selection.isSelected(row)"
-                                [disabled]="!!progress"
-                                (change)="$event ? selection.toggle(row) : null"
-                                (click)="$event.stopPropagation()"
-                            >
-                            </mat-checkbox>
-                        </td>
-                    </ng-container>
+                    <v-select-column
+                        [data]="data()"
+                        [filtered]="!!filterControl.value"
+                        [name]="selectColumnDef"
+                        [progress]="progress"
+                        [selected]="rowSelected"
+                        (selectedChange)="rowSelectedChange.emit($event); selected = $event"
+                    ></v-select-column>
                 }
                 @for (col of columnsObjects.values(); track col) {
                     <ng-container
@@ -190,7 +164,8 @@
                             *matCellDef="let row; let index = index"
                             [ngClass]="{
                                 'pinned-left': col.pinned === 'left',
-                                'pinned-right': col.pinned === 'right'
+                                'pinned-right': col.pinned === 'right',
+                                td: true
                             }"
                             [ngStyle]="{
                                 width: col.width,
@@ -233,7 +208,7 @@
                         {{
                             progress
                                 ? 'Loading...'
-                                : !externalFilter && (filterProgress$ | async)
+                                : !externalFilter() && (filterProgress$ | async)
                                   ? 'Filtering...'
                                   : filteredDataLength === 0
                                     ? 'No records found'
@@ -254,7 +229,7 @@
         <v-show-more-button
             [disabled]="!!progress"
             [displayedPages]="displayedPages"
-            [length]="data?.length ?? 0"
+            [length]="data()?.length ?? 0"
             [pageSize]="size"
             [progress]="!!progress"
             (more)="showMore()"
@@ -291,7 +266,7 @@
 </ng-template>
 
 <ng-template #exactButtonTpl>
-    @if (!externalFilter) {
+    @if (!externalFilter()) {
         <v-switch-button
             [formControl]="exactFilterControl"
             [states]="[

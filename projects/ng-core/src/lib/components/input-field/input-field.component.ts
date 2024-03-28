@@ -13,4 +13,5 @@ export class InputFieldComponent<T> extends FormControlSuperclass<T> {
     @Input() placeholder: string = '';
     @Input() type: 'string' | 'number' = 'string';
     @Input() appearance: MatFormFieldAppearance = 'fill';
+    @Input() size?: 'small' | '';
 }

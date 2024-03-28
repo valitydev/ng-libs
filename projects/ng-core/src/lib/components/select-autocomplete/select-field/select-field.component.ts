@@ -1,9 +1,10 @@
 import { booleanAttribute, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 
-import { createControlProviders, FormControlSuperclass } from '../../utils';
-
-import { Option } from './types/option';
+import { createControlProviders, FormControlSuperclass } from '../../../utils';
+import { Option } from '../types';
+import { isSearchOption } from '../utils';
+import { getHintText } from '../utils/get-hint-text';
 
 @Component({
     selector: 'v-select-field',
@@ -26,30 +27,22 @@ export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
     @Input({ transform: booleanAttribute }) multiple = false;
     @Input({ transform: booleanAttribute }) required = false;
 
+    @Input() size?: 'small' | '';
+
     searchStr: string = '';
 
-    get option() {
-        return this.options?.find?.((o) => o.value === this.control.value);
-    }
-
     get hintText() {
-        if (this.hint) {
-            return this.hint;
-        }
-        if (this.multiple && this.options && this.options.length > 1) {
-            return (this.control.value?.length || 0) + '/' + this.options.length;
-        }
-        return this.option?.description;
+        return getHintText(
+            this.options,
+            this.multiple ? this.control.value : [this.control.value as T],
+            this.hint,
+            {
+                multiple: this.multiple,
+            },
+        );
     }
 
     search = (term: string, item: Option<T>) => {
-        if (this.externalSearch) {
-            return true;
-        }
-        const termLowerCase = term.toLowerCase();
-        return (
-            item.label.toLowerCase().includes(termLowerCase) ||
-            !!item.description?.includes?.(termLowerCase)
-        );
+        return this.externalSearch || isSearchOption(item, term.toLowerCase());
     };
 }

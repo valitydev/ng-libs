@@ -2,8 +2,10 @@ import { booleanAttribute, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject, merge } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
-import { createControlProviders, FormControlSuperclass, ComponentChanges } from '../../utils';
-import { Option } from '../select-field';
+import { createControlProviders, FormControlSuperclass, ComponentChanges } from '../../../utils';
+import { Option } from '../types';
+import { searchOptions } from '../utils';
+import { getHintText } from '../utils/get-hint-text';
 
 @Component({
     selector: 'v-autocomplete-field',
@@ -22,6 +24,10 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     @Input({ transform: booleanAttribute }) mono = false;
     @Input({ transform: booleanAttribute }) required = false;
 
+    get hintText() {
+        return getHintText(this.options, [this.control.value], this.hint, { showLabel: true });
+    }
+
     options$ = new BehaviorSubject<Option<T>[]>([]);
     selected$ = merge(this.control.valueChanges, this.options$).pipe(
         map(() => (this.options || []).find((o) => o.value === this.control.value)),
@@ -29,14 +35,7 @@ export class AutocompleteFieldComponent<T> extends FormControlSuperclass<T> impl
     );
     filteredOptions$ = merge(this.control.valueChanges, this.options$).pipe(
         map(() => String(this.control.value ?? '').toLowerCase()),
-        map((filter) =>
-            (this.options || []).filter(
-                (o) =>
-                    String(o.value).toLowerCase().includes(filter) ||
-                    o.label.toLowerCase().includes(filter) ||
-                    o.description?.toLowerCase()?.includes?.(filter),
-            ),
-        ),
+        map((filter) => searchOptions(this.options, filter)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 

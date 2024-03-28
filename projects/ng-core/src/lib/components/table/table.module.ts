@@ -16,7 +16,6 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { NgLetModule } from 'ng-let';
 
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
@@ -24,10 +23,13 @@ import { InputFieldModule } from '../input-field';
 import { SwitchButtonModule } from '../switch-button';
 import { TagModule } from '../tag';
 
+import { ScoreColumnComponent } from './components/score-column.component';
+import { SelectColumnComponent } from './components/select-column.component';
 import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
 import { TableInputsComponent } from './components/table-inputs.component';
+import { Table2Component } from './components/table2';
 import { TableComponent } from './table.component';
 
 @NgModule({
@@ -45,7 +47,6 @@ import { TableComponent } from './table.component';
         MatTooltipModule,
         MatChipsModule,
         PipesModule,
-        NgLetModule,
         TagModule,
         RouterLink,
         MatProgressBarModule,
@@ -56,9 +57,12 @@ import { TableComponent } from './table.component';
         SwitchButtonModule,
         CdkDrag,
         CdkDropList,
+        SelectColumnComponent,
+        ScoreColumnComponent,
     ],
     declarations: [
         TableComponent,
+        Table2Component,
         TableActionsComponent,
         TableCellComponent,
         ShowMoreButtonComponent,

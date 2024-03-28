@@ -12,8 +12,8 @@ export abstract class AbstractControlSuperclass<OuterType, InnerType = OuterType
     extends WrappedControlSuperclass<OuterType, InnerType>
     implements Validator, OnInit
 {
-    private cdr = inject(ChangeDetectorRef);
-    private destroyRef = inject(DestroyRef);
+    private _cdr = inject(ChangeDetectorRef);
+    private _destroyRef = inject(DestroyRef);
 
     override ngOnInit() {
         super.ngOnInit();
@@ -21,11 +21,11 @@ export abstract class AbstractControlSuperclass<OuterType, InnerType = OuterType
             .pipe(
                 filter(() => this.control.invalid),
                 take(1),
-                takeUntilDestroyed(this.destroyRef),
+                takeUntilDestroyed(this._destroyRef),
             )
             .subscribe(() => {
                 this.onValidatorChange();
-                this.cdr.markForCheck();
+                this._cdr.markForCheck();
             });
     }
 

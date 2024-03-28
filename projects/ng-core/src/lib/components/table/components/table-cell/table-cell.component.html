@@ -32,68 +32,87 @@
     </div>
 
     <ng-template #valueTemplate>
-        <div
-            *ngLet="
-                rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef] as value
-            "
-            [ngClass]="{ 'value-link': !!colDef.click }"
-            class="value"
-            (click)="colDef.click?.(rowData, index)"
+        <ng-template
+            #value
+            [ngTemplateOutlet]="value"
+            [ngTemplateOutletContext]="{
+                value: rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef]
+            }"
+            let-value="value"
         >
-            @if (colDef.type === 'datetime') {
-                {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
-            }
-            @if (colDef.type === 'tag') {
-                @if (colDef.typeParameters.tags[value] ?? {}; as tag) {
-                    <v-tag [color]="tag.color">
-                        {{
+            <div
+                [ngClass]="{ 'value-link': !!colDef.click }"
+                [title]="value"
+                class="value"
+                (click)="colDef.click?.(rowData, index)"
+            >
+                @if (colDef.type === 'datetime') {
+                    {{ value | date: 'dd.MM.yyyy HH:mm:ss' : '+0000' }}
+                }
+                @if (colDef.type === 'tag') {
+                    @if (colDef.typeParameters.tags[value] ?? {}; as tag) {
+                        @if (
                             tag.label ??
-                                (rowData | vSelect: colDef.typeParameters.label : value : [colDef])
-                        }}
-                    </v-tag>
-                }
-            }
-            @if (colDef.type === 'boolean') {
-                @if (value === true || value === false) {
-                    <v-tag [color]="value ? 'success' : 'neutral'">
-                        {{ value ? 'Yes' : 'No' }}
-                    </v-tag>
-                }
-            }
-            @if (colDef.type === 'currency') {
-                {{
-                    value
-                        | amountCurrency
-                            : (rowData
-                                  | vSelect: colDef?.typeParameters?.currencyCode : '' : [colDef])
-                            : 'long'
-                            : (colDef.typeParameters.isMinor ? undefined : 0)
-                }}
-            }
-            @if (colDef.type === 'menu') {
-                <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
-                    <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                    @for (item of colDef.typeParameters.items; track item; let index = $index) {
-                        <button
-                            [disabled]="!!item?.disabled?.(rowData, index)"
-                            mat-menu-item
-                            (click)="item.click(rowData, index)"
-                        >
-                            {{ getLabel(item.label, index) }}
-                        </button>
+                                (rowData | vSelect: colDef.typeParameters.label : value : [colDef]);
+                            as tagLabel
+                        ) {
+                            <v-tag [color]="tag.color">
+                                {{ tagLabel }}
+                            </v-tag>
+                        }
                     }
-                </mat-menu>
-            }
-            @if (!colDef.type) {
-                {{ value }}
-            }
-        </div>
+                }
+                @if (colDef.type === 'boolean') {
+                    @if (value === true || value === false) {
+                        <v-tag [color]="value ? 'success' : 'warn'">
+                            {{ value ? 'Yes' : 'No' }}
+                        </v-tag>
+                    }
+                }
+                @if (colDef.type === 'currency') {
+                    {{
+                        value
+                            | amountCurrency
+                                : (rowData
+                                      | vSelect
+                                          : colDef?.typeParameters?.currencyCode
+                                          : ''
+                                          : [colDef])
+                                : 'long'
+                                : (rowData
+                                      | vSelect: colDef?.typeParameters?.exponent : 2 : [colDef])
+                                : !colDef?.typeParameters?.isMinor
+                    }}
+                }
+                @if (colDef.type === 'menu') {
+                    <button [matMenuTriggerFor]="menu" class="button" mat-icon-button>
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        @for (item of colDef.typeParameters.items; track item; let index = $index) {
+                            <button
+                                [disabled]="!!item?.disabled?.(rowData, index)"
+                                mat-menu-item
+                                (click)="item.click(rowData, index)"
+                            >
+                                {{ getLabel(item.label, index) }}
+                            </button>
+                        }
+                    </mat-menu>
+                }
+                @if (!colDef.type) {
+                    {{ value }}
+                }
+            </div>
+        </ng-template>
     </ng-template>
     <ng-template #descriptionTemplate>
-        <div class="description mat-caption mat-secondary-text">
-            {{ rowData | vSelect: colDef.description : '' : [colDef] }}
+        <div
+            *ngIf="rowData | vSelect: colDef.description : '' : [colDef] as description"
+            [title]="description"
+            class="description mat-caption mat-secondary-text"
+        >
+            {{ description }}
         </div>
     </ng-template>
 </ng-template>

@@ -1,4 +1,3 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
     AfterViewInit,
@@ -15,8 +14,10 @@ import {
     numberAttribute,
     booleanAttribute,
     OnDestroy,
+    input,
+    Injector,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTable } from '@angular/material/table';
@@ -30,7 +31,6 @@ import {
     debounceTime,
     switchMap,
     forkJoin,
-    Subject,
     BehaviorSubject,
     tap,
     Observable,
@@ -49,28 +49,16 @@ import {
 
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableInputsComponent } from './components/table-inputs.component';
-import { Column, ColumnObject, UpdateOptions } from './types';
+import {
+    DEFAULT_DEBOUNCE_TIME_MS,
+    DEFAULT_SORT,
+    COMPLETE_MISMATCH_SCORE,
+    DEFAULT_SORT_DATA,
+} from './consts';
+import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
 import { createInternalColumnDef } from './utils/create-internal-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
-
-const COMPLETE_MISMATCH_SCORE = 1;
-const DEFAULT_SORT: Sort = { active: '', direction: '' };
-const DEFAULT_DEBOUNCE_TIME_MS = 250;
-const DEFAULT_SORT_DATA: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
-
-export interface DragDrop<T> {
-    item: T;
-    // Indexes in previous data
-    previousIndex: number;
-    currentIndex: number;
-    previousData: T[];
-    // Indexes in current data
-    currentDataIndex: number;
-    currentData: T[];
-
-    sort: Sort;
-}
 
 @Component({
     selector: 'v-table',
@@ -81,7 +69,8 @@ export interface DragDrop<T> {
 export class TableComponent<T extends object>
     implements OnInit, Progressable, OnChanges, AfterViewInit, OnDestroy
 {
-    @Input() data!: T[];
+    data = input<T[]>([]);
+
     @Input() columns!: Column<T>[];
     @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
     @Input() progress?: boolean | number | null = false;
@@ -111,11 +100,12 @@ export class TableComponent<T extends object>
     @Input() rowSelected!: T[];
     @Output() rowSelectedChange = new EventEmitter<T[]>();
     selectColumnDef = createInternalColumnDef('select');
+    selected: T[] = [];
 
     // Filter
     @Input({ transform: booleanAttribute }) noFilter: boolean = false;
     @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
-    @Input({ transform: booleanAttribute }) externalFilter: boolean = false;
+    externalFilter = input(false, { transform: booleanAttribute });
     @Input() filter = '';
     // TODO: filter by rendered column fields, it will be useful if you save the render in memory
     @Input() filterByColumns?: string[];
@@ -143,7 +133,6 @@ export class TableComponent<T extends object>
     isPreload = false;
 
     dataSource = new MatTableDataSource<T>();
-    selection = new SelectionModel<T>(true, []);
 
     displayedColumns: string[] = [];
 
@@ -166,29 +155,26 @@ export class TableComponent<T extends object>
     get hasShowMore() {
         return (
             this.hasMore ||
-            (this.filteredDataLength ?? this.data?.length) > this.size * this.displayedPages
+            (this.filteredDataLength ?? this.data()?.length) > this.size * this.displayedPages
         );
     }
 
     get isNoRecords() {
-        return !this.data?.length || this.filteredDataLength === 0;
+        return !this.data()?.length || this.filteredDataLength === 0;
     }
 
     private paginator!: OnePageTableDataSourcePaginator;
-    private dataUpdated$ = new Subject<void>();
     private qp?: QueryParamsNamespace<{ filter: string; exact?: boolean }>;
 
     constructor(
         private destroyRef: DestroyRef,
         private queryParamsService: QueryParamsService,
+        private injector: Injector,
     ) {
         this.updatePaginator();
     }
 
     ngOnInit() {
-        this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-            this.rowSelectedChange.emit(this.selection.selected);
-        });
         const startValue = this.filterControl.value;
         const filter$ = this.filterControl.valueChanges.pipe(
             ...((startValue ? [startWith(startValue)] : []) as []),
@@ -208,7 +194,12 @@ export class TableComponent<T extends object>
         exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
             this.qp?.patch?.({ exact });
         });
-        combineLatest([filter$, exactFilter$, this.dataUpdated$.pipe(startWith(null))])
+        combineLatest([
+            filter$,
+            exactFilter$,
+            toObservable(this.data, { injector: this.injector }),
+            toObservable(this.externalFilter, { injector: this.injector }),
+        ])
             .pipe(
                 tap(() => {
                     this.filterProgress$.next(true);
@@ -216,7 +207,7 @@ export class TableComponent<T extends object>
                 }),
                 debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
                 switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
-                    if (!filter || this.externalFilter || !this.data?.length) {
+                    if (!filter || this.externalFilter() || !this.data()?.length) {
                         return of([new Map(), filter]);
                     }
                     const cols = this.filterByColumns
@@ -229,7 +220,7 @@ export class TableComponent<T extends object>
                         cols.length
                             ? forkJoin([
                                   forkJoin(
-                                      this.data.map((sourceValue, index) =>
+                                      this.data().map((sourceValue, index) =>
                                           combineLatest(
                                               cols.map((colDef) =>
                                                   colDef.lazy
@@ -247,7 +238,7 @@ export class TableComponent<T extends object>
                                       ),
                                   ),
                                   forkJoin(
-                                      this.data.map((sourceValue, index) =>
+                                      this.data().map((sourceValue, index) =>
                                           combineLatest(
                                               cols.map((colDef) =>
                                                   colDef.description && !colDef.lazy
@@ -268,7 +259,7 @@ export class TableComponent<T extends object>
                             : of([[] as unknown[], [] as unknown[]])
                     ).pipe(
                         map(([formattedValues, formattedDescription]) => {
-                            const fuseData = this.data.map((item, idx) => ({
+                            const fuseData = this.data().map((item, idx) => ({
                                 // TODO: add weights
                                 value: JSON.stringify(item),
                                 formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
@@ -286,7 +277,7 @@ export class TableComponent<T extends object>
                             return [
                                 new Map(
                                     filterResult.map(({ refIndex, score }) => [
-                                        this.data[refIndex],
+                                        this.data()[refIndex],
                                         { score: score ?? COMPLETE_MISMATCH_SCORE },
                                     ]),
                                 ),
@@ -300,7 +291,7 @@ export class TableComponent<T extends object>
             .subscribe(([scores, filter]) => {
                 this.scores = scores;
                 this.sortChanged(
-                    filter && !this.externalFilter
+                    filter && !this.externalFilter()
                         ? { active: this.scoreColumnDef, direction: 'asc' }
                         : this.sortComponent.active === this.scoreColumnDef
                           ? DEFAULT_SORT
@@ -322,13 +313,9 @@ export class TableComponent<T extends object>
         if (changes.columns || changes.rowSelectable || changes.rowDragDrop) {
             this.updateDisplayedColumns();
         }
-        if (this.rowSelectable && (changes.data || changes.rowSelected)) {
-            this.updateSelection();
-        }
         if (changes.data) {
-            this.dataSource.data = this.data;
+            this.dataSource.data = this.data();
             this.preloadedLazyCells = new Map();
-            this.dataUpdated$.next();
         }
         if (this.dataSource.sort && changes.sort) {
             this.updateSort();
@@ -352,9 +339,6 @@ export class TableComponent<T extends object>
             if (exact !== this.exactFilterControl.value) {
                 this.exactFilterControl.setValue(1);
             }
-        }
-        if (changes.externalFilter) {
-            this.dataUpdated$.next();
         }
         if (changes.sortOnFront || changes.data) {
             this.tryFrontSort();
@@ -387,24 +371,9 @@ export class TableComponent<T extends object>
 
     showMore() {
         this.paginator.more();
-        if (this.hasMore && this.displayedPages * this.size > this.data?.length) {
+        if (this.hasMore && this.displayedPages * this.size > this.data()?.length) {
             this.more.emit({ size: this.currentSize });
         }
-    }
-
-    isAllSelected() {
-        const numSelected = this.selection.selected.length;
-        const numRows = this.dataSource.data.length;
-        return numSelected === numRows;
-    }
-
-    toggleAllRows() {
-        if (this.isAllSelected()) {
-            this.selection.clear(true);
-            return;
-        }
-
-        this.selection.select(...this.dataSource.data);
     }
 
     sortChanged(sort: Sort) {
@@ -418,7 +387,7 @@ export class TableComponent<T extends object>
         this.dragDisabled = true;
         const item = event.item.data;
         const { previousIndex, currentIndex } = event;
-        const previousData = this.dataSource.sortData(this.data, this.sortComponent);
+        const previousData = this.dataSource.sortData(this.data(), this.sortComponent);
         const currentData = previousData.slice();
         let currentDataIndex = 0;
         if (previousIndex > currentIndex) {
@@ -442,7 +411,7 @@ export class TableComponent<T extends object>
     }
 
     private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
-        const data = this.data;
+        const data = this.data();
         if (!data?.length || !active || !direction) {
             this.updateDataSourceSort();
             return;
@@ -533,11 +502,5 @@ export class TableComponent<T extends object>
                 .filter((c) => !c.hide)
                 .map((c) => c.field),
         ];
-    }
-
-    private updateSelection() {
-        const newSelected = (this.rowSelected || []).filter((d) => !!this.data?.includes?.(d));
-        this.selection.deselect(...this.selection.selected.filter((s) => !newSelected.includes(s)));
-        this.selection.select(...newSelected);
     }
 }
