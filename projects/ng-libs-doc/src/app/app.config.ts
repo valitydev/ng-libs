@@ -13,14 +13,14 @@ import {
 } from '@ng-doc/app';
 import { NG_DOC_ROUTING, provideNgDocContext } from '@ng-doc/generated';
 
-import { routes } from './app.routes';
+import { ROUTES } from './app.routes';
 
-export const appConfig: ApplicationConfig = {
+export const APP_CONFIG: ApplicationConfig = {
     providers: [
         provideAnimations(),
         provideHttpClient(withInterceptorsFromDi()),
         provideRouter(
-            [...routes, ...NG_DOC_ROUTING],
+            [...ROUTES, ...NG_DOC_ROUTING],
             withInMemoryScrolling({
                 scrollPositionRestoration: 'enabled',
                 anchorScrolling: 'enabled',

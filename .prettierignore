@@ -1,23 +1,20 @@
 LICENSE
 
-.idea
-.vscode
+.*
 
 package.json
 package-lock.json
 node_modules
-.npmrc
 
-.angular
-.run
 dist
 coverage
 
 Dockerfile
 *.conf
 
-.*ignore
 *.env
 
 *.ico
 *.ttf
+
+ng-doc

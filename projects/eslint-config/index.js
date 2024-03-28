@@ -61,20 +61,25 @@ module.exports = {
                         format: null,
                     },
                     {
+                        selector: 'import',
+                        modifiers: ['default'],
+                        format: ['UPPER_CASE', 'PascalCase', 'camelCase'],
+                    },
+                    {
                         selector: 'typeLike',
                         format: ['PascalCase'],
                     },
                     {
                         selector: 'variable',
                         modifiers: ['const', 'global'],
-                        format: ['UPPER_CASE'],
+                        format: ['UPPER_CASE', 'PascalCase'],
                     },
                     {
                         selector: 'variable',
                         modifiers: ['const', 'global'],
                         // Objects are functions too
                         types: ['function'],
-                        format: ['UPPER_CASE', 'camelCase'],
+                        format: ['UPPER_CASE', 'camelCase', 'PascalCase'],
                     },
                     {
                         selector: 'enumMember',
@@ -82,7 +87,7 @@ module.exports = {
                     },
                     {
                         selector: ['objectLiteralProperty', 'typeProperty'],
-                        format: ['camelCase', 'snake_case'],
+                        format: ['camelCase', 'snake_case', 'PascalCase'],
                         leadingUnderscore: 'allow',
                         trailingUnderscore: 'allow',
                     },

@@ -1,6 +1,6 @@
 import { NgDocConfiguration } from '@ng-doc/builder';
 
-const config: NgDocConfiguration = {
+const Config: NgDocConfiguration = {
     repoConfig: {
         url: 'https://github.com/valitydev/ng-libs',
         mainBranch: 'master',
@@ -8,4 +8,4 @@ const config: NgDocConfiguration = {
     },
 };
 
-export default config;
+export default Config;
