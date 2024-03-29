@@ -1,7 +1,9 @@
 import { NgDocApi } from '@ng-doc/core';
 
+import CoreCategory from './ng-doc.category';
+
 const Api: NgDocApi = {
-    title: 'Core API',
+    title: 'API',
     scopes: [
         ...['components', 'services', 'pipes', 'utils', 'types', 'styles'].map((path) => ({
             name: `@vality/ng-core ${path}`,
@@ -9,6 +11,7 @@ const Api: NgDocApi = {
             include: `projects/ng-core/src/lib/${path}/**/*.ts`,
         })),
     ],
+    category: CoreCategory,
 };
 
 export default Api;

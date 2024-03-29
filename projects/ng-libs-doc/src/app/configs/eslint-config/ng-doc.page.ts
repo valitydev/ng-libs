@@ -1,11 +1,11 @@
 import { NgDocPage } from '@ng-doc/core';
 
-import LibrariesCategory from '../ng-doc.category';
+import ConfigsCategory from '../ng-doc.category';
 
 const EslintConfigPage: NgDocPage = {
     title: `ESLint Config`,
     mdFile: './index.md',
-    category: LibrariesCategory,
+    category: ConfigsCategory,
 };
 
 export default EslintConfigPage;
