@@ -23,25 +23,25 @@ jobs:
       - name: Build
         run: npm run build
       - name: Publish Angular Core
-        if: github.event.label.name == 'publish'
+        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish ng-core')
         working-directory: ./projects/ng-core/dist
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish ESLint Config
-        if: github.event.label.name == 'publish'
+        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish eslint-config')
         working-directory: ./projects/eslint-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish CSpell Config
-        if: github.event.label.name == 'publish'
+        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish cspell-config')
         working-directory: ./projects/cspell-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish Prettier Config
-        if: github.event.label.name == 'publish'
+        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish prettier-config')
         working-directory: ./projects/prettier-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
