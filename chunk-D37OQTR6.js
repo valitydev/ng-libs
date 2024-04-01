@@ -1,0 +1,1 @@
+import"./chunk-S4BCQQ57.js";var e=[{path:"",redirectTo:"interfaces/Progressable",pathMatch:"full"},{path:"",title:"@vality/ng-core types",children:[{path:"interfaces/Progressable",loadChildren:()=>import("./chunk-OIDZ7CLU.js")}]}],t=e;export{t as default};
