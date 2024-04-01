@@ -8,6 +8,7 @@ module.exports = {
         '**/*.js',
         '**/*.conf',
         '**/*.ico',
+        '**/*.svg',
         'Dockerfile',
         'dist',
         'coverage',

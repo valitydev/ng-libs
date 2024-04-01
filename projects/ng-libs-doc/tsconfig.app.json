@@ -4,8 +4,7 @@
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
         "outDir": "../../out-tsc/app",
-        "types": [],
-        "resolveJsonModule": true
+        "types": []
     },
     "files": ["src/main.ts"],
     "include": ["src/**/*.d.ts"]
