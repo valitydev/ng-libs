@@ -2,8 +2,10 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
         "outDir": "../../out-tsc/app",
-        "types": []
+        "types": [],
+        "resolveJsonModule": true
     },
     "files": ["src/main.ts"],
     "include": ["src/**/*.d.ts"]
