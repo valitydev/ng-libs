@@ -13,6 +13,138 @@
   },
   {
     "breadcrumbs": [
+      "Configuration Libraries",
+      "CSpell Config"
+    ],
+    "pageType": "guide",
+    "title": "CSpell Config",
+    "section": "CSpell Config",
+    "route": "/configs/cspell-config",
+    "fragment": "cspell-config",
+    "content": "CSPell - a spell checker for code."
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "CSpell Config"
+    ],
+    "pageType": "guide",
+    "title": "CSpell Config",
+    "section": "Installation",
+    "route": "/configs/cspell-config",
+    "fragment": "installation",
+    "content": "You need to install the library itself And this ready-made configuration"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "CSpell Config"
+    ],
+    "pageType": "guide",
+    "title": "CSpell Config",
+    "section": "Configuration",
+    "route": "/configs/cspell-config",
+    "fragment": "configuration",
+    "content": "cspell.json"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "ESLint Config"
+    ],
+    "pageType": "guide",
+    "title": "ESLint Config",
+    "section": "ESLint Config",
+    "route": "/configs/eslint-config",
+    "fragment": "eslint-config",
+    "content": "ESLint - a static code analysis tool for identifying problematic patterns found in JavaScript (TypeScript) code."
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "ESLint Config"
+    ],
+    "pageType": "guide",
+    "title": "ESLint Config",
+    "section": "Installation",
+    "route": "/configs/eslint-config",
+    "fragment": "installation",
+    "content": "You need to install the library itself"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "ESLint Config"
+    ],
+    "pageType": "guide",
+    "title": "ESLint Config",
+    "section": "Installation",
+    "route": "/configs/eslint-config",
+    "fragment": "installation",
+    "content": "Angular requires installation and configuration in the same way Configuration angular.json"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "ESLint Config"
+    ],
+    "pageType": "guide",
+    "title": "ESLint Config",
+    "section": "Installation",
+    "route": "/configs/eslint-config",
+    "fragment": "installation",
+    "content": "And this ready-made configuration"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "ESLint Config"
+    ],
+    "pageType": "guide",
+    "title": "ESLint Config",
+    "section": "Configuration",
+    "route": "/configs/eslint-config",
+    "fragment": "configuration",
+    "content": ".eslintrc.js"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "Prettier Config"
+    ],
+    "pageType": "guide",
+    "title": "Prettier Config",
+    "section": "Prettier Config",
+    "route": "/configs/prettier-config",
+    "fragment": "prettier-config",
+    "content": "Prettier - a code formatter"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "Prettier Config"
+    ],
+    "pageType": "guide",
+    "title": "Prettier Config",
+    "section": "Installation",
+    "route": "/configs/prettier-config",
+    "fragment": "installation",
+    "content": "You need to install the library itself And this ready-made configuration"
+  },
+  {
+    "breadcrumbs": [
+      "Configuration Libraries",
+      "Prettier Config"
+    ],
+    "pageType": "guide",
+    "title": "Prettier Config",
+    "section": "Configuration",
+    "route": "/configs/prettier-config",
+    "fragment": "configuration",
+    "content": ".prettierrc.js Example .prettierignore"
+  },
+  {
+    "breadcrumbs": [
       "Core Library",
       "Development"
     ],

@@ -1,0 +1,1 @@
+import"./chunk-S4BCQQ57.js";var t=[{path:"",redirectTo:"cspell-config",pathMatch:"full"},{path:"",title:"Configuration Libraries",children:[{path:"cspell-config",loadChildren:()=>import("./chunk-VZ7VAKAZ.js")},{path:"eslint-config",loadChildren:()=>import("./chunk-CGDSS24P.js")},{path:"prettier-config",loadChildren:()=>import("./chunk-WGODKOFR.js")}]}],i=t;export{i as default};
