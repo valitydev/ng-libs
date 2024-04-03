@@ -1,0 +1,23 @@
+<ng-doc-root>
+    <ng-doc-navbar [leftContent]="leftContent" [rightContent]="rightContent">
+        <ng-template #leftContent>
+            <h3 [routerLink]="'/'" style="margin: 0; cursor: pointer">Vality Angular Libraries</h3>
+        </ng-template>
+        <ng-template #rightContent>
+            <div @preventInitialChild class="ng-doc-header-controls">
+                <ng-doc-theme-toggle></ng-doc-theme-toggle>
+                <a
+                    [href]="githubUrl"
+                    ng-doc-button-icon
+                    ngDocTooltip="Repository on GitHub"
+                    size="large"
+                    target="_blank"
+                >
+                    <ng-doc-icon [size]="24" customIcon="github"></ng-doc-icon>
+                </a>
+            </div>
+        </ng-template>
+    </ng-doc-navbar>
+    <ng-doc-sidebar></ng-doc-sidebar>
+    <router-outlet></router-outlet>
+</ng-doc-root>

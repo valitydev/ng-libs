@@ -1,0 +1,8 @@
+@use '@vality/ng-core' as v;
+
+$app-theme: v.create-light-theme();
+
+@include v.core();
+@include v.all-component-themes($app-theme);
+@include v.typography-hierarchy($app-theme);
+@include v.app($app-theme);

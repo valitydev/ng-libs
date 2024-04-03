@@ -1,7 +1,12 @@
-module.exports = (prefix = 'app') => ({
+const path = require('path');
+
+const TS = '*.ts';
+const HTML = '*.html';
+
+module.exports = (prefix = 'app', dir) => ({
     overrides: [
         {
-            files: ['*.ts'],
+            files: [dir ? path.join(dir, TS) : TS],
             extends: [
                 'plugin:@angular-eslint/recommended',
                 'plugin:@angular-eslint/template/process-inline-templates',
@@ -26,7 +31,7 @@ module.exports = (prefix = 'app') => ({
             },
         },
         {
-            files: ['*.html'],
+            files: [dir ? path.join(dir, HTML) : HTML],
             extends: ['plugin:@angular-eslint/template/recommended'],
             rules: {
                 '@angular-eslint/template/no-negated-async': 'off',

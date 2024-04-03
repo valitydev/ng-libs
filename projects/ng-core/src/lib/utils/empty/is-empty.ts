@@ -1,4 +1,4 @@
-import _isEmpty from 'lodash-es/isEmpty';
+import lodashIsEmpty from 'lodash-es/isEmpty';
 import isObject from 'lodash-es/isObject';
 
 import { isEmptyPrimitive } from './is-empty-primitive';
@@ -9,7 +9,7 @@ export function isEmpty(value: unknown): boolean {
           Array.isArray(value) ||
           value instanceof Set ||
           value instanceof Map
-            ? _isEmpty(value)
+            ? lodashIsEmpty(value)
             : false
         : isEmptyPrimitive(value);
 }

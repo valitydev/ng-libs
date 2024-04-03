@@ -79,7 +79,9 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
                     map(({ result, continuationToken }) => ({
                         params,
                         result:
-                            action.type === 'load' ? result : [...(acc.result ?? []), ...result],
+                            action.type === 'load' || action.type === 'reload'
+                                ? result
+                                : [...(acc.result ?? []), ...result],
                         size,
                         continuationToken,
                     })),
