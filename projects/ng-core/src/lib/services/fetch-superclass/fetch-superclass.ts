@@ -125,3 +125,11 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         options: FetchOptions<TContinuationToken>,
     ): Observable<FetchResult<TResultItem, TContinuationToken>>;
 }
+
+export abstract class SingleFetchSuperclass<TResultItem, TParams = void> extends FetchSuperclass<
+    TResultItem,
+    TParams,
+    never
+> {
+    override more: () => never = () => undefined as never;
+}
