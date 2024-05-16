@@ -43,3 +43,7 @@ npm i --save-exact @vality/ng-core@pr
 ```
 
 _The latest version with the tag can also be [viewed in NPM](https://www.npmjs.com/package/@vality/ng-core?activeTab=versions)_
+
+## Publish
+
+Apply the PR label `publish` to all packages, or specify it for individual packages like `publish ng-core` for the `ng-core` package.

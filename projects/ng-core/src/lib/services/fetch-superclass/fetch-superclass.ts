@@ -4,18 +4,21 @@ import {
     mergeScan,
     map,
     BehaviorSubject,
-    ReplaySubject,
     skipWhile,
     Subject,
     takeUntil,
     tap,
+    race,
+    skip,
+    take,
+    concat,
 } from 'rxjs';
-import { shareReplay, startWith } from 'rxjs/operators';
+import { shareReplay, startWith, delay } from 'rxjs/operators';
 
 import { inProgressFrom, progressTo } from '../../utils';
 
 export interface Action<TParams> {
-    type: 'load' | 'reload' | 'more';
+    type: 'load' | 'reload' | 'more' | 'init';
     params?: TParams;
     size?: number;
 }
@@ -51,9 +54,15 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         () => this.state$,
     );
 
-    private fetch$ = new ReplaySubject<Action<TParams>>(1);
+    private fetch$ = new BehaviorSubject<Action<TParams>>({ type: 'init' });
     private progress$ = new BehaviorSubject(0);
-    private state$ = defer(() => this.fetch$.pipe(skipWhile(({ type }) => type !== 'load'))).pipe(
+    private state$ = defer(() => {
+        const resAction$ = this.fetch$.pipe(skipWhile((action) => action.type !== 'load'));
+        return race(
+            concat(resAction$.pipe(take(1), delay(1000)), resAction$),
+            resAction$.pipe(skip(1)),
+        );
+    }).pipe(
         tap((action) => {
             if (action.type === 'load') {
                 this.skipPrevious$.next(true);
@@ -115,4 +124,12 @@ export abstract class FetchSuperclass<TResultItem, TParams = void, TContinuation
         params: TParams,
         options: FetchOptions<TContinuationToken>,
     ): Observable<FetchResult<TResultItem, TContinuationToken>>;
+}
+
+export abstract class SingleFetchSuperclass<TResultItem, TParams = void> extends FetchSuperclass<
+    TResultItem,
+    TParams,
+    never
+> {
+    override more: () => never = () => undefined as never;
 }
