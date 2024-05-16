@@ -31,6 +31,7 @@ import { TableCellComponent } from './components/table-cell/table-cell.component
 import { TableInputsComponent } from './components/table-inputs.component';
 import { Table2Component } from './components/table2';
 import { TableComponent } from './table.component';
+import { MtxTooltip } from '@ng-matero/extensions/tooltip';
 
 @NgModule({
     imports: [
@@ -59,6 +60,7 @@ import { TableComponent } from './table.component';
         CdkDropList,
         SelectColumnComponent,
         ScoreColumnComponent,
+        MtxTooltip,
     ],
     declarations: [
         TableComponent,
