@@ -16,6 +16,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { MtxTooltip } from '@ng-matero/extensions/tooltip';
 
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
@@ -31,7 +32,6 @@ import { TableCellComponent } from './components/table-cell/table-cell.component
 import { TableInputsComponent } from './components/table-inputs.component';
 import { Table2Component } from './components/table2';
 import { TableComponent } from './table.component';
-import { MtxTooltip } from '@ng-matero/extensions/tooltip';
 
 @NgModule({
     imports: [
