@@ -193,7 +193,7 @@
                                     } @else {
                                         <ng-container
                                             *ngTemplateOutlet="
-                                                col.cellTemplate ?? cellTemplate[col.field];
+                                                col.cellTemplate ?? cellTemplate[col.field] ?? null;
                                                 context: {
                                                     colDef: col,
                                                     index: index,
