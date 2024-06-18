@@ -6,7 +6,7 @@ export function loadFileContent(file: File): Observable<string> {
             return file;
         }
         const read = new FileReader();
-        read.readAsBinaryString(file);
+        read.readAsText(file, 'utf-8');
         read.onloadend = function () {
             if (read.error) {
                 return subscriber.error(read.error);
