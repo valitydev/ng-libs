@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng build ng-core --watch --configuration development",
     "doc": "ng serve --port 4500",
-    "build": "ng build ng-core && ng build ng-libs-doc --base-href='./'",
+    "build": "ng build ng-core && echo \"TODO: ng build ng-libs-doc --base-href='./'\"",
     "test": "ng test ng-core",
     "test:ci": "npm run test -- --browsers=ChromeHeadless --watch=false",
     "format": "prettier \"**\" --list-different",
