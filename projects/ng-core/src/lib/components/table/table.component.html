@@ -173,19 +173,43 @@
                                 'max-width': col.maxWidth
                             }"
                             mat-cell
+                            style="vertical-align: top; padding: 6px 16px"
                         >
-                            @if (!col.cellTemplate && !cellTemplate[col.field]) {
-                                <v-table-cell
-                                    [colDef]="col"
-                                    [index]="index"
-                                    [preloadLazy]="
-                                        index < preloadedLazyRowsCount ||
-                                        !!preloadedLazyCells.get(row)
-                                    "
-                                    [rowData]="row"
-                                    (preloadedLazyChange)="preloadedLazyCells.set(row, $event)"
-                                ></v-table-cell>
-                            } @else {}
+                            <div style="min-height: 40px; display: flex; align-items: center">
+                                <div>
+                                    @if (!col.cellTemplate && !cellTemplate[col.field]) {
+                                        <v-table-cell
+                                            [colDef]="col"
+                                            [index]="index"
+                                            [preloadLazy]="
+                                                index < preloadedLazyRowsCount ||
+                                                !!preloadedLazyCells.get(row)
+                                            "
+                                            [rowData]="row"
+                                            (preloadedLazyChange)="
+                                                preloadedLazyCells.set(row, $event)
+                                            "
+                                        ></v-table-cell>
+                                    } @else {
+                                        <ng-container
+                                            *ngTemplateOutlet="
+                                                col.cellTemplate ?? cellTemplate[col.field] ?? null;
+                                                context: {
+                                                    colDef: col,
+                                                    index: index,
+                                                    rowData: row,
+                                                    value:
+                                                        row
+                                                        | vSelect
+                                                            : col.formatter ?? col.field
+                                                            : ''
+                                                            : [index, col]
+                                                }
+                                            "
+                                        ></ng-container>
+                                    }
+                                </div>
+                            </div>
                         </td>
                     </ng-container>
                 }

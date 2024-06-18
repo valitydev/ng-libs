@@ -16,6 +16,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { MtxTooltip } from '@ng-matero/extensions/tooltip';
 
 import { PipesModule } from '../../pipes';
 import { ActionsModule } from '../actions';
@@ -59,6 +60,7 @@ import { TableComponent } from './table.component';
         CdkDropList,
         SelectColumnComponent,
         ScoreColumnComponent,
+        MtxTooltip,
     ],
     declarations: [
         TableComponent,

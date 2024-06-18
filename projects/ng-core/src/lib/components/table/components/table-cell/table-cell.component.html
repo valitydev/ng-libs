@@ -14,10 +14,13 @@
 <ng-template #content>
     <div class="wrapper">
         @if (rowData | vSelect: colDef.tooltip : '' : [colDef]; as tooltip) {
-            <div [matTooltip]="tooltip | json" class="tooltip" matTooltipPosition="right">
+            <div [mtxTooltip]="tooltipTpl" class="tooltip" mtxTooltipPosition="right">
                 <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
             </div>
             <ng-container *ngTemplateOutlet="descriptionTemplate"></ng-container>
+            <ng-template #tooltipTpl>
+                <pre>{{ tooltip | json }}</pre>
+            </ng-template>
         } @else {
             @if (colDef.link?.(rowData, index); as link) {
                 <a [routerLink]="link" [target]="colDef?.linkParameters?.target" class="link">
