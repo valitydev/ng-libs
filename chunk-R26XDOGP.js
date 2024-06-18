@@ -1,1 +1,0 @@
-import"./chunk-S4BCQQ57.js";var t=[{path:"",redirectTo:"table",pathMatch:"full"},{path:"",title:"Components",children:[{path:"table",loadChildren:()=>import("./chunk-OCKISCFX.js")},{path:"tag",loadChildren:()=>import("./chunk-53MOPA2J.js")}]}],a=t;export{a as default};
