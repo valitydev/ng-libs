@@ -5,7 +5,7 @@
 
     .v-dialog {
         .title {
-            @include mat.typography-level($typography, headline-5);
+            @include mat.m2-typography-level($typography, headline-5);
         }
     }
 }
