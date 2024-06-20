@@ -1,1 +1,0 @@
-import"./chunk-S4BCQQ57.js";var t=[{path:"",redirectTo:"api",pathMatch:"full"},{path:"",title:"Core Library",children:[{path:"api",loadChildren:()=>import("./chunk-GEDQUCGG.js")},{path:"development",loadChildren:()=>import("./chunk-2OBHS634.js")},{path:"installation",loadChildren:()=>import("./chunk-BZ2IQN5L.js")}]}],a=t;export{a as default};
