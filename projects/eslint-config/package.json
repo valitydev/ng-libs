@@ -1,6 +1,6 @@
 {
-  "name": "@vality/eslint-config",
-  "version": "8.2.0",
+  "name": "@vality/eslint-config-ng",
+  "version": "18.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -9,16 +9,16 @@
     "./configs": "./configs/index.js"
   },
   "peerDependencies": {
-    "eslint": "^8.56.0"
+    "eslint": "^8.0.0"
   },
   "dependencies": {
-    "@angular-eslint/eslint-plugin": "^17.2.1",
-    "@angular-eslint/eslint-plugin-template": "^17.2.1",
-    "@angular-eslint/template-parser": "^17.2.1",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
-    "@typescript-eslint/parser": "^6.20.0",
+    "@angular-eslint/eslint-plugin": "^18.0.1",
+    "@angular-eslint/eslint-plugin-template": "^18.0.1",
+    "@angular-eslint/template-parser": "^18.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-unused-imports": "^3.0.0"
+    "eslint-plugin-unused-imports": "^3.2.0"
   }
 }
