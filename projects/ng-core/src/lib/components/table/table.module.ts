@@ -61,15 +61,15 @@ import { TableComponent } from './table.component';
         SelectColumnComponent,
         ScoreColumnComponent,
         MtxTooltip,
+        Table2Component,
     ],
     declarations: [
         TableComponent,
-        Table2Component,
         TableActionsComponent,
         TableCellComponent,
         ShowMoreButtonComponent,
         TableInputsComponent,
     ],
-    exports: [TableComponent, TableActionsComponent, TableInputsComponent],
+    exports: [TableComponent, TableActionsComponent, TableInputsComponent, Table2Component],
 })
 export class TableModule {}

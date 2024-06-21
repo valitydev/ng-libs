@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, Output, EventEmitter, computed, signal } from '@angular/core';
+import { Component, input, computed, signal, output } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -28,9 +28,8 @@ import { Value } from './types/value';
     styleUrl: './value.component.scss',
 })
 export class ValueComponent {
-    value = input.required<Value>();
-
-    @Output() lazyVisibleChange = new EventEmitter<boolean>();
+    value = input<Value>();
+    lazyVisibleChange = output<boolean>();
 
     lazyVisible = signal(false);
     isLoaded = computed(() => !this.value()?.lazy || this.lazyVisible());

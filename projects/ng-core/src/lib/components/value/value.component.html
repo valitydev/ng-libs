@@ -14,18 +14,26 @@
                     <v-menu-value [value]="v"></v-menu-value>
                 }
                 @default {
-                    <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                    <ng-container *ngTemplateOutlet="tagTemplate"></ng-container>
                 }
             }
-            <ng-template #valueTemplate>
-                <v-tag [color]="v.color">
-                    <ng-container *ngTemplateOutlet="baseValueTemplate"></ng-container>
-                </v-tag>
+            <ng-template #tagTemplate>
+                @if (v.color) {
+                    <v-tag [color]="v.color">
+                        <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
+                    </v-tag>
+                } @else {
+                    <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
+                }
             </ng-template>
-            <ng-template #baseValueTemplate>
-                <span [matTooltip]="v.tooltip ?? ''">
+            <ng-template #tooltipTemplate>
+                @if (v.tooltip) {
+                    <span [matTooltip]="v.tooltip ?? ''">
+                        {{ v.value }}
+                    </span>
+                } @else {
                     {{ v.value }}
-                </span>
+                }
             </ng-template>
         }
 
