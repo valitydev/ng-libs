@@ -6,6 +6,7 @@ import {
     effect,
     computed,
     DestroyRef,
+    booleanAttribute,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
@@ -15,6 +16,9 @@ import { shareReplay } from 'rxjs/operators';
 
 import { ValueComponent, Value } from '../../../value';
 import { Column2, NormalizedColumn2, normalizeColumns } from '../../types';
+import { createInternalColumnDef } from '../../utils/create-internal-column-def';
+import { NoRecordsColumnComponent } from '../no-records-column.component';
+import { ProgressBarComponent } from '../progress-bar.component';
 
 @Component({
     standalone: true,
@@ -22,11 +26,19 @@ import { Column2, NormalizedColumn2, normalizeColumns } from '../../types';
     templateUrl: './table2.component.html',
     styleUrls: ['./table2.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [MatTableModule, MatCardModule, ValueComponent, AsyncPipe],
+    imports: [
+        MatTableModule,
+        MatCardModule,
+        ValueComponent,
+        AsyncPipe,
+        ProgressBarComponent,
+        NoRecordsColumnComponent,
+    ],
 })
 export class Table2Component<T extends object> {
     data = input<T[]>([]);
     columns = input<Column2<T>[]>([]);
+    progress = input(false, { transform: booleanAttribute });
 
     dataSource = new MatTableDataSource<T>();
     normalizedColumns = computed<NormalizedColumn2<T>[]>(() => normalizeColumns(this.columns()));
@@ -40,7 +52,11 @@ export class Table2Component<T extends object> {
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    displayedColumns = computed(() => this.normalizedColumns().map((c) => c.field));
+    rowDefs = computed(() => this.normalizedColumns().map((c) => c.field));
+    columnDefs = {
+        noRecords: createInternalColumnDef('no-records'),
+    };
+    footerRowDefs = computed(() => (this.data()?.length ? [] : [this.columnDefs.noRecords]));
 
     constructor(private dr: DestroyRef) {
         effect(() => {
