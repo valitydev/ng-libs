@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, booleanAttribute } from '@angular/core';
 
 @Component({
+    standalone: true,
     selector: 'v-show-more-button',
     templateUrl: './show-more-button.component.html',
     styleUrls: ['./show-more-button.component.scss'],

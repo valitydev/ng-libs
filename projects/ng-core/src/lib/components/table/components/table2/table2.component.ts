@@ -18,6 +18,7 @@ import { ValueComponent, Value } from '../../../value';
 import { Column2, NormalizedColumn2, normalizeColumns } from '../../types';
 import { createInternalColumnDef } from '../../utils/create-internal-column-def';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
+import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
@@ -35,6 +36,7 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
         TableProgressBarComponent,
         NoRecordsColumnComponent,
         TableInfoBarComponent,
+        ShowMoreButtonComponent,
     ],
 })
 export class Table2Component<T extends object> {
