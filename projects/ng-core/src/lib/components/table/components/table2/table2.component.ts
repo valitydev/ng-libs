@@ -18,7 +18,8 @@ import { ValueComponent, Value } from '../../../value';
 import { Column2, NormalizedColumn2, normalizeColumns } from '../../types';
 import { createInternalColumnDef } from '../../utils/create-internal-column-def';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
-import { ProgressBarComponent } from '../progress-bar.component';
+import { TableInfoBarComponent } from '../table-info-bar.component';
+import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 @Component({
     standalone: true,
@@ -31,14 +32,16 @@ import { ProgressBarComponent } from '../progress-bar.component';
         MatCardModule,
         ValueComponent,
         AsyncPipe,
-        ProgressBarComponent,
+        TableProgressBarComponent,
         NoRecordsColumnComponent,
+        TableInfoBarComponent,
     ],
 })
 export class Table2Component<T extends object> {
     data = input<T[]>([]);
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
+    hasMore = input(false, { transform: booleanAttribute });
 
     dataSource = new MatTableDataSource<T>();
     normalizedColumns = computed<NormalizedColumn2<T>[]>(() => normalizeColumns(this.columns()));

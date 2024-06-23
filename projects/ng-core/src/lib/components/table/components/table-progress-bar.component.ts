@@ -2,7 +2,7 @@ import { Component, input, booleanAttribute } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
 
 @Component({
-    selector: 'v-progress-bar',
+    selector: 'v-table-progress-bar',
     standalone: true,
     imports: [MatProgressBar],
     template: `
@@ -17,6 +17,6 @@ import { MatProgressBar } from '@angular/material/progress-bar';
       }
     `,
 })
-export class ProgressBarComponent {
+export class TableProgressBarComponent {
     progress = input(false, { transform: booleanAttribute });
 }

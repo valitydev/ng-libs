@@ -1,27 +1,35 @@
-<mat-card class="table-card">
-    <v-progress-bar [progress]="progress()"></v-progress-bar>
-    <table #table [dataSource]="dataSource" mat-table>
-        @for (col of normalizedColumns(); track col; let colIndex = $index) {
-            <ng-container [matColumnDef]="col.field">
-                <th *matHeaderCellDef mat-header-cell>
-                    <v-value [value]="(col.header | async) ?? undefined"></v-value>
-                </th>
-                <td *matCellDef="let row; let rowIndex = index" mat-cell>
-                    <v-value [value]="(columnsData$ | async)?.[colIndex]?.[rowIndex]"></v-value>
-                </td>
-            </ng-container>
-        }
-        <v-no-records-column
-            [name]="columnDefs.noRecords"
-            [progress]="progress()"
-        ></v-no-records-column>
+<div class="wrapper">
+    <v-table-info-bar
+        [count]="data()?.length"
+        [hasMore]="hasMore()"
+        [progress]="progress()"
+    ></v-table-info-bar>
 
-        <tr *matHeaderRowDef="rowDefs()" mat-header-row></tr>
-        <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
-        <tr
-            *matFooterRowDef="footerRowDefs()"
-            [style.display]="footerRowDefs().length ? '' : 'none'"
-            mat-footer-row
-        ></tr>
-    </table>
-</mat-card>
+    <mat-card class="table-card">
+        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
+        <table #table [dataSource]="dataSource" mat-table>
+            @for (col of normalizedColumns(); track col; let colIndex = $index) {
+                <ng-container [matColumnDef]="col.field">
+                    <th *matHeaderCellDef mat-header-cell>
+                        <v-value [value]="(col.header | async) ?? undefined"></v-value>
+                    </th>
+                    <td *matCellDef="let row; let rowIndex = index" mat-cell>
+                        <v-value [value]="(columnsData$ | async)?.[colIndex]?.[rowIndex]"></v-value>
+                    </td>
+                </ng-container>
+            }
+            <v-no-records-column
+                [name]="columnDefs.noRecords"
+                [progress]="progress()"
+            ></v-no-records-column>
+
+            <tr *matHeaderRowDef="rowDefs()" mat-header-row></tr>
+            <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
+            <tr
+                *matFooterRowDef="footerRowDefs()"
+                [style.display]="footerRowDefs().length ? '' : 'none'"
+                mat-footer-row
+            ></tr>
+        </table>
+    </mat-card>
+</div>

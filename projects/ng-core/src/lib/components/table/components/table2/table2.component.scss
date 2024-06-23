@@ -1,0 +1,10 @@
+.wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+
+    .table-card {
+        width: 100%;
+        overflow: auto;
+    }
+}
