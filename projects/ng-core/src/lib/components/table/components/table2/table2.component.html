@@ -1,6 +1,6 @@
 <div class="wrapper">
     <v-table-info-bar
-        [count]="data()?.length"
+        [count]="count()"
         [hasMore]="hasMore()"
         [progress]="progress()"
     ></v-table-info-bar>
@@ -32,4 +32,14 @@
             ></tr>
         </table>
     </mat-card>
+
+    @if (hasMore() || dataSource.paginator.length < count()) {
+        <v-show-more-button
+            [displayedPages]="dataSource.paginator.displayedPages"
+            [length]="count()"
+            [pageSize]="size()"
+            [progress]="progress()"
+            (more)="showMore()"
+        ></v-show-more-button>
+    }
 </div>

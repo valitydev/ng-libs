@@ -251,7 +251,6 @@
     </div>
     @if (hasShowMore) {
         <v-show-more-button
-            [disabled]="!!progress"
             [displayedPages]="displayedPages"
             [length]="data()?.length ?? 0"
             [pageSize]="size"
