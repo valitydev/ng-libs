@@ -14,8 +14,8 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest, switchMap, Observable } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
+import { combineLatest, Observable, switchMap } from 'rxjs';
+import { shareReplay, map } from 'rxjs/operators';
 
 import { ValueComponent, Value } from '../../../value';
 import { Column2, NormalizedColumn2, normalizeColumns, UpdateOptions } from '../../types';
@@ -56,13 +56,21 @@ export class Table2Component<T extends object> {
 
     dataSource = new TableDataSource<T>();
     normalizedColumns = computed<NormalizedColumn2<T>[]>(() => normalizeColumns(this.columns()));
-    columnsData$: Observable<Value[][]> = combineLatest([
+    columnsData$$: Observable<Observable<Value>[][]> = combineLatest([
         toObservable(this.data),
         toObservable(this.normalizedColumns),
     ]).pipe(
-        switchMap(([data, cols]) =>
-            combineLatest(cols.map((c) => combineLatest(data.map((d, idx) => c.cell(d, idx))))),
+        map(([data, cols]) =>
+            cols.map((c) =>
+                data.map((d, idx) =>
+                    c.cell(d, idx).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
+                ),
+            ),
         ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    columnsData$: Observable<Value[][]> = this.columnsData$$.pipe(
+        switchMap((d) => combineLatest(d.map((v) => combineLatest(v)))),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);

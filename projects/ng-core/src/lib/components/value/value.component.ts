@@ -28,7 +28,7 @@ import { Value } from './types/value';
     styleUrl: './value.component.scss',
 })
 export class ValueComponent {
-    value = input<Value>();
+    value = input<Value | null>();
     lazyVisibleChange = output<boolean>();
 
     lazyVisible = signal(false);

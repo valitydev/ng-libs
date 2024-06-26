@@ -1,7 +1,7 @@
 import { get } from 'lodash-es';
 import startCase from 'lodash-es/startCase';
 import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
 import { Value } from '../../value';
@@ -37,7 +37,6 @@ export function normalizeColumnValue(
                 ? ({ value: defaultValue, ...value } as Value)
                 : { value: value ?? defaultValue },
         ),
-        shareReplay({ refCount: true, bufferSize: 1 }),
     );
 }
 

@@ -14,7 +14,9 @@
                         <v-value [value]="(col.header | async) ?? undefined"></v-value>
                     </th>
                     <td *matCellDef="let row; let rowIndex = index" mat-cell>
-                        <v-value [value]="(columnsData$ | async)?.[colIndex]?.[rowIndex]"></v-value>
+                        <v-value
+                            [value]="(columnsData$$ | async)?.[colIndex]?.[rowIndex] | async"
+                        ></v-value>
                     </td>
                 </ng-container>
             }
