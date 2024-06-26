@@ -9,7 +9,7 @@ import { Value } from '../../value';
 type Fn<R, P extends Array<unknown> = []> = (...args: P) => R;
 type PossiblyFn<R, P extends Array<unknown> = []> = Fn<R, P> | R;
 
-type CellFnArgs<T extends object> = [data: T, index: number];
+export type CellFnArgs<T extends object> = [data: T, index: number];
 
 export interface Column2<T extends object> {
     field: string;
