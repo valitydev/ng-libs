@@ -14,7 +14,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest, Observable, switchMap } from 'rxjs';
+import { combineLatest, Observable, switchMap, debounceTime } from 'rxjs';
 import { shareReplay, map } from 'rxjs/operators';
 
 import { ValueComponent, Value } from '../../../value';
@@ -71,6 +71,7 @@ export class Table2Component<T extends object> {
     );
     columnsData$: Observable<Value[][]> = this.columnsData$$.pipe(
         switchMap((d) => combineLatest(d.map((v) => combineLatest(v)))),
+        debounceTime(300),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);

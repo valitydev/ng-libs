@@ -11,13 +11,17 @@ type PossiblyFn<R, P extends Array<unknown> = []> = Fn<R, P> | R;
 
 export type CellFnArgs<T extends object> = [data: T, index: number];
 
-export interface Column2<T extends object> {
+interface ColumnParams {
+    sticky?: 'start' | 'end';
+}
+
+export interface Column2<T extends object> extends ColumnParams {
     field: string;
     header?: PossiblyAsync<Partial<Value> | string>;
     cell?: PossiblyFn<PossiblyAsync<Partial<Value> | string>, CellFnArgs<T>>;
 }
 
-export interface NormalizedColumn2<T extends object> {
+export interface NormalizedColumn2<T extends object> extends ColumnParams {
     field: string;
     header: Observable<Value>;
     cell: Fn<Observable<Value>, CellFnArgs<T>>;
@@ -42,6 +46,7 @@ export function normalizeColumnValue(
 
 export function normalizeColumns<T extends object>(columns: Column2<T>[]): NormalizedColumn2<T>[] {
     return columns.map((c) => ({
+        ...c,
         field: c.field,
         header: normalizeColumnValue(c.header, startCase(c.field)),
         cell: (d, ...args) =>
