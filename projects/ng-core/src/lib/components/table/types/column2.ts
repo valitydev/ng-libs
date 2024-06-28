@@ -15,44 +15,46 @@ interface ColumnParams {
     sticky?: 'start' | 'end';
 }
 
+type CellValue = 'string' | Value | Value[];
+
 export interface Column2<T extends object> extends ColumnParams {
     field: string;
     header?: PossiblyAsync<Partial<Value> | string>;
-    cell?: PossiblyFn<PossiblyAsync<Partial<Value> | string>, CellFnArgs<T>>;
-}
-
-export interface NormalizedColumn2<T extends object> extends ColumnParams {
-    field: string;
-    header: Observable<Value>;
-    cell: Fn<Observable<Value>, CellFnArgs<T>>;
+    cell?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<T>>;
 }
 
 export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<R, P>): Fn<R, P> {
     return typeof fn === 'function' ? (fn as Fn<R, P>) : () => fn;
 }
 
-export function normalizeColumnValue(
-    sourceValue?: PossiblyAsync<Partial<Value> | string>,
-    defaultValue?: Value['value'],
-): Observable<Value> {
-    return getPossiblyAsyncObservable(sourceValue ?? defaultValue).pipe(
-        map((value) =>
-            typeof value === 'object'
-                ? ({ value: defaultValue, ...value } as Value)
-                : { value: value ?? defaultValue },
-        ),
-    );
-}
+export class NormColumn<T extends object> {
+    field!: string;
+    header!: Observable<Value>;
+    cell!: Fn<Observable<Value[]>, CellFnArgs<T>>;
+    params!: ColumnParams;
 
-export function normalizeColumns<T extends object>(columns: Column2<T>[]): NormalizedColumn2<T>[] {
-    return columns.map((c) => ({
-        ...c,
-        field: c.field,
-        header: normalizeColumnValue(c.header, startCase(c.field)),
-        cell: (d, ...args) =>
-            normalizeColumnValue(
-                c.cell ? normalizePossiblyFn(c.cell)(d, ...args) : undefined,
-                get(d, c.field),
+    constructor({ field, header, cell, ...params }: Column2<T>) {
+        this.field = field ?? (typeof header === 'string' ? header : Math.random());
+        const defaultHeaderValue = startCase(field ?? '');
+        this.header = getPossiblyAsyncObservable(header).pipe(
+            map((value) =>
+                typeof value === 'object'
+                    ? ({ value: defaultHeaderValue, ...value } as Value)
+                    : { value: value ?? defaultHeaderValue },
             ),
-    }));
+        );
+        const cellFn = normalizePossiblyFn(cell);
+        this.cell = (...args) =>
+            getPossiblyAsyncObservable(cellFn(...args)).pipe(
+                map((value) => {
+                    const defaultValue = get(args[0], this.field);
+                    return (Array.isArray(value) ? value : [value ?? defaultValue]).map((v) =>
+                        typeof value === 'object'
+                            ? ({ value: defaultValue, ...v } as Value)
+                            : { value: v ?? defaultValue },
+                    );
+                }),
+            );
+        this.params = params;
+    }
 }

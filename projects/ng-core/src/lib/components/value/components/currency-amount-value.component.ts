@@ -1,4 +1,5 @@
 import { Component, input, computed, Inject, LOCALE_ID } from '@angular/core';
+import isNil from 'lodash-es/isNil';
 
 import { formatCurrency } from '../../../utils';
 import { TypedParamsValue } from '../types/base-type';
@@ -22,14 +23,16 @@ export class CurrencyAmountValueComponent {
 
     formattedValue = computed(() => {
         const v = this.value();
-        return formatCurrency(
-            v.value,
-            v.params.code,
-            'long',
-            this._locale,
-            v.params.exponent,
-            !!v.params.major,
-        );
+        return isNil(v.value)
+            ? ''
+            : formatCurrency(
+                  v.value,
+                  v.params.code,
+                  'long',
+                  this._locale,
+                  v.params.exponent,
+                  !!v.params.major,
+              );
     });
 
     constructor(@Inject(LOCALE_ID) private _locale: string) {}

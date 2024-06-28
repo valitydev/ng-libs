@@ -3,7 +3,7 @@ import { TemplateRef } from '@angular/core';
 import { Color } from '../../../styles';
 
 export type BaseValue<V = unknown> = {
-    value: V;
+    value?: V;
 
     description?: unknown;
     tooltip?: string;
