@@ -5,26 +5,28 @@
         [progress]="progress()"
     ></v-table-info-bar>
 
-    <mat-card class="table-card">
+    <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
         <table #table [dataSource]="dataSource" mat-table>
             @for (col of normalizedColumns(); track col; let colIndex = $index) {
                 <ng-container [matColumnDef]="col.field">
                     <th *matHeaderCellDef mat-header-cell>
-                        <v-value [value]="col.header | async"></v-value>
+                        <v-value [value]="col.header | async" inline></v-value>
                     </th>
-                    <td *matCellDef="let row; let rowIndex = index" mat-cell>
+                    <td
+                        *matCellDef="let row; let rowIndex = index"
+                        [ngStyle]="col?.params?.style"
+                        mat-cell
+                    >
                         @if ((columnsData$$ | async)?.[colIndex]?.[rowIndex] | async; as cellData) {
                             @if (cellData.length > 1) {
-                                <table>
+                                <div class="multi-cell">
                                     @for (item of cellData; track item) {
-                                        <tr>
-                                            <td><v-value [value]="item"></v-value></td>
-                                        </tr>
+                                        <v-value [value]="item" inline></v-value>
                                     }
-                                </table>
+                                </div>
                             } @else {
-                                <v-value [value]="cellData[0]"></v-value>
+                                <v-value [value]="cellData[0]" inline></v-value>
                             }
                         }
                     </td>

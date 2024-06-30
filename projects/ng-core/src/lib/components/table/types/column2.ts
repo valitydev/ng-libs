@@ -13,6 +13,7 @@ export type CellFnArgs<T extends object> = [data: T, index: number];
 
 interface ColumnParams {
     sticky?: 'start' | 'end';
+    style?: Record<string, unknown>;
 }
 
 type CellValue = 'string' | Value | Value[];
@@ -33,7 +34,10 @@ export class NormColumn<T extends object> {
     cell!: Fn<Observable<Value[]>, CellFnArgs<T>>;
     params!: ColumnParams;
 
-    constructor({ field, header, cell, ...params }: Column2<T>) {
+    constructor(
+        { field, header, cell, ...params }: Column2<T>,
+        commonParams: ColumnParams = { style: { 'max-width': 'max(20px, 30vw)' } },
+    ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
         const defaultHeaderValue = startCase(field ?? '');
         this.header = getPossiblyAsyncObservable(header).pipe(
@@ -55,6 +59,10 @@ export class NormColumn<T extends object> {
                     );
                 }),
             );
-        this.params = params;
+        this.params = {
+            ...commonParams,
+            ...params,
+            style: Object.assign({}, commonParams?.style, params?.style),
+        };
     }
 }

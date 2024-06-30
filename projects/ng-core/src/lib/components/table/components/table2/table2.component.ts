@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -33,10 +33,10 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
     styleUrls: ['./table2.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        CommonModule,
         MatTableModule,
         MatCardModule,
         ValueComponent,
-        AsyncPipe,
         TableProgressBarComponent,
         NoRecordsColumnComponent,
         TableInfoBarComponent,

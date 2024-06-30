@@ -1,0 +1,15 @@
+:host {
+    cursor: default;
+}
+
+::ng-deep .inline {
+    &,
+    & * {
+        white-space: nowrap;
+    }
+}
+
+.description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

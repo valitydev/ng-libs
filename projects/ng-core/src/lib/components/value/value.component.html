@@ -32,7 +32,9 @@
                         {{ v.value }}
                     </span>
                 } @else {
-                    {{ v.value }}
+                    <span [title]="v.value">
+                        {{ v.value }}
+                    </span>
                 }
             </ng-template>
         }

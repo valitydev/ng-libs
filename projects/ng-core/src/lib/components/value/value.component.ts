@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, computed, signal, output } from '@angular/core';
+import { Component, input, computed, signal, output, booleanAttribute } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -26,9 +26,13 @@ import { Value } from './types/value';
     ],
     templateUrl: './value.component.html',
     styleUrl: './value.component.scss',
+    host: {
+        '[class.inline]': 'inline()',
+    },
 })
 export class ValueComponent {
     value = input<Value | null>();
+    inline = input(false, { transform: booleanAttribute });
     lazyVisibleChange = output<boolean>();
 
     lazyVisible = signal(false);
