@@ -12,13 +12,12 @@ import { MatProgressBar } from '@angular/material/progress-bar';
                 progress()
                     ? '...'
                     : count()
-                      ? count() + (hasMore() ? ' (more available)' : ' (all)')
+                      ? (filteredCount() ? filteredCount() + '/' : '') +
+                        (hasMore() ? '>' : '') +
+                        count()
                       : '0'
             }}
             @if (!progress()) {
-                @if (filteredCount()) {
-                    | <i>Filtered: {{ filteredCount() }}</i>
-                }
                 @if (selectedCount()) {
                     | <b>Selected: {{ selectedCount() }}</b>
                 }
