@@ -10,12 +10,15 @@ import {
     numberAttribute,
     signal,
     output,
+    ElementRef,
+    AfterViewInit,
+    viewChild,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { MatCardModule } from '@angular/material/card';
+import { MatCardModule, MatCard } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest, switchMap, debounceTime } from 'rxjs';
-import { shareReplay, map } from 'rxjs/operators';
+import { combineLatest, switchMap, debounceTime, fromEvent } from 'rxjs';
+import { shareReplay, map, filter } from 'rxjs/operators';
 
 import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
@@ -43,13 +46,14 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
         ShowMoreButtonComponent,
     ],
 })
-export class Table2Component<T extends object> {
+export class Table2Component<T extends object> implements AfterViewInit {
     data = input<T[]>([]);
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     preloadSize = input(1000, { transform: numberAttribute });
+    infinityScroll = input(false, { transform: booleanAttribute });
 
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
@@ -85,6 +89,7 @@ export class Table2Component<T extends object> {
         noRecords: createInternalColumnDef('no-records'),
     };
     footerRowDefs = computed(() => (this.data()?.length ? [] : [this.columnDefs.noRecords]));
+    cardEl = viewChild(MatCard, { read: ElementRef });
 
     constructor(private dr: DestroyRef) {
         effect(() => {
@@ -93,6 +98,24 @@ export class Table2Component<T extends object> {
         effect(() => {
             this.dataSource.paginator.setSize(this.size());
         });
+    }
+
+    ngAfterViewInit() {
+        if (this.infinityScroll()) {
+            toObservable(this.cardEl)
+                .pipe(
+                    filter((el) => !!el?.nativeElement),
+                    switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
+                    debounceTime(500),
+                )
+                .subscribe((e) => {
+                    const el = e.target as HTMLElement;
+                    const buffer = 200;
+                    if (el.scrollTop > el.scrollHeight - el.clientHeight - buffer) {
+                        this.showMore();
+                    }
+                });
+        }
     }
 
     load() {

@@ -7,7 +7,7 @@
 
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <table #table [dataSource]="dataSource" mat-table>
+        <table [dataSource]="dataSource" mat-table>
             @for (col of normalizedColumns(); track col; let colIndex = $index) {
                 <ng-container [matColumnDef]="col.field">
                     <th *matHeaderCellDef mat-header-cell>
@@ -37,7 +37,7 @@
                 [progress]="progress()"
             ></v-no-records-column>
 
-            <tr *matHeaderRowDef="rowDefs()" mat-header-row></tr>
+            <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
             <tr
                 *matFooterRowDef="footerRowDefs()"
@@ -47,7 +47,7 @@
         </table>
     </mat-card>
 
-    @if (hasMore() || dataSource.paginator.length < count()) {
+    @if (!infinityScroll() && (hasMore() || dataSource.paginator.length < count())) {
         <v-show-more-button
             [displayedPages]="dataSource.paginator.displayedPages"
             [length]="count()"
