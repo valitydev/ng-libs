@@ -15,3 +15,4 @@ export * from './datetime-field';
 export * from './switch-button';
 export * from './value';
 export * from './nav';
+export * from './content-loading';

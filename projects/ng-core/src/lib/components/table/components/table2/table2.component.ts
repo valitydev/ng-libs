@@ -18,9 +18,10 @@ import {
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCardModule, MatCard } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest, switchMap, debounceTime, fromEvent } from 'rxjs';
+import { combineLatest, switchMap, debounceTime, fromEvent, skipWhile } from 'rxjs';
 import { shareReplay, map, filter } from 'rxjs/operators';
 
+import { ContentLoadingComponent } from '../../../content-loading';
 import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
@@ -46,6 +47,7 @@ import { COLUMN_DEFS } from './consts';
         NoRecordsColumnComponent,
         TableInfoBarComponent,
         ShowMoreButtonComponent,
+        ContentLoadingComponent,
     ],
 })
 export class Table2Component<T extends object> implements OnInit {
@@ -88,8 +90,8 @@ export class Table2Component<T extends object> implements OnInit {
 
     rowDefs = computed(() => this.normalizedColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;
-    footerRowDefs = computed(() => (this.data()?.length ? [] : [this.columnDefs.noRecords]));
     cardEl = viewChild(MatCard, { read: ElementRef });
+    hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
     constructor(
         private dr: DestroyRef,
@@ -117,11 +119,12 @@ export class Table2Component<T extends object> implements OnInit {
                 filter((el) => !!el?.nativeElement),
                 switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
                 debounceTime(500),
+                skipWhile(() => this.progress()),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((e) => {
                 const el = e.target as HTMLElement;
-                const buffer = 200;
+                const buffer = el.clientHeight;
                 if (el.scrollTop > el.scrollHeight - el.clientHeight - buffer) {
                     this.showMore();
                 }

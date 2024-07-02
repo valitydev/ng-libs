@@ -4,6 +4,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 
+import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
 
 import { CurrencyAmountValueComponent } from './components/currency-amount-value.component';
@@ -23,6 +24,7 @@ import { Value } from './types/value';
         DatetimeValueComponent,
         CurrencyAmountValueComponent,
         MenuValueComponent,
+        ContentLoadingComponent,
     ],
     templateUrl: './value.component.html',
     styleUrl: './value.component.scss',
@@ -32,6 +34,7 @@ import { Value } from './types/value';
 })
 export class ValueComponent {
     value = input<Value | null>();
+    progress = input(false, { transform: booleanAttribute });
     inline = input(false, { transform: booleanAttribute });
     lazyVisibleChange = output<boolean>();
 

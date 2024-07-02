@@ -5,7 +5,10 @@
         [progress]="progress()"
     ></v-table-info-bar>
 
-    <mat-card class="card">
+    <mat-card
+        [ngClass]="{ 'card__loading-content-footer': hasLoadingContentFooter() }"
+        class="card"
+    >
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
         <table [dataSource]="dataSource" mat-table>
             @for (col of normalizedColumns(); track col; let colIndex = $index) {
@@ -28,10 +31,16 @@
                             } @else {
                                 <v-value [value]="cellData[0]" inline></v-value>
                             }
+                        } @else {
+                            <v-value [progress]="true" inline></v-value>
                         }
+                    </td>
+                    <td *matFooterCellDef mat-footer-cell>
+                        <v-value [progress]="true" inline></v-value>
                     </td>
                 </ng-container>
             }
+
             <v-no-records-column
                 [name]="columnDefs.noRecords"
                 [progress]="progress()"
@@ -40,14 +49,19 @@
             <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
             <tr
-                *matFooterRowDef="footerRowDefs()"
-                [style.display]="footerRowDefs().length ? '' : 'none'"
+                *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
+                [style.display]="hasLoadingContentFooter() ? '' : 'none'"
+                mat-row
+            ></tr>
+            <tr
+                *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
+                [style.display]="count() ? 'none' : ''"
                 mat-footer-row
             ></tr>
         </table>
     </mat-card>
 
-    @if (!infinityScroll() && (hasMore() || dataSource.paginator.length < count())) {
+    @if (!hasLoadingContentFooter() && (hasMore() || dataSource.paginator.length < count())) {
         <v-show-more-button
             [displayedPages]="dataSource.paginator.displayedPages"
             [length]="count()"
