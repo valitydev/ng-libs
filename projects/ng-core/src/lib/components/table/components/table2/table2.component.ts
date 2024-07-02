@@ -11,10 +11,11 @@ import {
     signal,
     output,
     ElementRef,
-    AfterViewInit,
     viewChild,
+    OnInit,
+    Injector,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCardModule, MatCard } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { combineLatest, switchMap, debounceTime, fromEvent } from 'rxjs';
@@ -22,12 +23,13 @@ import { shareReplay, map, filter } from 'rxjs/operators';
 
 import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
-import { createInternalColumnDef } from '../../utils/create-internal-column-def';
 import { TableDataSource } from '../../utils/table-data-source';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
+
+import { COLUMN_DEFS } from './consts';
 
 @Component({
     standalone: true,
@@ -46,7 +48,7 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
         ShowMoreButtonComponent,
     ],
 })
-export class Table2Component<T extends object> implements AfterViewInit {
+export class Table2Component<T extends object> implements OnInit {
     data = input<T[]>([]);
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
@@ -85,37 +87,45 @@ export class Table2Component<T extends object> implements AfterViewInit {
     count = computed(() => this.data()?.length ?? 0);
 
     rowDefs = computed(() => this.normalizedColumns().map((c) => c.field));
-    columnDefs = {
-        noRecords: createInternalColumnDef('no-records'),
-    };
+    columnDefs = COLUMN_DEFS;
     footerRowDefs = computed(() => (this.data()?.length ? [] : [this.columnDefs.noRecords]));
     cardEl = viewChild(MatCard, { read: ElementRef });
 
-    constructor(private dr: DestroyRef) {
-        effect(() => {
-            this.dataSource.data = this.data();
-        });
+    constructor(
+        private dr: DestroyRef,
+        private injector: Injector,
+    ) {
+        effect(
+            () => {
+                this.dataSource.data = this.data();
+            },
+            {
+                // TODO: not a necessary line, but after adding viewChild signal requires
+                allowSignalWrites: true,
+            },
+        );
         effect(() => {
             this.dataSource.paginator.setSize(this.size());
         });
     }
 
-    ngAfterViewInit() {
-        if (this.infinityScroll()) {
-            toObservable(this.cardEl)
-                .pipe(
-                    filter((el) => !!el?.nativeElement),
-                    switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
-                    debounceTime(500),
-                )
-                .subscribe((e) => {
-                    const el = e.target as HTMLElement;
-                    const buffer = 200;
-                    if (el.scrollTop > el.scrollHeight - el.clientHeight - buffer) {
-                        this.showMore();
-                    }
-                });
-        }
+    ngOnInit() {
+        toObservable(this.infinityScroll, { injector: this.injector })
+            .pipe(
+                filter(Boolean),
+                switchMap(() => toObservable(this.cardEl, { injector: this.injector })),
+                filter((el) => !!el?.nativeElement),
+                switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
+                debounceTime(500),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe((e) => {
+                const el = e.target as HTMLElement;
+                const buffer = 200;
+                if (el.scrollTop > el.scrollHeight - el.clientHeight - buffer) {
+                    this.showMore();
+                }
+            });
     }
 
     load() {

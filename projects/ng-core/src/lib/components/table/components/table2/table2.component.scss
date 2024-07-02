@@ -13,16 +13,20 @@
     .card {
         width: 100%;
         overflow: auto;
+
+        .multi-cell {
+            display: flex;
+            flex-direction: column;
+
+            & > * {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-height: 20px;
+            }
+        }
     }
 
-    .multi-cell {
-        display: flex;
-        flex-direction: column;
-
-        & > * {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: 20px;
-        }
+    .show-more-button {
+        margin-top: 8px;
     }
 }
