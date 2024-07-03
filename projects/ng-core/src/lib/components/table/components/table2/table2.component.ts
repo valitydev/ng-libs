@@ -16,7 +16,7 @@ import {
     Injector,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatCardModule, MatCard } from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { combineLatest, switchMap, debounceTime, fromEvent, skipWhile } from 'rxjs';
 import { shareReplay, map, filter } from 'rxjs/operators';
@@ -90,7 +90,7 @@ export class Table2Component<T extends object> implements OnInit {
 
     rowDefs = computed(() => this.normalizedColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;
-    cardEl = viewChild(MatCard, { read: ElementRef });
+    scrolledTableWrapperEl = viewChild('scrolledTableWrapper', { read: ElementRef });
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
     constructor(
@@ -115,7 +115,9 @@ export class Table2Component<T extends object> implements OnInit {
         toObservable(this.infinityScroll, { injector: this.injector })
             .pipe(
                 filter(Boolean),
-                switchMap(() => toObservable(this.cardEl, { injector: this.injector })),
+                switchMap(() =>
+                    toObservable(this.scrolledTableWrapperEl, { injector: this.injector }),
+                ),
                 filter((el) => !!el?.nativeElement),
                 switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
                 debounceTime(500),

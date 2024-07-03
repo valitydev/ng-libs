@@ -5,60 +5,66 @@
         [progress]="progress()"
     ></v-table-info-bar>
 
-    <mat-card
-        [ngClass]="{ 'card__loading-content-footer': hasLoadingContentFooter() }"
-        class="card"
-    >
+    <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <table [dataSource]="dataSource" mat-table>
-            @for (col of normalizedColumns(); track col; let colIndex = $index) {
-                <ng-container [matColumnDef]="col.field">
-                    <th *matHeaderCellDef mat-header-cell>
-                        <v-value [value]="col.header | async" inline></v-value>
-                    </th>
-                    <td
-                        *matCellDef="let row; let rowIndex = index"
-                        [ngStyle]="col?.params?.style"
-                        mat-cell
-                    >
-                        @if ((columnsData$$ | async)?.[colIndex]?.[rowIndex] | async; as cellData) {
-                            @if (cellData.length > 1) {
-                                <div class="multi-cell">
-                                    @for (item of cellData; track item) {
-                                        <v-value [value]="item" inline></v-value>
-                                    }
-                                </div>
+        <div #scrolledTableWrapper class="scrolled-table-wrapper">
+            <table
+                [dataSource]="dataSource"
+                [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
+                mat-table
+            >
+                @for (col of normalizedColumns(); track col; let colIndex = $index) {
+                    <ng-container [matColumnDef]="col.field">
+                        <th *matHeaderCellDef mat-header-cell>
+                            <v-value [value]="col.header | async" inline></v-value>
+                        </th>
+                        <td
+                            *matCellDef="let row; let rowIndex = index"
+                            [ngStyle]="col?.params?.style"
+                            mat-cell
+                        >
+                            @if (
+                                (columnsData$$ | async)?.[colIndex]?.[rowIndex] | async;
+                                as cellData
+                            ) {
+                                @if (cellData.length > 1) {
+                                    <div class="multi-cell">
+                                        @for (item of cellData; track item) {
+                                            <v-value [value]="item" inline></v-value>
+                                        }
+                                    </div>
+                                } @else {
+                                    <v-value [value]="cellData[0]" inline></v-value>
+                                }
                             } @else {
-                                <v-value [value]="cellData[0]" inline></v-value>
+                                <v-value [progress]="true" inline></v-value>
                             }
-                        } @else {
+                        </td>
+                        <td *matFooterCellDef mat-footer-cell>
                             <v-value [progress]="true" inline></v-value>
-                        }
-                    </td>
-                    <td *matFooterCellDef mat-footer-cell>
-                        <v-value [progress]="true" inline></v-value>
-                    </td>
-                </ng-container>
-            }
+                        </td>
+                    </ng-container>
+                }
 
-            <v-no-records-column
-                [name]="columnDefs.noRecords"
-                [progress]="progress()"
-            ></v-no-records-column>
+                <v-no-records-column
+                    [name]="columnDefs.noRecords"
+                    [progress]="progress()"
+                ></v-no-records-column>
 
-            <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
-            <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
-            <tr
-                *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
-                [style.display]="hasLoadingContentFooter() ? '' : 'none'"
-                mat-row
-            ></tr>
-            <tr
-                *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
-                [style.display]="count() ? 'none' : ''"
-                mat-footer-row
-            ></tr>
-        </table>
+                <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
+                <tr
+                    *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
+                    [style.display]="hasLoadingContentFooter() ? '' : 'none'"
+                    mat-row
+                ></tr>
+                <tr
+                    *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
+                    [style.display]="count() ? 'none' : ''"
+                    mat-footer-row
+                ></tr>
+            </table>
+        </div>
     </mat-card>
 
     @if (!hasLoadingContentFooter() && (hasMore() || dataSource.paginator.length < count())) {
