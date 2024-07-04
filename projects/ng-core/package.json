@@ -16,6 +16,7 @@
     "@s-libs/rxjs-core": "^18.0.0",
     "dinero.js": "^2.0.0-alpha.14",
     "fuse.js": "^7.0.0",
+    "papaparse": "^5.4.1",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
@@ -31,5 +32,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.14"
   }
 }

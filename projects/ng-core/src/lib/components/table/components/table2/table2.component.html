@@ -1,4 +1,43 @@
 <div class="wrapper">
+    <div style="flex: 0; white-space: nowrap; padding-top: 12px">
+        <button
+            [disabled]="progress()"
+            mat-icon-button
+            matTooltip="Reload {{ size() }} elements"
+            style="margin: -6px 0"
+            (click)="load()"
+        >
+            <mat-icon>refresh</mat-icon>
+        </button>
+        <button
+            [color]="isPreload() && hasMore() ? 'accent' : undefined"
+            [disabled]="progress() || !hasMore()"
+            mat-icon-button
+            matTooltip="Preload {{ preloadSize() }}{{
+                isPreload() && hasMore() ? ' more' : ''
+            }} elements"
+            style="margin: -6px 0"
+            (click)="preload()"
+        >
+            <mat-icon>{{
+                hasMore() || progress()
+                    ? isPreload() && hasMore()
+                        ? 'downloading'
+                        : 'download_for_offline'
+                    : 'download_done'
+            }}</mat-icon>
+        </button>
+        <button
+            [disabled]="progress()"
+            mat-icon-button
+            matTooltip="Download CSV"
+            style="margin: -6px 0"
+            (click)="downloadCsv()"
+        >
+            <mat-icon>file_save</mat-icon>
+        </button>
+    </div>
+
     <v-table-info-bar
         [count]="count()"
         [hasMore]="hasMore()"

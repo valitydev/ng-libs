@@ -6,38 +6,34 @@
             @if (v.template) {
                 <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
             } @else {
-                @switch (v.type) {
-                    @case ('datetime') {
-                        <v-datetime-value [value]="v"></v-datetime-value>
-                    }
-                    @case ('currency') {
-                        <v-currency-amount-value [value]="v"></v-currency-amount-value>
-                    }
-                    @case ('menu') {
-                        <v-menu-value [value]="v"></v-menu-value>
-                    }
-                    @default {
-                        <ng-container *ngTemplateOutlet="tagTemplate"></ng-container>
-                    }
-                }
-                <ng-template #tagTemplate>
-                    @if (v.color) {
-                        <v-tag [color]="v.color">
-                            <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
-                        </v-tag>
-                    } @else {
+                @if (v.color) {
+                    <v-tag [color]="v.color">
                         <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
-                    }
-                </ng-template>
+                    </v-tag>
+                } @else {
+                    <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
+                }
+
                 <ng-template #tooltipTemplate>
                     @if (v.tooltip) {
                         <span [matTooltip]="v.tooltip ?? ''">
-                            {{ v.value }}
+                            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
                         </span>
                     } @else {
                         <span [title]="v.value">
-                            {{ v.value }}
+                            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
                         </span>
+                    }
+                </ng-template>
+
+                <ng-template #valueTemplate>
+                    @switch (v.type) {
+                        @case ('menu') {
+                            <v-menu-value [value]="v"></v-menu-value>
+                        }
+                        @default {
+                            {{ renderedValue() }}
+                        }
                     }
                 </ng-template>
             }

@@ -16,13 +16,27 @@ import {
     Injector,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest, switchMap, debounceTime, fromEvent, skipWhile } from 'rxjs';
+import { MatTooltip } from '@angular/material/tooltip';
+import {
+    combineLatest,
+    switchMap,
+    debounceTime,
+    fromEvent,
+    skipWhile,
+    forkJoin,
+    take,
+    Observable,
+} from 'rxjs';
 import { shareReplay, map, filter } from 'rxjs/operators';
 
+import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
-import { ValueComponent } from '../../../value';
+import { ValueComponent, Value } from '../../../value';
+import { valueToString } from '../../../value/utils/value-to-string';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
@@ -48,6 +62,9 @@ import { COLUMN_DEFS } from './consts';
         TableInfoBarComponent,
         ShowMoreButtonComponent,
         ContentLoadingComponent,
+        MatIcon,
+        MatTooltip,
+        MatIconButton,
     ],
 })
 export class Table2Component<T extends object> implements OnInit {
@@ -81,7 +98,6 @@ export class Table2Component<T extends object> implements OnInit {
     );
     columnsData$ = this.columnsData$$.pipe(
         switchMap((d) => combineLatest(d.map((v) => combineLatest(v)))),
-        debounceTime(300),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
@@ -156,5 +172,40 @@ export class Table2Component<T extends object> implements OnInit {
         if (this.hasMore() && this.dataSource.paginator.length > this.count()) {
             this.more.emit({ size: this.loadSize() });
         }
+    }
+
+    downloadCsv() {
+        return this.generateCSVData().subscribe((csvData) => {
+            downloadFile(csvData, 'csv');
+        });
+    }
+
+    private generateCSVData(): Observable<string> {
+        return combineLatest([
+            toObservable(this.normalizedColumns, { injector: this.injector }).pipe(
+                switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
+            ),
+            this.columnsData$.pipe(take(1)),
+        ]).pipe(
+            map(([cols, data]) =>
+                createCsv([
+                    cols.map((v) => valueToString(v)),
+                    ...data
+                        .reduce(
+                            (acc, c, cIdx) => {
+                                c.forEach((r, rIdx) => {
+                                    if (!acc[rIdx]) {
+                                        acc[rIdx] = [];
+                                    }
+                                    acc[rIdx][cIdx] = r;
+                                });
+                                return acc;
+                            },
+                            [] as Value[][][],
+                        )
+                        .map((t) => t.map((r) => r.map((v) => valueToString(v)).join(', '))),
+                ]),
+            ),
+        );
     }
 }

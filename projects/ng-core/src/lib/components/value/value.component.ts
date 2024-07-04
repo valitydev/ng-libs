@@ -7,10 +7,9 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
 
-import { CurrencyAmountValueComponent } from './components/currency-amount-value.component';
-import { DatetimeValueComponent } from './components/datetime-value.component';
 import { MenuValueComponent } from './components/menu-value.component';
 import { Value } from './types/value';
+import { valueToString } from './utils/value-to-string';
 
 @Component({
     selector: 'v-value',
@@ -21,8 +20,6 @@ import { Value } from './types/value';
         MatIconButton,
         TagModule,
         MatTooltip,
-        DatetimeValueComponent,
-        CurrencyAmountValueComponent,
         MenuValueComponent,
         ContentLoadingComponent,
     ],
@@ -34,12 +31,15 @@ import { Value } from './types/value';
 })
 export class ValueComponent {
     value = input<Value | null>();
+    resultingValue = input<string>();
     progress = input(false, { transform: booleanAttribute });
     inline = input(false, { transform: booleanAttribute });
+
     lazyVisibleChange = output<boolean>();
 
     lazyVisible = signal(false);
     isLoaded = computed(() => !this.value()?.lazy || this.lazyVisible());
+    renderedValue = computed(() => this.resultingValue() ?? valueToString(this.value()));
 
     toggleLazyVisible() {
         this.lazyVisible.set(true);

@@ -1,10 +1,9 @@
-import { Component, input, booleanAttribute } from '@angular/core';
-import { MatProgressBar } from '@angular/material/progress-bar';
+import { Component, input, booleanAttribute, output } from '@angular/core';
 
 @Component({
     selector: 'v-table-info-bar',
     standalone: true,
-    imports: [MatProgressBar],
+    imports: [],
     template: `
         <div class="details">
             Quantity:
@@ -38,4 +37,6 @@ export class TableInfoBarComponent {
     count = input<number | undefined>(0);
     filteredCount = input<number | undefined>(0);
     selectedCount = input<number | undefined>(0);
+
+    downloadCsv = output();
 }
