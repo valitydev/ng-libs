@@ -52,7 +52,7 @@
                 [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
                 mat-table
             >
-                @for (col of normalizedColumns(); track col; let colIndex = $index) {
+                @for (col of normColumns(); track col; let colIndex = $index) {
                     <ng-container [matColumnDef]="col.field">
                         <th *matHeaderCellDef mat-header-cell>
                             <v-value [value]="col.header | async" inline></v-value>
@@ -63,7 +63,7 @@
                             mat-cell
                         >
                             @if (
-                                (columnsData$$ | async)?.[colIndex]?.[rowIndex] | async;
+                                (columnsData$$ | async)?.[rowIndex]?.[colIndex] | async;
                                 as cellData
                             ) {
                                 @if (cellData.length > 1) {

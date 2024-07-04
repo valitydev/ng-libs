@@ -35,10 +35,10 @@ import { shareReplay, map, filter } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
-import { ValueComponent, Value } from '../../../value';
-import { valueToString } from '../../../value/utils/value-to-string';
+import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
+import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
@@ -80,16 +80,11 @@ export class Table2Component<T extends object> implements OnInit {
     more = output<UpdateOptions>();
 
     dataSource = new TableDataSource<T>();
-    normalizedColumns = computed<NormColumn<T>[]>(() =>
-        this.columns().map((c) => new NormColumn(c)),
-    );
-    columnsData$$ = combineLatest([
-        toObservable(this.data),
-        toObservable(this.normalizedColumns),
-    ]).pipe(
+    normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    columnsData$$ = combineLatest([toObservable(this.data), toObservable(this.normColumns)]).pipe(
         map(([data, cols]) =>
-            cols.map((c) =>
-                data.map((d, idx) =>
+            data.map((d, idx) =>
+                cols.map((c) =>
                     c.cell(d, idx).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
                 ),
             ),
@@ -104,7 +99,7 @@ export class Table2Component<T extends object> implements OnInit {
     loadSize = computed(() => (this.isPreload() ? this.preloadSize() : this.size()));
     count = computed(() => this.data()?.length ?? 0);
 
-    rowDefs = computed(() => this.normalizedColumns().map((c) => c.field));
+    rowDefs = computed(() => this.normColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;
     scrolledTableWrapperEl = viewChild('scrolledTableWrapper', { read: ElementRef });
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
@@ -175,37 +170,19 @@ export class Table2Component<T extends object> implements OnInit {
     }
 
     downloadCsv() {
-        return this.generateCSVData().subscribe((csvData) => {
-            downloadFile(csvData, 'csv');
-        });
+        this.generateCsvData()
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe((csvData) => {
+                downloadFile(csvData, 'csv');
+            });
     }
 
-    private generateCSVData(): Observable<string> {
+    private generateCsvData(): Observable<string> {
         return combineLatest([
-            toObservable(this.normalizedColumns, { injector: this.injector }).pipe(
+            toObservable(this.normColumns, { injector: this.injector }).pipe(
                 switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
             ),
             this.columnsData$.pipe(take(1)),
-        ]).pipe(
-            map(([cols, data]) =>
-                createCsv([
-                    cols.map((v) => valueToString(v)),
-                    ...data
-                        .reduce(
-                            (acc, c, cIdx) => {
-                                c.forEach((r, rIdx) => {
-                                    if (!acc[rIdx]) {
-                                        acc[rIdx] = [];
-                                    }
-                                    acc[rIdx][cIdx] = r;
-                                });
-                                return acc;
-                            },
-                            [] as Value[][][],
-                        )
-                        .map((t) => t.map((r) => r.map((v) => valueToString(v)).join(', '))),
-                ]),
-            ),
-        );
+        ]).pipe(map(([cols, data]) => createCsv(tableToCsvObject(cols, data))));
     }
 }

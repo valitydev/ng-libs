@@ -1,9 +1,8 @@
-import isNil from 'lodash-es/isNil';
-
 import { Value } from '../types/value';
 
 import { currencyAmountValueToString } from './currency-amount-value-to-string';
 import { datetimeValueToString } from './datetime-value-to-string';
+import { unknownToString } from './unknown-to-string';
 
 export function valueToString(value?: Value | null): string {
     switch (value?.type) {
@@ -12,5 +11,5 @@ export function valueToString(value?: Value | null): string {
         case 'datetime':
             return datetimeValueToString(value);
     }
-    return isNil(value?.value) ? '' : String(value?.value);
+    return unknownToString(value?.value);
 }
