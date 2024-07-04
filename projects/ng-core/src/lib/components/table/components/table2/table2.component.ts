@@ -37,6 +37,7 @@ import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
+import { checkNeedToLoadMore } from '../../utils/check-need-to-load-more';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
@@ -129,16 +130,15 @@ export class Table2Component<T extends object> implements OnInit {
                 switchMap(() =>
                     toObservable(this.scrolledTableWrapperEl, { injector: this.injector }),
                 ),
-                filter((el) => !!el?.nativeElement),
-                switchMap((el) => fromEvent<Event>(el?.nativeElement, 'scroll')),
+                map((el) => el?.nativeElement),
+                filter(Boolean),
+                switchMap((el) => fromEvent<Event>(el, 'scroll')),
                 debounceTime(500),
                 skipWhile(() => this.progress()),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((e) => {
-                const el = e.target as HTMLElement;
-                const buffer = el.clientHeight;
-                if (el.scrollTop > el.scrollHeight - el.clientHeight - buffer) {
+                if (checkNeedToLoadMore(e.target as HTMLElement)) {
                     this.showMore();
                 }
             });
