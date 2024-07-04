@@ -10,9 +10,6 @@ import {
     numberAttribute,
     signal,
     output,
-    ElementRef,
-    viewChild,
-    OnInit,
     Injector,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,25 +18,16 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import {
-    combineLatest,
-    switchMap,
-    debounceTime,
-    fromEvent,
-    skipWhile,
-    forkJoin,
-    take,
-    Observable,
-} from 'rxjs';
-import { shareReplay, map, filter } from 'rxjs/operators';
+import { combineLatest, switchMap, forkJoin, take, Observable } from 'rxjs';
+import { shareReplay, map } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ValueComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
-import { checkNeedToLoadMore } from '../../utils/check-need-to-load-more';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
+import { InfinityScrollDirective } from '../infinity-scroll.directive';
 import { NoRecordsColumnComponent } from '../no-records-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
@@ -66,9 +54,10 @@ import { COLUMN_DEFS } from './consts';
         MatIcon,
         MatTooltip,
         MatIconButton,
+        InfinityScrollDirective,
     ],
 })
-export class Table2Component<T extends object> implements OnInit {
+export class Table2Component<T extends object> {
     data = input<T[]>([]);
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
@@ -102,7 +91,6 @@ export class Table2Component<T extends object> implements OnInit {
 
     rowDefs = computed(() => this.normColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;
-    scrolledTableWrapperEl = viewChild('scrolledTableWrapper', { read: ElementRef });
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
     constructor(
@@ -121,27 +109,6 @@ export class Table2Component<T extends object> implements OnInit {
         effect(() => {
             this.dataSource.paginator.setSize(this.size());
         });
-    }
-
-    ngOnInit() {
-        toObservable(this.infinityScroll, { injector: this.injector })
-            .pipe(
-                filter(Boolean),
-                switchMap(() =>
-                    toObservable(this.scrolledTableWrapperEl, { injector: this.injector }),
-                ),
-                map((el) => el?.nativeElement),
-                filter(Boolean),
-                switchMap((el) => fromEvent<Event>(el, 'scroll')),
-                debounceTime(500),
-                skipWhile(() => this.progress()),
-                takeUntilDestroyed(this.dr),
-            )
-            .subscribe((e) => {
-                if (checkNeedToLoadMore(e.target as HTMLElement)) {
-                    this.showMore();
-                }
-            });
     }
 
     load() {

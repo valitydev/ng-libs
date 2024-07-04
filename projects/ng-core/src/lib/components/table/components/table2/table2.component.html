@@ -46,7 +46,12 @@
 
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <div #scrolledTableWrapper class="scrolled-table-wrapper">
+        <div
+            [vInfinityScroll]="infinityScroll()"
+            [vInfinityScrollSkip]="progress()"
+            class="scrolled-table-wrapper"
+            (vInfinityScrollMore)="showMore()"
+        >
             <table
                 [dataSource]="dataSource"
                 [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
