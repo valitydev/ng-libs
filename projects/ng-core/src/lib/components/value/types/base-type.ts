@@ -10,6 +10,9 @@ export type BaseValue<V = unknown> = {
     color?: Color;
     lazy?: boolean;
 
+    click?: (event: MouseEvent) => void;
+    link?: (event: MouseEvent) => void;
+
     template?: TemplateRef<unknown>;
 };
 

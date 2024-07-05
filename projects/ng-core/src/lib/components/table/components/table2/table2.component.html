@@ -32,11 +32,22 @@
                         [sticky]="col.params.sticky === 'start'"
                         [stickyEnd]="col.params.sticky === 'end'"
                     >
-                        <th *matHeaderCellDef mat-header-cell>
+                        <th
+                            *matHeaderCellDef
+                            [ngClass]="{
+                                'column__sticky-start': col.params.sticky === 'start',
+                                'column__sticky-end': col.params.sticky === 'end'
+                            }"
+                            mat-header-cell
+                        >
                             <v-value [value]="col.header | async" inline></v-value>
                         </th>
                         <td
                             *matCellDef="let row; let rowIndex = index"
+                            [ngClass]="{
+                                'column__sticky-start': col.params.sticky === 'start',
+                                'column__sticky-end': col.params.sticky === 'end'
+                            }"
                             [ngStyle]="col?.params?.style"
                             mat-cell
                         >
@@ -57,7 +68,14 @@
                                 <v-value [progress]="true" inline></v-value>
                             }
                         </td>
-                        <td *matFooterCellDef mat-footer-cell>
+                        <td
+                            *matFooterCellDef
+                            [ngClass]="{
+                                'column__sticky-start': col.params.sticky === 'start',
+                                'column__sticky-end': col.params.sticky === 'end'
+                            }"
+                            mat-footer-cell
+                        >
                             <v-value [progress]="true" inline></v-value>
                         </td>
                     </ng-container>

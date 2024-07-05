@@ -24,4 +24,13 @@
     .v-table-filter {
         @include mat.form-field-density(-5);
     }
+
+    // Table 2
+
+    .column {
+        &__sticky-start,
+        &__sticky-end {
+            border-color: get-color($theme, neutral, 300) !important;
+        }
+    }
 }

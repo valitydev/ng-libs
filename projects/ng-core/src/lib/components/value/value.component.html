@@ -16,7 +16,7 @@
 
                 <ng-template #tooltipTemplate>
                     @if (v.tooltip) {
-                        <span [matTooltip]="v.tooltip ?? ''">
+                        <span [matTooltip]="v.tooltip ?? ''" class="tooltip">
                             <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
                         </span>
                     } @else {
@@ -32,7 +32,12 @@
                             <v-menu-value [value]="v"></v-menu-value>
                         }
                         @default {
-                            {{ renderedValue() }}
+                            <span
+                                [ngClass]="{ value__click: v.click, value__link: v.link }"
+                                (click)="click($event)"
+                            >
+                                {{ renderedValue() }}
+                            </span>
                         }
                     }
                 </ng-template>

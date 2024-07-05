@@ -9,6 +9,30 @@
     }
 }
 
+.tooltip {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+
+.value {
+    &__click {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+            text-decoration-style: dashed;
+        }
+    }
+
+    &__link {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
 .description {
     overflow: hidden;
     text-overflow: ellipsis;

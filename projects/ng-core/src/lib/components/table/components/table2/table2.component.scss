@@ -43,3 +43,13 @@
         margin-top: 8px;
     }
 }
+
+.column {
+    &__sticky-start {
+        border-right: 1px solid;
+    }
+
+    &__sticky-end {
+        border-left: 1px solid;
+    }
+}

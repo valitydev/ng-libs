@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, computed, signal, output, booleanAttribute } from '@angular/core';
+import {
+    Component,
+    input,
+    computed,
+    signal,
+    output,
+    booleanAttribute,
+    runInInjectionContext,
+    Injector,
+} from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -39,10 +48,24 @@ export class ValueComponent {
 
     lazyVisible = signal(false);
     isLoaded = computed(() => !this.value()?.lazy || this.lazyVisible());
-    renderedValue = computed(() => this.resultingValue() ?? valueToString(this.value()));
+    renderedValue = computed(
+        () =>
+            this.resultingValue() ??
+            runInInjectionContext(this.injector, () => valueToString(this.value())),
+    );
+
+    constructor(private injector: Injector) {}
 
     toggleLazyVisible() {
         this.lazyVisible.set(true);
         this.lazyVisibleChange.emit(this.lazyVisible());
+    }
+
+    click(event: MouseEvent) {
+        if (this.value()?.click) {
+            this.value()?.click?.(event);
+        } else if (typeof this.value()?.link === 'function') {
+            this.value()?.link?.(event);
+        }
     }
 }
