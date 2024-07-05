@@ -27,7 +27,11 @@
                 mat-table
             >
                 @for (col of normColumns(); track col; let colIndex = $index) {
-                    <ng-container [matColumnDef]="col.field">
+                    <ng-container
+                        [matColumnDef]="col.field"
+                        [sticky]="col.params.sticky === 'start'"
+                        [stickyEnd]="col.params.sticky === 'end'"
+                    >
                         <th *matHeaderCellDef mat-header-cell>
                             <v-value [value]="col.header | async" inline></v-value>
                         </th>
