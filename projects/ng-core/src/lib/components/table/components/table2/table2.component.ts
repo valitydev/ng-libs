@@ -11,6 +11,7 @@ import {
     signal,
     output,
     Injector,
+    viewChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -93,6 +94,8 @@ export class Table2Component<T extends object> {
     columnDefs = COLUMN_DEFS;
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
+    infinityScrollDirective = viewChild(InfinityScrollDirective);
+
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
@@ -115,17 +118,15 @@ export class Table2Component<T extends object> {
         if (this.isPreload()) {
             this.isPreload.set(false);
         }
-        this.update.emit({ size: this.loadSize() });
-        this.dataSource.paginator.reload();
+        this.reload();
     }
 
     preload() {
-        if (this.isPreload() && this.hasMore()) {
-            this.more.emit({ size: this.loadSize() });
-        } else {
+        if (!this.isPreload()) {
             this.isPreload.set(true);
-            this.update.emit({ size: this.loadSize() });
-            this.dataSource.paginator.reload();
+            this.reload();
+        } else if (this.hasMore()) {
+            this.more.emit({ size: this.loadSize() });
         }
     }
 
@@ -151,5 +152,11 @@ export class Table2Component<T extends object> {
             ),
             this.columnsData$.pipe(take(1)),
         ]).pipe(map(([cols, data]) => createCsv(tableToCsvObject(cols, data))));
+    }
+
+    private reload() {
+        this.infinityScrollDirective()?.reset?.();
+        this.update.emit({ size: this.loadSize() });
+        this.dataSource.paginator.reload();
     }
 }
