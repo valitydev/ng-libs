@@ -64,7 +64,7 @@ export class Table2Component<T extends object> {
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
-    preloadSize = input(1000, { transform: numberAttribute });
+    maxSize = input(1000, { transform: numberAttribute });
     infinityScroll = input(false, { transform: booleanAttribute });
 
     update = output<UpdateOptions>();
@@ -87,7 +87,7 @@ export class Table2Component<T extends object> {
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
-    loadSize = computed(() => (this.isPreload() ? this.preloadSize() : this.size()));
+    loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
     count = computed(() => this.data()?.length ?? 0);
 
     rowDefs = computed(() => this.normColumns().map((c) => c.field));
@@ -110,7 +110,7 @@ export class Table2Component<T extends object> {
             },
         );
         effect(() => {
-            this.dataSource.paginator.setSize(this.size());
+            this.dataSource.paginator.setSize(this.loadSize());
         });
     }
 
