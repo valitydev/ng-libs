@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, numberAttribute } from '@angular/core';
 import { random } from 'lodash-es';
 
 @Component({
@@ -10,4 +10,6 @@ import { random } from 'lodash-es';
 })
 export class ContentLoadingComponent {
     width = input(random(35, 80) + '%');
+    textSize = input(0, { transform: numberAttribute });
+    hiddenText = input();
 }

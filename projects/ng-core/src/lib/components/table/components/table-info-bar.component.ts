@@ -25,18 +25,24 @@ import { TagModule } from '../../tag';
                           ', selected: ' +
                           selectedCount()
                 "
+                [progress]="progress()"
                 class="count"
                 matBadgeSize="small"
-                >{{
-                    count()
-                        ? (filteredCount() ? filteredCount() + '/' : '') +
-                          (hasMore() ? '>' : '') +
-                          count() +
-                          (progress() ? '..' : '')
-                        : progress() || count() === 0
-                          ? '...'
-                          : '0'
-                }}
+            >
+                @if ((!count() && count() !== 0) || (progress() && !count())) {
+                    <span style="color: transparent">{{ '>' }}25</span>
+                    <span style="position: absolute; left: 50%; transform: translateX(-50%);"
+                        >...</span
+                    >
+                } @else {
+                    {{
+                        count()
+                            ? (filteredCount() ? filteredCount() + '/' : '') +
+                              (hasMore() ? '>' : '') +
+                              count()
+                            : '0'
+                    }}
+                }
             </v-tag>
             <button
                 [disabled]="progress()"
@@ -54,13 +60,15 @@ import { TagModule } from '../../tag';
                 }} elements"
                 (click)="preload.emit()"
             >
-                <mat-icon>{{
-                    hasMore() || progress()
-                        ? isPreload() && hasMore()
-                            ? 'downloading'
-                            : 'download'
-                        : 'download_done'
-                }}</mat-icon>
+                <mat-icon>
+                    {{
+                        hasMore() || progress()
+                            ? isPreload() && hasMore()
+                                ? 'downloading'
+                                : 'download'
+                            : 'download_done'
+                    }}
+                </mat-icon>
             </button>
             <button
                 [disabled]="progress()"
@@ -95,7 +103,7 @@ export class TableInfoBarComponent {
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });
 
-    count = input<number | undefined>(0);
+    count = input<number | undefined>(undefined);
     filteredCount = input<number | undefined>(0);
     selectedCount = input<number | undefined>(0);
 

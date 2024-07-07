@@ -89,7 +89,7 @@ export class Table2Component<T extends object> {
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count = computed(() => this.data()?.length ?? 0);
+    count = computed(() => this.data()?.length);
 
     rowDefs = computed(() => this.normColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;

@@ -13,9 +13,9 @@
 }
 
 .content-loading {
+    color: transparent;
     display: inline-block;
-    line-height: 80%;
-    width: 80px;
+    line-height: 100%;
     background-color: rgba(0, 0, 0, 0.08);
     animation: content-loading-animation 1.5s ease-in-out infinite;
 }

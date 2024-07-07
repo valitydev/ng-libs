@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    HostBinding,
+    Input,
+    input,
+    booleanAttribute,
+} from '@angular/core';
 
 import { Color } from '../../styles';
 
@@ -12,4 +19,6 @@ export class TagComponent {
     @HostBinding('class.v-tag') hostClass: boolean = true;
 
     @Input() color?: Color;
+
+    progress = input(false, { transform: booleanAttribute });
 }
