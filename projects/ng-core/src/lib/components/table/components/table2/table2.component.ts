@@ -12,6 +12,7 @@ import {
     output,
     Injector,
     viewChild,
+    runInInjectionContext,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -151,7 +152,11 @@ export class Table2Component<T extends object> {
                 switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
             ),
             this.columnsData$.pipe(take(1)),
-        ]).pipe(map(([cols, data]) => createCsv(tableToCsvObject(cols, data))));
+        ]).pipe(
+            map(([cols, data]) =>
+                createCsv(runInInjectionContext(this.injector, () => tableToCsvObject(cols, data))),
+            ),
+        );
     }
 
     private reload() {

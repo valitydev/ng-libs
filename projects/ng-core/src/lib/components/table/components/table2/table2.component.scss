@@ -1,12 +1,14 @@
 :host {
+    display: block;
     overflow: auto;
     padding: 8px;
     margin: -8px;
+    height: 100%;
 }
 
 .wrapper {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
     height: 100%;
 

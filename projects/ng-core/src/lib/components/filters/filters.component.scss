@@ -6,6 +6,10 @@ $rows: 1;
     grid-column-gap: 8px;
     margin-bottom: -22px;
     padding: 22px !important;
+
+    ::ng-deep & > * {
+        min-width: 0;
+    }
 }
 
 @for $i from 1 through $max-columns {

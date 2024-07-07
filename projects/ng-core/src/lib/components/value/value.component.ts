@@ -63,9 +63,13 @@ export class ValueComponent {
 
     click(event: MouseEvent) {
         if (this.value()?.click) {
-            this.value()?.click?.(event);
+            runInInjectionContext(this.injector, () => {
+                this.value()?.click?.(event);
+            });
         } else if (typeof this.value()?.link === 'function') {
-            this.value()?.link?.(event);
+            runInInjectionContext(this.injector, () => {
+                this.value()?.link?.(event);
+            });
         }
     }
 }
