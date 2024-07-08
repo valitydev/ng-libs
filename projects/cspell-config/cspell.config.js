@@ -35,6 +35,7 @@ module.exports = {
         'codegen',
         'titlecase',
         'dinero',
+        'papaparse',
         // Local names
         'Wachter',
         'Deanonimus',
