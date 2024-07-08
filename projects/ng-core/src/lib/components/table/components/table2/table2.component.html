@@ -90,12 +90,12 @@
                 <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
                 <tr
                     *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
-                    [style.display]="hasLoadingContentFooter() ? '' : 'none'"
+                    [ngClass]="{ row__hidden: !hasLoadingContentFooter() }"
                     mat-row
                 ></tr>
                 <tr
                     *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
-                    [style.display]="count() ? 'none' : ''"
+                    [ngClass]="{ row__hidden: !!count() }"
                     mat-footer-row
                 ></tr>
             </table>
