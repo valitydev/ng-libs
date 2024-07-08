@@ -36,6 +36,7 @@ module.exports = {
         'titlecase',
         'dinero',
         'papaparse',
+        'unparse',
         // Local names
         'Wachter',
         'Deanonimus',
