@@ -53,7 +53,7 @@ import {
     DEFAULT_DEBOUNCE_TIME_MS,
     DEFAULT_SORT,
     COMPLETE_MISMATCH_SCORE,
-    DEFAULT_SORT_DATA,
+    sortDataByDefault,
 } from './consts';
 import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
@@ -470,7 +470,7 @@ export class TableComponent<T extends object>
     }
 
     private updateDataSourceSort(sortedData?: T[]) {
-        this.dataSource.sortData = sortedData ? () => sortedData : DEFAULT_SORT_DATA;
+        this.dataSource.sortData = sortedData ? () => sortedData : sortDataByDefault;
         // TODO: hack for update
         this.dataSource.sort = this.sortComponent;
     }
