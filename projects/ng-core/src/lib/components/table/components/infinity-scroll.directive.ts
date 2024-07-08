@@ -9,7 +9,7 @@ import {
     Injector,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { fromEvent, debounceTime, switchMap } from 'rxjs';
+import { fromEvent, debounceTime, switchMap, EMPTY } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 @Directive({
@@ -32,7 +32,7 @@ export class InfinityScrollDirective implements OnInit {
         const el = this.elementRef.nativeElement;
         toObservable(this.vInfinityScroll, { injector: this.injector })
             .pipe(
-                switchMap(() => fromEvent<Event>(el, 'scroll')),
+                switchMap((enabled) => (enabled ? fromEvent<Event>(el, 'scroll') : EMPTY)),
                 debounceTime(500),
                 switchMap(() =>
                     toObservable(this.vInfinityScrollSkip, { injector: this.injector }),
