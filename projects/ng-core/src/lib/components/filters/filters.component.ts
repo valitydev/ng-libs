@@ -4,13 +4,15 @@ import {
     ContentChild,
     ElementRef,
     EventEmitter,
-    Input,
     Output,
     TemplateRef,
     ViewChild,
     booleanAttribute,
+    Input,
+    signal,
 } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { DialogService } from '../dialog';
@@ -27,6 +29,9 @@ import { OtherFiltersDirective } from './components/other-filters/other-filters.
 export class FiltersComponent {
     @Input() active = 0;
     @Input({ transform: booleanAttribute }) merge = false;
+    // TODO: to change from outside you need to change the logic and set $rows in two SCSS
+    rows = signal(1);
+
     @Output() clear = new EventEmitter<void>();
 
     @ContentChild(TemplateRef, { static: true }) filtersTemplate!: TemplateRef<unknown>;
@@ -65,7 +70,9 @@ export class FiltersComponent {
         }),
     );
 
-    displayedFiltersCount$ = this.repeat$.pipe(map((r) => r * 2));
+    displayedFiltersCount$ = combineLatest([this.repeat$, toObservable(this.rows)]).pipe(
+        map(([repeat, rows]) => repeat * rows),
+    );
     filtersCount$ = new BehaviorSubject(0);
 
     constructor(

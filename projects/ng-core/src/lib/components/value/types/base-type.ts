@@ -3,12 +3,15 @@ import { TemplateRef } from '@angular/core';
 import { Color } from '../../../styles';
 
 export type BaseValue<V = unknown> = {
-    value: V;
+    value?: V;
 
-    description?: unknown;
+    description?: string | number | boolean;
     tooltip?: string;
     color?: Color;
     lazy?: boolean;
+
+    click?: (event: MouseEvent) => void;
+    link?: (event: MouseEvent) => void;
 
     template?: TemplateRef<unknown>;
 };

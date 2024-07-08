@@ -73,14 +73,19 @@ module.exports = {
                     {
                         selector: 'variable',
                         modifiers: ['const', 'global'],
-                        format: ['UPPER_CASE', 'PascalCase'],
+                        format: ['UPPER_CASE', 'camelCase', 'PascalCase'],
                     },
                     {
                         selector: 'variable',
                         modifiers: ['const', 'global'],
-                        // Objects are functions too
+                        types: ['array', 'boolean', 'number', 'string'],
+                        format: ['UPPER_CASE'],
+                    },
+                    {
+                        selector: 'variable',
+                        modifiers: ['const', 'global'],
                         types: ['function'],
-                        format: ['UPPER_CASE', 'camelCase', 'PascalCase'],
+                        format: ['camelCase'],
                     },
                     {
                         selector: 'enumMember',

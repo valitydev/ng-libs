@@ -2,6 +2,7 @@
 @use '@ng-matero/extensions' as mtx;
 
 @use '../components/table/table-theme';
+@use '../components/value/value-theme';
 @use '../components/dialog/dialog-theme';
 @use '../components/tag/tag-theme';
 @use '../components/input-field/input-field-theme';
@@ -15,6 +16,7 @@
     @include mtx.select-theme($theme);
 
     @include table-theme.theme($theme);
+    @include value-theme.theme($theme);
     @include dialog-theme.theme($theme);
     @include tag-theme.theme($theme);
     @include input-field-theme.theme($theme);

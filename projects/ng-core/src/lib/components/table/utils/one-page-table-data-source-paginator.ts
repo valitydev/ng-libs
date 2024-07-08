@@ -4,17 +4,30 @@ import { BehaviorSubject } from 'rxjs';
 
 export class OnePageTableDataSourcePaginator implements Partial<MatPaginator> {
     pageIndex = 0;
-    length = 0;
     pageSize = 0;
     page = new EventEmitter<PageEvent>();
     initialized = new BehaviorSubject(undefined);
+
+    get length() {
+        return this.pageSize;
+    }
+    set length(v: number) {}
 
     get displayedPages() {
         return this.pageSize / this.partSize;
     }
 
-    constructor(private partSize = 25) {
-        this.pageSize = partSize;
+    private partSize!: number;
+
+    constructor(partSize?: number) {
+        this.setSize(partSize);
+    }
+
+    setSize(partSize = 25) {
+        if (partSize !== this.partSize) {
+            this.pageSize = this.partSize = partSize;
+            this.reload();
+        }
     }
 
     reload() {

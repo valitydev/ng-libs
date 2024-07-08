@@ -1,6 +1,6 @@
 {
   "name": "@vality/ng-core",
-  "version": "18.0.0",
+  "version": "18.1.0",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -8,14 +8,15 @@
     }
   },
   "dependencies": {
-    "@angular/material-date-fns-adapter": "^18.0.3",
-    "@ng-matero/extensions": "^18.0.1",
-    "@s-libs/js-core": "^18.0.0-next.0",
-    "@s-libs/micro-dash": "^18.0.0-next.0",
-    "@s-libs/ng-core": "^18.0.0-next.0",
-    "@s-libs/rxjs-core": "^18.0.0-next.0",
+    "@angular/material-date-fns-adapter": "^18.0.5",
+    "@ng-matero/extensions": "^18.0.3",
+    "@s-libs/js-core": "^18.0.0",
+    "@s-libs/micro-dash": "^18.0.0",
+    "@s-libs/ng-core": "^18.0.0",
+    "@s-libs/rxjs-core": "^18.0.0",
     "dinero.js": "^2.0.0-alpha.14",
     "fuse.js": "^7.0.0",
+    "papaparse": "^5.4.1",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
@@ -31,5 +32,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.14"
   }
 }
