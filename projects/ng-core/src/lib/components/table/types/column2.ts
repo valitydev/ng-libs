@@ -34,10 +34,7 @@ export class NormColumn<T extends object> {
     cell!: Fn<Observable<Value[]>, CellFnArgs<T>>;
     params!: ColumnParams;
 
-    constructor(
-        { field, header, cell, ...params }: Column2<T>,
-        commonParams: ColumnParams = { style: { 'max-width': 'max(20px, 30vw)' } },
-    ) {
+    constructor({ field, header, cell, ...params }: Column2<T>, commonParams: ColumnParams = {}) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
         const defaultHeaderValue = startCase(field ?? '');
         this.header = getPossiblyAsyncObservable(header).pipe(

@@ -15,7 +15,12 @@
 
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <div #scrolledTableWrapper class="scrolled-table-wrapper">
+        <cdk-virtual-scroll-viewport
+            #scrollViewport
+            [footerEnabled]="true"
+            class="scrolled-table-wrapper"
+            tvsItemSize
+        >
             <table
                 [dataSource]="dataSource"
                 [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
@@ -33,21 +38,25 @@
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
+                            class="column"
                             mat-header-cell
                         >
                             <v-value [value]="col.header | async" inline></v-value>
                         </th>
                         <td
-                            *matCellDef="let row; let rowIndex = index"
+                            *matCellDef="let element; let rowIndex = index"
                             [ngClass]="{
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
                             [ngStyle]="col?.params?.style"
+                            class="column"
                             mat-cell
                         >
                             @if (
-                                (columnsData$$ | async)?.[rowIndex]?.[colIndex] | async;
+                                (columnsData$$ | async)?.[
+                                    (rowIndex | virtualScrollIndex: scrollViewport)
+                                ]?.[colIndex] | async;
                                 as cellData
                             ) {
                                 @if (cellData.length > 1) {
@@ -69,6 +78,7 @@
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
+                            class="column"
                             mat-footer-cell
                         >
                             <v-value [progress]="true" inline></v-value>
@@ -97,17 +107,6 @@
                     mat-footer-row
                 ></tr>
             </table>
-        </div>
+        </cdk-virtual-scroll-viewport>
     </mat-card>
-
-    @if (!hasLoadingContentFooter() && (hasMore() || dataSource.paginator.length < count())) {
-        <v-show-more-button
-            [displayedPages]="dataSource.paginator.displayedPages"
-            [length]="count()"
-            [pageSize]="size()"
-            [progress]="progress()"
-            class="show-more-button"
-            (more)="showMore()"
-        ></v-show-more-button>
-    }
 </div>

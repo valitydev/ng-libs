@@ -14,9 +14,11 @@
 
     .card {
         width: 100%;
+        height: 100%;
         overflow: auto;
 
         .scrolled-table-wrapper {
+            height: 100%;
             overflow: auto;
 
             .table__loading-content-footer ::ng-deep .mdc-data-table__row:last-child .mat-mdc-cell {
@@ -47,6 +49,8 @@
 }
 
 .column {
+    max-width: max(20px, 30vw);
+
     &__sticky-start {
         border-right: 1px solid;
     }

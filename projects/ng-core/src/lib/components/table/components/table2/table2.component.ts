@@ -1,3 +1,4 @@
+import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -12,8 +13,10 @@ import {
     output,
     Injector,
     viewChild,
-    runInInjectionContext,
     ElementRef,
+    PipeTransform,
+    Pipe,
+    runInInjectionContext,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -21,7 +24,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import { combineLatest, switchMap, forkJoin, take, Observable } from 'rxjs';
+import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
+import { combineLatest, Observable, switchMap, take, forkJoin } from 'rxjs';
 import { shareReplay, map } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
@@ -37,6 +41,13 @@ import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
+
+@Pipe({ standalone: true, name: 'virtualScrollIndex' })
+export class VirtualScrollIndexPipe implements PipeTransform {
+    transform(index: number, scrollViewport: CdkVirtualScrollViewport) {
+        return index + scrollViewport.getRenderedRange().start;
+    }
+}
 
 @Component({
     standalone: true,
@@ -58,6 +69,9 @@ import { COLUMN_DEFS } from './consts';
         MatTooltip,
         MatIconButton,
         InfinityScrollDirective,
+        TableVirtualScrollModule,
+        ScrollingModule,
+        VirtualScrollIndexPipe,
     ],
 })
 export class Table2Component<T extends object> {
@@ -78,7 +92,9 @@ export class Table2Component<T extends object> {
         map(([data, cols]) =>
             data.map((d, idx) =>
                 cols.map((c) =>
-                    c.cell(d, idx).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
+                    c
+                        .cell(d, idx)
+                        .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
                 ),
             ),
         ),
@@ -96,7 +112,7 @@ export class Table2Component<T extends object> {
     columnDefs = COLUMN_DEFS;
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
-    scrolledTableWrapperEl = viewChild('scrolledTableWrapper', { read: ElementRef });
+    scrollViewport = viewChild('scrollViewport', { read: ElementRef });
 
     constructor(
         private dr: DestroyRef,
@@ -111,9 +127,6 @@ export class Table2Component<T extends object> {
                 allowSignalWrites: true,
             },
         );
-        effect(() => {
-            this.dataSource.paginator.setSize(this.loadSize());
-        });
     }
 
     load() {
@@ -133,10 +146,7 @@ export class Table2Component<T extends object> {
     }
 
     showMore() {
-        this.dataSource.paginator.more();
-        if (this.hasMore() && this.dataSource.paginator.length > this.count()) {
-            this.more.emit({ size: this.loadSize() });
-        }
+        this.more.emit({ size: this.loadSize() });
     }
 
     downloadCsv() {
@@ -161,8 +171,7 @@ export class Table2Component<T extends object> {
     }
 
     private reload() {
-        this.scrolledTableWrapperEl()?.nativeElement?.scrollTo?.(0, 0);
+        this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
-        this.dataSource.paginator.reload();
     }
 }
