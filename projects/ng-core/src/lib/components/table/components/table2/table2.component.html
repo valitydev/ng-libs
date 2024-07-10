@@ -15,12 +15,7 @@
 
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <div
-            [vInfinityScroll]="infinityScroll()"
-            [vInfinityScrollSkip]="progress()"
-            class="scrolled-table-wrapper"
-            (vInfinityScrollMore)="showMore()"
-        >
+        <div #scrolledTableWrapper class="scrolled-table-wrapper">
             <table
                 [dataSource]="dataSource"
                 [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
@@ -91,7 +86,10 @@
                 <tr
                     *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
                     [ngClass]="{ row__hidden: !hasLoadingContentFooter() }"
+                    [vInfinityScrollProgress]="progress()"
                     mat-row
+                    vInfinityScroll
+                    (vInfinityScrollMore)="showMore()"
                 ></tr>
                 <tr
                     *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"

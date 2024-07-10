@@ -13,6 +13,7 @@ import {
     Injector,
     viewChild,
     runInInjectionContext,
+    ElementRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -95,7 +96,7 @@ export class Table2Component<T extends object> {
     columnDefs = COLUMN_DEFS;
     hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
-    infinityScrollDirective = viewChild(InfinityScrollDirective);
+    scrolledTableWrapperEl = viewChild('scrolledTableWrapper', { read: ElementRef });
 
     constructor(
         private dr: DestroyRef,
@@ -160,7 +161,7 @@ export class Table2Component<T extends object> {
     }
 
     private reload() {
-        this.infinityScrollDirective()?.reset?.();
+        this.scrolledTableWrapperEl()?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
         this.dataSource.paginator.reload();
     }
