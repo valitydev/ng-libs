@@ -25,12 +25,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
-import { combineLatest, Observable, switchMap, take, forkJoin } from 'rxjs';
+import { combineLatest, Observable, switchMap, take, forkJoin, of } from 'rxjs';
 import { shareReplay, map } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
-import { ValueComponent, ValueListComponent } from '../../../value';
+import { Value, ValueComponent, ValueListComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
@@ -105,7 +105,7 @@ export class Table2Component<T extends object, C extends object> {
     );
     dataSource = new TableDataSource<T>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
-    columnsData$$ = combineLatest([
+    columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
         toObservable(this.isTreeData),
         toObservable(this.treeInlineData),
         toObservable(this.data),
@@ -114,26 +114,29 @@ export class Table2Component<T extends object, C extends object> {
         map(([isTree, inlineData, data, cols]) => {
             if (isTree) {
                 return inlineData.map((d, idx) =>
-                    cols.map((c) =>
-                        (d.child && c.child
+                    cols.map((c) => ({
+                        value: (d.child && c.child
                             ? c.child(d.child, idx)
-                            : c.cell(d.value as never, idx)
+                            : d.value
+                              ? c.cell(d.value, idx)
+                              : of<Value>({ value: '' })
                         ).pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                    ),
+                        isChild: !d.value,
+                    })),
                 );
             }
             return data.map((d, idx) =>
-                cols.map((c) =>
-                    c
+                cols.map((c) => ({
+                    value: c
                         .cell(d, idx)
                         .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                ),
+                })),
             );
         }),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) => combineLatest(d.map((v) => combineLatest(v)))),
+        switchMap((d) => combineLatest(d.map((v) => combineLatest(v.map((v) => v.value))))),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);

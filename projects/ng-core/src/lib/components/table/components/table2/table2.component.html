@@ -50,6 +50,13 @@
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
                             [ngStyle]="col?.params?.style"
+                            [style.border-bottom]="
+                                (columnsData$$ | async)?.[
+                                    (rowIndex | virtualScrollIndex: scrollViewport) + 1
+                                ]?.[colIndex]?.isChild && !col.child
+                                    ? 'none'
+                                    : ''
+                            "
                             class="column"
                             mat-cell
                         >
@@ -57,7 +64,7 @@
                                 [value]="
                                     (columnsData$$ | async)?.[
                                         (rowIndex | virtualScrollIndex: scrollViewport)
-                                    ]?.[colIndex] | async
+                                    ]?.[colIndex]?.value | async
                                 "
                                 inline
                             ></v-value>
