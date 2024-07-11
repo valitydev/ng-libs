@@ -42,6 +42,9 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
 
+export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
+export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
+
 @Pipe({ standalone: true, name: 'virtualScrollIndex' })
 export class VirtualScrollIndexPipe implements PipeTransform {
     transform(index: number, scrollViewport: CdkVirtualScrollViewport) {
@@ -75,8 +78,9 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         ValueListComponent,
     ],
 })
-export class Table2Component<T extends object> {
+export class Table2Component<T extends object, C extends object> {
     data = input<T[]>([]);
+    treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
@@ -87,18 +91,45 @@ export class Table2Component<T extends object> {
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
+    isTreeData = computed(() => !!this.treeData());
+    treeInlineData = computed<{ value?: T; child?: object }[]>(() =>
+        this.isTreeData()
+            ? (this.treeData() ?? []).flatMap((d) => {
+                  const children = d.children ?? [];
+                  return [
+                      children.length ? { value: d.value, child: children[0] } : { value: d.value },
+                      ...children.slice(1).map((child) => ({ child })),
+                  ];
+              })
+            : [],
+    );
     dataSource = new TableDataSource<T>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
-    columnsData$$ = combineLatest([toObservable(this.data), toObservable(this.normColumns)]).pipe(
-        map(([data, cols]) =>
-            data.map((d, idx) =>
+    columnsData$$ = combineLatest([
+        toObservable(this.isTreeData),
+        toObservable(this.treeInlineData),
+        toObservable(this.data),
+        toObservable(this.normColumns),
+    ]).pipe(
+        map(([isTree, inlineData, data, cols]) => {
+            if (isTree) {
+                return inlineData.map((d, idx) =>
+                    cols.map((c) =>
+                        (d.child && c.child
+                            ? c.child(d.child, idx)
+                            : c.cell(d.value as never, idx)
+                        ).pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
+                    ),
+                );
+            }
+            return data.map((d, idx) =>
                 cols.map((c) =>
                     c
                         .cell(d, idx)
                         .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
                 ),
-            ),
-        ),
+            );
+        }),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
@@ -107,7 +138,10 @@ export class Table2Component<T extends object> {
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count = computed(() => this.data()?.length);
+    count$ = this.columnsData$$.pipe(
+        map((d) => d?.length),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
     rowDefs = computed(() => this.normColumns().map((c) => c.field));
     columnDefs = COLUMN_DEFS;
@@ -121,7 +155,9 @@ export class Table2Component<T extends object> {
     ) {
         effect(
             () => {
-                this.dataSource.data = this.data();
+                this.dataSource.data = (
+                    this.isTreeData() ? this.treeInlineData() : this.data()
+                ) as never;
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires

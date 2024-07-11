@@ -2,7 +2,7 @@ import { Value } from '../../value';
 import { unknownToString } from '../../value/utils/unknown-to-string';
 import { valueToString } from '../../value/utils/value-to-string';
 
-export function tableToCsvObject(cols: Value[], data: Value[][][]): string[][] {
+export function tableToCsvObject(cols: Value[], data: Value[][]): string[][] {
     const res = [
         cols
             .map((v) => {
@@ -10,30 +10,8 @@ export function tableToCsvObject(cols: Value[], data: Value[][][]): string[][] {
                 return [res, `${res} (description)`];
             })
             .flat(),
+        ...data.map((r) => r.map((c) => [valueToString(c), unknownToString(c.description)]).flat()),
     ];
-    for (const r of data) {
-        // flatten nested rows
-        const rowRes: string[][] = [[]];
-        for (let i = 0; i < r.length; ++i) {
-            const cell = r[i];
-            const cellValues = cell.map((v) => [valueToString(v), unknownToString(v.description)]);
-            if (cellValues.length > 1 && rowRes.length === 1) {
-                while (cellValues.length > rowRes.length) {
-                    rowRes.push(rowRes[0].slice());
-                }
-            }
-            if (cellValues.length === 1 && rowRes.length > 1) {
-                for (let j = 0; j < rowRes.length; ++j) {
-                    rowRes[j].push(...cellValues[0]);
-                }
-            } else {
-                for (let j = 0; j < cellValues.length; ++j) {
-                    rowRes[j].push(...cellValues[j]);
-                }
-            }
-        }
-        res.push(...rowRes);
-    }
     // Removing empty description columns (every second column)
     let emptyCols = [];
     for (

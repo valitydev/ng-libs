@@ -1,6 +1,6 @@
 <div class="wrapper">
     <v-table-info-bar
-        [count]="count()"
+        [count]="count$ | async"
         [filteredCount]="0"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
@@ -53,13 +53,14 @@
                             class="column"
                             mat-cell
                         >
-                            <v-value-list
-                                [list]="
+                            <v-value
+                                [value]="
                                     (columnsData$$ | async)?.[
                                         (rowIndex | virtualScrollIndex: scrollViewport)
                                     ]?.[colIndex] | async
                                 "
-                            ></v-value-list>
+                                inline
+                            ></v-value>
                         </td>
                         <td
                             *matFooterCellDef
@@ -91,8 +92,8 @@
                     (vInfinityScrollMore)="showMore()"
                 ></tr>
                 <tr
-                    *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
-                    [ngClass]="{ row__hidden: !!count() }"
+                    *matFooterRowDef="(count$ | async) ? [] : [columnDefs.noRecords]"
+                    [ngClass]="{ row__hidden: !!(count$ | async) }"
                     mat-footer-row
                 ></tr>
             </table>

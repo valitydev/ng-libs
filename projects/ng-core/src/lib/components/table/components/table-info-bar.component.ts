@@ -103,7 +103,7 @@ export class TableInfoBarComponent {
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });
 
-    count = input<number | undefined>(undefined);
+    count = input<number | undefined | null>(undefined);
     filteredCount = input<number | undefined>(0);
     selectedCount = input<number | undefined>(0);
 

@@ -1,4 +1,5 @@
 import { get } from 'lodash-es';
+import isNil from 'lodash-es/isNil';
 import startCase from 'lodash-es/startCase';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -16,25 +17,30 @@ interface ColumnParams {
     style?: Record<string, unknown>;
 }
 
-type CellValue = 'string' | Value | Value[];
+type CellValue = 'string' | Value;
 
-export interface Column2<T extends object> extends ColumnParams {
+export interface Column2<T extends object, C extends object = object> extends ColumnParams {
     field: string;
     header?: PossiblyAsync<Partial<Value> | string>;
     cell?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<T>>;
+    child?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<C>>;
 }
 
 export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<R, P>): Fn<R, P> {
     return typeof fn === 'function' ? (fn as Fn<R, P>) : () => fn;
 }
 
-export class NormColumn<T extends object> {
+export class NormColumn<T extends object, C extends object = object> {
     field!: string;
     header!: Observable<Value>;
-    cell!: Fn<Observable<Value[]>, CellFnArgs<T>>;
+    cell!: Fn<Observable<Value>, CellFnArgs<T>>;
+    child?: Fn<Observable<Value>, CellFnArgs<C>>;
     params!: ColumnParams;
 
-    constructor({ field, header, cell, ...params }: Column2<T>, commonParams: ColumnParams = {}) {
+    constructor(
+        { field, header, cell, child, ...params }: Column2<T, C>,
+        commonParams: ColumnParams = {},
+    ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
         const defaultHeaderValue = startCase(field ?? '');
         this.header = getPossiblyAsyncObservable(header).pipe(
@@ -48,14 +54,30 @@ export class NormColumn<T extends object> {
         this.cell = (...args) =>
             getPossiblyAsyncObservable(cellFn(...args)).pipe(
                 map((value) => {
-                    const defaultValue = get(args[0], this.field);
-                    return (Array.isArray(value) ? value : [value ?? defaultValue]).map((v) =>
-                        typeof value === 'object'
-                            ? ({ value: defaultValue, ...v } as Value)
-                            : { value: v ?? defaultValue },
-                    );
+                    const defaultValue = child
+                        ? { value: '' }
+                        : { value: get(args[0], this.field) };
+                    if (isNil(value)) {
+                        return defaultValue;
+                    }
+                    return typeof value === 'object' ? { ...defaultValue, ...value } : { value };
                 }),
             );
+        if (child) {
+            const childFn = normalizePossiblyFn(child);
+            this.child = (...args) =>
+                getPossiblyAsyncObservable(childFn(...args)).pipe(
+                    map((value) => {
+                        const defaultValue = { value: get(args[0], this.field) };
+                        if (isNil(value)) {
+                            return defaultValue;
+                        }
+                        return typeof value === 'object'
+                            ? { ...defaultValue, ...value }
+                            : { value };
+                    }),
+                );
+        }
         this.params = {
             ...commonParams,
             ...params,
