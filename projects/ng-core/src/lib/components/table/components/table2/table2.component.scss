@@ -29,17 +29,6 @@
                 border-bottom-width: var(--mat-table-row-item-outline-width, 1px) !important;
                 border-bottom-style: solid !important;
             }
-
-            .multi-cell {
-                display: flex;
-                flex-direction: column;
-
-                & > * {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    min-height: 20px;
-                }
-            }
         }
     }
 

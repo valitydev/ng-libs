@@ -30,7 +30,7 @@ import { shareReplay, map } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
-import { ValueComponent } from '../../../value';
+import { ValueComponent, ValueListComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
@@ -72,6 +72,7 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         TableVirtualScrollModule,
         ScrollingModule,
         VirtualScrollIndexPipe,
+        ValueListComponent,
     ],
 })
 export class Table2Component<T extends object> {

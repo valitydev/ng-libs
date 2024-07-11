@@ -53,24 +53,13 @@
                             class="column"
                             mat-cell
                         >
-                            @if (
-                                (columnsData$$ | async)?.[
-                                    (rowIndex | virtualScrollIndex: scrollViewport)
-                                ]?.[colIndex] | async;
-                                as cellData
-                            ) {
-                                @if (cellData.length > 1) {
-                                    <div class="multi-cell">
-                                        @for (item of cellData; track item) {
-                                            <v-value [value]="item" inline></v-value>
-                                        }
-                                    </div>
-                                } @else {
-                                    <v-value [value]="cellData[0]" inline></v-value>
-                                }
-                            } @else {
-                                <v-value [progress]="true" inline></v-value>
-                            }
+                            <v-value-list
+                                [list]="
+                                    (columnsData$$ | async)?.[
+                                        (rowIndex | virtualScrollIndex: scrollViewport)
+                                    ]?.[colIndex] | async
+                                "
+                            ></v-value-list>
                         </td>
                         <td
                             *matFooterCellDef
