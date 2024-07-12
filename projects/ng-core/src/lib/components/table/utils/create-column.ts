@@ -5,9 +5,11 @@ import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
 import { Value } from '../../value';
 import { Column2, CellFnArgs } from '../types';
 
+import { createUniqueColumnDef } from './create-unique-column-def';
+
 export function createColumn<P, A extends object>(
     createCell: (cellParams: P, ...args: CellFnArgs<A>) => PossiblyAsync<Value>,
-    header: string,
+    columnObject: Partial<Omit<Column2<object>, 'cell'>>,
 ) {
     return <T extends A>(
         getCellParams: (...args: CellFnArgs<T>) => PossiblyAsync<P>,
@@ -15,8 +17,7 @@ export function createColumn<P, A extends object>(
     ): Column2<T> => {
         const injector = inject(Injector);
         return {
-            header: header,
-            field: `${header}__${Math.random().toString()}`,
+            field: createUniqueColumnDef(column?.header),
             cell: (...cellArgs) =>
                 getPossiblyAsyncObservable(getCellParams(...cellArgs)).pipe(
                     switchMap((cellParams) =>
@@ -27,6 +28,7 @@ export function createColumn<P, A extends object>(
                         ),
                     ),
                 ),
+            ...columnObject,
             ...column,
         };
     };

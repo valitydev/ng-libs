@@ -1,5 +1,7 @@
+import { MenuValue } from '../../value/components/menu-value.component';
 import { MenuColumn } from '../types';
-import { createInternalColumnDef } from '../utils/create-internal-column-def';
+import { createColumn } from '../utils/create-column';
+import { createUniqueColumnDef } from '../utils/create-unique-column-def';
 
 export function createOperationColumn<T extends object>(
     items: MenuColumn<T>['typeParameters']['items'],
@@ -7,7 +9,7 @@ export function createOperationColumn<T extends object>(
 ): MenuColumn<T> {
     return {
         typeParameters: { ...(other?.typeParameters ?? {}), items },
-        field: createInternalColumnDef('operation'),
+        field: createUniqueColumnDef('operation'),
         header: '',
         pinned: 'right',
         width: '0',
@@ -15,3 +17,21 @@ export function createOperationColumn<T extends object>(
         ...other,
     };
 }
+
+// Table 2 Menu Column
+export const createMenuColumn = createColumn(
+    (params: MenuValue['params']) => {
+        return {
+            type: 'menu',
+            params,
+        };
+    },
+    {
+        field: 'menu',
+        header: '',
+        sticky: 'end',
+        style: {
+            padding: 0,
+        },
+    },
+);

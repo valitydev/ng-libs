@@ -57,7 +57,7 @@ import {
 } from './consts';
 import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
 import { createColumnsObjects } from './utils/create-columns-objects';
-import { createInternalColumnDef } from './utils/create-internal-column-def';
+import { createUniqueColumnDef } from './utils/create-unique-column-def';
 import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
 
 @Component({
@@ -99,7 +99,7 @@ export class TableComponent<T extends object>
     @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
     @Input() rowSelected!: T[];
     @Output() rowSelectedChange = new EventEmitter<T[]>();
-    selectColumnDef = createInternalColumnDef('select');
+    selectColumnDef = createUniqueColumnDef('select');
     selected: T[] = [];
 
     // Filter
@@ -136,9 +136,9 @@ export class TableComponent<T extends object>
 
     displayedColumns: string[] = [];
 
-    scoreColumnDef = createInternalColumnDef('score');
-    noRecordsColumnDef = createInternalColumnDef('no-records');
-    dragColumnDef = createInternalColumnDef('drag');
+    scoreColumnDef = createUniqueColumnDef('score');
+    noRecordsColumnDef = createUniqueColumnDef('no-records');
+    dragColumnDef = createUniqueColumnDef('drag');
 
     preloadedLazyCells = new Map<T, boolean>();
 
