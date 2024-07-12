@@ -35,7 +35,7 @@ import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
-import { NoRecordsColumnComponent } from '../no-records-column.component';
+import { NoRecordsComponent } from '../no-records.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
@@ -64,7 +64,7 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         MatCardModule,
         ValueComponent,
         TableProgressBarComponent,
-        NoRecordsColumnComponent,
+        NoRecordsComponent,
         TableInfoBarComponent,
         ShowMoreButtonComponent,
         ContentLoadingComponent,

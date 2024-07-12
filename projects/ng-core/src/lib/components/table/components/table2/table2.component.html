@@ -12,9 +12,9 @@
         (load)="load()"
         (preload)="preload()"
     ></v-table-info-bar>
-
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
+        <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
         <cdk-virtual-scroll-viewport
             #scrollViewport
             [footerEnabled]="true"
@@ -83,11 +83,6 @@
                     </ng-container>
                 }
 
-                <v-no-records-column
-                    [name]="columnDefs.noRecords"
-                    [progress]="progress()"
-                ></v-no-records-column>
-
                 <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
                 <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
                 <tr
@@ -97,11 +92,6 @@
                     mat-row
                     vInfinityScroll
                     (vInfinityScrollMore)="showMore()"
-                ></tr>
-                <tr
-                    *matFooterRowDef="(count$ | async) ? [] : [columnDefs.noRecords]"
-                    [ngClass]="{ row__hidden: !!(count$ | async) }"
-                    mat-footer-row
                 ></tr>
             </table>
         </cdk-virtual-scroll-viewport>
