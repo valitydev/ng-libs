@@ -36,6 +36,7 @@ import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
 import { NoRecordsComponent } from '../no-records.component';
+import { SelectColumnComponent } from '../select-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
@@ -76,6 +77,7 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         ScrollingModule,
         VirtualScrollIndexPipe,
         ValueListComponent,
+        SelectColumnComponent,
     ],
 })
 export class Table2Component<T extends object, C extends object> {
@@ -86,7 +88,12 @@ export class Table2Component<T extends object, C extends object> {
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
-    infinityScroll = input(false, { transform: booleanAttribute });
+
+    // Select
+    rowSelectable = input(false, { transform: booleanAttribute });
+    rowSelected = input<T[]>([]);
+    rowSelectedChange = output<T[]>();
+    selected = signal<T[]>([]);
 
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
@@ -146,9 +153,11 @@ export class Table2Component<T extends object, C extends object> {
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    rowDefs = computed(() => this.normColumns().map((c) => c.field));
+    displayedColumns = computed(() => [
+        ...(this.rowSelectable() ? [this.columnDefs.select] : []),
+        ...this.normColumns().map((c) => c.field),
+    ]);
     columnDefs = COLUMN_DEFS;
-    hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
     scrollViewport = viewChild('scrollViewport', { read: ElementRef });
 
@@ -166,6 +175,12 @@ export class Table2Component<T extends object, C extends object> {
                 // TODO: not a necessary line, but after adding viewChild signal requires
                 allowSignalWrites: true,
             },
+        );
+        effect(
+            () => {
+                this.selected.set(this.rowSelected());
+            },
+            { allowSignalWrites: true },
         );
     }
 
