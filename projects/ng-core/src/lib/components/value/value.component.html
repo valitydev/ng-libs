@@ -1,4 +1,4 @@
-@if (progress()) {
+@if (progress() || !value()) {
     <v-content-loading></v-content-loading>
 } @else {
     @if (value(); as v) {
