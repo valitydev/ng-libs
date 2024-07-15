@@ -21,7 +21,7 @@
             height: 100%;
             overflow: auto;
 
-            .table__loading-content-footer ::ng-deep .mdc-data-table__row:last-child .mat-mdc-cell {
+            ::ng-deep .mdc-data-table__row:last-child .mat-mdc-cell {
                 border-bottom-color: var(
                     --mat-table-row-item-outline-color,
                     rgba(0, 0, 0, 0.12)
