@@ -11,5 +11,5 @@ export function valueToString(value?: Value | null): string {
         case 'datetime':
             return datetimeValueToString(value);
     }
-    return unknownToString(value?.value);
+    return unknownToString(value?.value)?.trim?.();
 }
