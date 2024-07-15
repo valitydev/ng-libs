@@ -5,12 +5,11 @@ import {
     Component,
     input,
     booleanAttribute,
-    Output,
-    EventEmitter,
     DestroyRef,
     OnInit,
     OnDestroy,
     OnChanges,
+    output,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -26,8 +25,8 @@ import { BaseColumnComponent } from './base-column.component';
     standalone: true,
     selector: 'v-select-column',
     template: `
-        <ng-container [sticky]="true" matColumnDef>
-            <th *matHeaderCellDef class="pinned-left" mat-header-cell>
+        <ng-container [matColumnDef]="name()" [sticky]="true">
+            <th *matHeaderCellDef mat-header-cell>
                 <mat-checkbox
                     [checked]="selection.hasValue() && (isAllSelected$ | async)"
                     [disabled]="!!progress() || (filtered() && !(isAllSelected$ | async))"
@@ -36,7 +35,7 @@ import { BaseColumnComponent } from './base-column.component';
                 >
                 </mat-checkbox>
             </th>
-            <td *matCellDef="let row" class="pinned-left" mat-cell>
+            <td *matCellDef="let row" mat-cell>
                 <mat-checkbox
                     [checked]="selection.isSelected(row)"
                     [disabled]="!!progress()"
@@ -45,6 +44,7 @@ import { BaseColumnComponent } from './base-column.component';
                 >
                 </mat-checkbox>
             </td>
+            <td *matFooterCellDef mat-footer-cell></td>
         </ng-container>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,7 +55,7 @@ export class SelectColumnComponent<T extends object>
     implements OnInit, OnDestroy, OnChanges
 {
     selected = input<T[]>([]);
-    @Output() selectedChange = new EventEmitter<T[]>();
+    selectedChange = output<T[]>();
 
     data = input<T[]>([]);
     progress = input<boolean | number | null | undefined>(false);
@@ -70,13 +70,13 @@ export class SelectColumnComponent<T extends object>
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    constructor(private destroyRef: DestroyRef) {
+    constructor(private dr: DestroyRef) {
         super();
     }
 
     override ngOnInit() {
         super.ngOnInit();
-        this.selection.changed.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        this.selection.changed.pipe(takeUntilDestroyed(this.dr)).subscribe(() => {
             this.selectedChange.emit(this.selection.selected);
         });
     }

@@ -43,6 +43,9 @@ export class ValueComponent {
     resultingValue = input<string>();
     progress = input(false, { transform: booleanAttribute });
     inline = input(false, { transform: booleanAttribute });
+    emptySymbol = input(undefined, {
+        transform: (v) => (v === true || v === '' ? '―' : typeof v === 'string' ? v : ''),
+    });
 
     lazyVisibleChange = output<boolean>();
 

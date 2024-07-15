@@ -1,4 +1,4 @@
-@if (progress()) {
+@if (progress() || !value()) {
     <v-content-loading></v-content-loading>
 } @else {
     @if (value(); as v) {
@@ -32,12 +32,16 @@
                             <v-menu-value [value]="v"></v-menu-value>
                         }
                         @default {
-                            <span
-                                [ngClass]="{ value__click: v.click, value__link: v.link }"
-                                (click)="click($event)"
-                            >
-                                {{ renderedValue() }}
-                            </span>
+                            @if (renderedValue()) {
+                                <span
+                                    [ngClass]="{ value__click: v.click, value__link: v.link }"
+                                    (click)="click($event)"
+                                >
+                                    {{ renderedValue() }}
+                                </span>
+                            } @else if (emptySymbol()) {
+                                <span style="color: #ccc">{{ emptySymbol() }}</span>
+                            }
                         }
                     }
                 </ng-template>

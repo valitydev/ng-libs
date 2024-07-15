@@ -1,6 +1,6 @@
 <div class="wrapper">
     <v-table-info-bar
-        [count]="count()"
+        [count]="count$ | async"
         [filteredCount]="0"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
@@ -11,21 +11,28 @@
         (downloadCsv)="downloadCsv()"
         (load)="load()"
         (preload)="preload()"
-    ></v-table-info-bar>
-
+    >
+        <ng-content select="v-table-actions"></ng-content>
+    </v-table-info-bar>
     <mat-card class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
-        <div
-            [vInfinityScroll]="infinityScroll()"
-            [vInfinityScrollSkip]="progress()"
+        <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
+        <cdk-virtual-scroll-viewport
+            #scrollViewport
+            [footerEnabled]="true"
             class="scrolled-table-wrapper"
-            (vInfinityScrollMore)="showMore()"
+            tvsItemSize
         >
-            <table
-                [dataSource]="dataSource"
-                [ngClass]="{ 'table__loading-content-footer': hasLoadingContentFooter() }"
-                mat-table
-            >
+            <table [dataSource]="dataSource" mat-table>
+                @if (rowSelectable()) {
+                    <v-select-column
+                        [data]="data()"
+                        [name]="columnDefs.select"
+                        [progress]="progress()"
+                        [selected]="selected()"
+                        (selectedChange)="rowSelectedChange.emit($event); selected.set($event)"
+                    ></v-select-column>
+                }
                 @for (col of normColumns(); track col; let colIndex = $index) {
                     <ng-container
                         [matColumnDef]="col.field"
@@ -38,35 +45,37 @@
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
+                            class="column"
                             mat-header-cell
                         >
                             <v-value [value]="col.header | async" inline></v-value>
                         </th>
                         <td
-                            *matCellDef="let row; let rowIndex = index"
+                            *matCellDef="let element; let rowIndex = index"
                             [ngClass]="{
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
                             [ngStyle]="col?.params?.style"
+                            [style.border-bottom]="
+                                (columnsData$$ | async)?.[
+                                    (rowIndex | virtualScrollIndex: scrollViewport) + 1
+                                ]?.[colIndex]?.isChild && !col.child
+                                    ? 'none'
+                                    : ''
+                            "
+                            class="column"
                             mat-cell
                         >
-                            @if (
-                                (columnsData$$ | async)?.[rowIndex]?.[colIndex] | async;
-                                as cellData
-                            ) {
-                                @if (cellData.length > 1) {
-                                    <div class="multi-cell">
-                                        @for (item of cellData; track item) {
-                                            <v-value [value]="item" inline></v-value>
-                                        }
-                                    </div>
-                                } @else {
-                                    <v-value [value]="cellData[0]" inline></v-value>
-                                }
-                            } @else {
-                                <v-value [progress]="true" inline></v-value>
-                            }
+                            <v-value
+                                [value]="
+                                    (columnsData$$ | async)?.[
+                                        (rowIndex | virtualScrollIndex: scrollViewport)
+                                    ]?.[colIndex]?.value | async
+                                "
+                                emptySymbol
+                                inline
+                            ></v-value>
                         </td>
                         <td
                             *matFooterCellDef
@@ -74,6 +83,7 @@
                                 'column__sticky-start': col.params.sticky === 'start',
                                 'column__sticky-end': col.params.sticky === 'end'
                             }"
+                            class="column"
                             mat-footer-cell
                         >
                             <v-value [progress]="true" inline></v-value>
@@ -81,35 +91,17 @@
                     </ng-container>
                 }
 
-                <v-no-records-column
-                    [name]="columnDefs.noRecords"
-                    [progress]="progress()"
-                ></v-no-records-column>
-
-                <tr *matHeaderRowDef="rowDefs(); sticky: true" mat-header-row></tr>
-                <tr *matRowDef="let row; columns: rowDefs()" mat-row></tr>
+                <tr *matHeaderRowDef="displayedColumns(); sticky: true" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: displayedColumns()" mat-row></tr>
                 <tr
-                    *matFooterRowDef="hasLoadingContentFooter() ? rowDefs() : []"
-                    [style.display]="hasLoadingContentFooter() ? '' : 'none'"
+                    *matFooterRowDef="hasMore() ? displayedColumns() : []"
+                    [ngClass]="{ row__hidden: !hasMore() }"
+                    [vInfinityScrollProgress]="progress()"
                     mat-row
-                ></tr>
-                <tr
-                    *matFooterRowDef="count() ? [] : [columnDefs.noRecords]"
-                    [style.display]="count() ? 'none' : ''"
-                    mat-footer-row
+                    vInfinityScroll
+                    (vInfinityScrollMore)="showMore()"
                 ></tr>
             </table>
-        </div>
+        </cdk-virtual-scroll-viewport>
     </mat-card>
-
-    @if (!hasLoadingContentFooter() && (hasMore() || dataSource.paginator.length < count())) {
-        <v-show-more-button
-            [displayedPages]="dataSource.paginator.displayedPages"
-            [length]="count()"
-            [pageSize]="size()"
-            [progress]="progress()"
-            class="show-more-button"
-            (more)="showMore()"
-        ></v-show-more-button>
-    }
 </div>

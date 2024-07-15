@@ -12,6 +12,7 @@
         "@angular/material-date-fns-adapter",
         "fuse.js",
         "short-uuid",
-        "papaparse"
+        "papaparse",
+        "ng-table-virtual-scroll"
     ]
 }

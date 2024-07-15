@@ -1,3 +1,4 @@
+import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -12,6 +13,9 @@ import {
     output,
     Injector,
     viewChild,
+    ElementRef,
+    PipeTransform,
+    Pipe,
     runInInjectionContext,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,22 +24,34 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import { combineLatest, switchMap, forkJoin, take, Observable } from 'rxjs';
+import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
+import { combineLatest, Observable, switchMap, take, forkJoin, of } from 'rxjs';
 import { shareReplay, map } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
-import { ValueComponent } from '../../../value';
+import { Value, ValueComponent, ValueListComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
-import { NoRecordsColumnComponent } from '../no-records-column.component';
+import { NoRecordsComponent } from '../no-records.component';
+import { SelectColumnComponent } from '../select-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
+
+export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
+export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
+
+@Pipe({ standalone: true, name: 'virtualScrollIndex' })
+export class VirtualScrollIndexPipe implements PipeTransform {
+    transform(index: number, scrollViewport: CdkVirtualScrollViewport) {
+        return index + scrollViewport.getRenderedRange().start;
+    }
+}
 
 @Component({
     standalone: true,
@@ -49,7 +65,7 @@ import { COLUMN_DEFS } from './consts';
         MatCardModule,
         ValueComponent,
         TableProgressBarComponent,
-        NoRecordsColumnComponent,
+        NoRecordsComponent,
         TableInfoBarComponent,
         ShowMoreButtonComponent,
         ContentLoadingComponent,
@@ -57,45 +73,93 @@ import { COLUMN_DEFS } from './consts';
         MatTooltip,
         MatIconButton,
         InfinityScrollDirective,
+        TableVirtualScrollModule,
+        ScrollingModule,
+        VirtualScrollIndexPipe,
+        ValueListComponent,
+        SelectColumnComponent,
     ],
 })
-export class Table2Component<T extends object> {
+export class Table2Component<T extends object, C extends object> {
     data = input<T[]>([]);
+    treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
-    infinityScroll = input(false, { transform: booleanAttribute });
+
+    // Select
+    rowSelectable = input(false, { transform: booleanAttribute });
+    rowSelected = input<T[]>([]);
+    rowSelectedChange = output<T[]>();
+    selected = signal<T[]>([]);
 
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
+    isTreeData = computed(() => !!this.treeData());
+    treeInlineData = computed<{ value?: T; child?: object }[]>(() =>
+        this.isTreeData()
+            ? (this.treeData() ?? []).flatMap((d) => {
+                  const children = d.children ?? [];
+                  return [
+                      children.length ? { value: d.value, child: children[0] } : { value: d.value },
+                      ...children.slice(1).map((child) => ({ child })),
+                  ];
+              })
+            : [],
+    );
     dataSource = new TableDataSource<T>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
-    columnsData$$ = combineLatest([toObservable(this.data), toObservable(this.normColumns)]).pipe(
-        map(([data, cols]) =>
-            data.map((d, idx) =>
-                cols.map((c) =>
-                    c.cell(d, idx).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
-                ),
-            ),
-        ),
+    columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
+        toObservable(this.isTreeData),
+        toObservable(this.treeInlineData),
+        toObservable(this.data),
+        toObservable(this.normColumns),
+    ]).pipe(
+        map(([isTree, inlineData, data, cols]) => {
+            if (isTree) {
+                return inlineData.map((d, idx) =>
+                    cols.map((c) => ({
+                        value: (d.child && c.child
+                            ? c.child(d.child, idx)
+                            : d.value
+                              ? c.cell(d.value, idx)
+                              : of<Value>({ value: '' })
+                        ).pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
+                        isChild: !d.value,
+                    })),
+                );
+            }
+            return data.map((d, idx) =>
+                cols.map((c) => ({
+                    value: c
+                        .cell(d, idx)
+                        .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
+                })),
+            );
+        }),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) => combineLatest(d.map((v) => combineLatest(v)))),
+        switchMap((d) => combineLatest(d.map((v) => combineLatest(v.map((v) => v.value))))),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count = computed(() => this.data()?.length);
+    count$ = this.columnsData$$.pipe(
+        map((d) => d?.length),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
-    rowDefs = computed(() => this.normColumns().map((c) => c.field));
+    displayedColumns = computed(() => [
+        ...(this.rowSelectable() ? [this.columnDefs.select] : []),
+        ...this.normColumns().map((c) => c.field),
+    ]);
     columnDefs = COLUMN_DEFS;
-    hasLoadingContentFooter = computed(() => this.infinityScroll() && this.hasMore());
 
-    infinityScrollDirective = viewChild(InfinityScrollDirective);
+    scrollViewport = viewChild('scrollViewport', { read: ElementRef });
 
     constructor(
         private dr: DestroyRef,
@@ -103,16 +167,21 @@ export class Table2Component<T extends object> {
     ) {
         effect(
             () => {
-                this.dataSource.data = this.data();
+                this.dataSource.data = (
+                    this.isTreeData() ? this.treeInlineData() : this.data()
+                ) as never;
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires
                 allowSignalWrites: true,
             },
         );
-        effect(() => {
-            this.dataSource.paginator.setSize(this.loadSize());
-        });
+        effect(
+            () => {
+                this.selected.set(this.rowSelected());
+            },
+            { allowSignalWrites: true },
+        );
     }
 
     load() {
@@ -132,10 +201,7 @@ export class Table2Component<T extends object> {
     }
 
     showMore() {
-        this.dataSource.paginator.more();
-        if (this.hasMore() && this.dataSource.paginator.length > this.count()) {
-            this.more.emit({ size: this.loadSize() });
-        }
+        this.more.emit({ size: this.loadSize() });
     }
 
     downloadCsv() {
@@ -160,8 +226,7 @@ export class Table2Component<T extends object> {
     }
 
     private reload() {
-        this.infinityScrollDirective()?.reset?.();
+        this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
-        this.dataSource.paginator.reload();
     }
 }
