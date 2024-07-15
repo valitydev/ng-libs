@@ -39,8 +39,8 @@
                                 >
                                     {{ renderedValue() }}
                                 </span>
-                            } @else {
-                                <span style="color: #ccc">―</span>
+                            } @else if (emptySymbol()) {
+                                <span style="color: #ccc">{{ emptySymbol() }}</span>
                             }
                         }
                     }
