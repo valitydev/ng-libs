@@ -44,7 +44,9 @@ import { BaseColumnComponent } from './base-column.component';
                 >
                 </mat-checkbox>
             </td>
-            <td *matFooterCellDef mat-footer-cell></td>
+            <td *matFooterCellDef mat-footer-cell>
+                <mat-checkbox disabled></mat-checkbox>
+            </td>
         </ng-container>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
