@@ -14,38 +14,27 @@ import { TagModule } from '../../tag';
     template: `
         <v-actions>
             <div class="details">
-                <v-tag
-                    [matBadge]="progress() ? '' : selectedCount() || ''"
-                    [matTooltip]="
-                        progress()
-                            ? ''
-                            : 'quantity: ' +
-                              count() +
-                              (hasMore() ? ' (more available)' : ' (all)') +
-                              ', filtered: ' +
-                              filteredCount() +
-                              ', selected: ' +
-                              selectedCount()
-                    "
-                    [progress]="progress()"
-                    class="count"
-                    matBadgeSize="small"
-                >
-                    @if ((!count() && count() !== 0) || (progress() && !count())) {
-                        <span style="color: transparent">{{ '>' }}25</span>
-                        <span style="position: absolute; left: 50%; transform: translateX(-50%);"
-                            >...</span
-                        >
-                    } @else {
-                        {{
-                            count()
-                                ? (filteredCount() ? filteredCount() + '/' : '') +
-                                  (hasMore() ? '>' : '') +
-                                  count()
-                                : '0'
-                        }}
-                    }
-                </v-tag>
+                <div class="count">
+                    <v-tag
+                        [matBadge]="selectedCount() || ''"
+                        [matBadgeDisabled]="progress()"
+                        [progress]="progress()"
+                        matBadgePosition="above after"
+                        matBadgeSize="small"
+                    >
+                        @if ((!count() && count() !== 0) || (progress() && !count())) {
+                            <span>...</span>
+                        } @else {
+                            {{
+                                count()
+                                    ? (filteredCount() ? filteredCount() + '/' : '') +
+                                      (hasMore() ? '>' : '') +
+                                      count()
+                                    : '0'
+                            }}
+                        }
+                    </v-tag>
+                </div>
                 <button
                     [disabled]="progress()"
                     mat-icon-button
@@ -92,7 +81,17 @@ import { TagModule } from '../../tag';
             align-items: center;
 
             .count {
-                min-width: 60px;
+                min-width: 65px;
+
+                & > * {
+                    display: inline-block;
+                }
+
+                ::ng-deep .mat-badge-content {
+                    width: auto;
+                    border-radius: 1000px;
+                    padding: 0 4px;
+                }
             }
 
             ::ng-deep button {
