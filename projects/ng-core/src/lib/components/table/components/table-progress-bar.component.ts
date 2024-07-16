@@ -11,10 +11,10 @@ import { MatProgressBar } from '@angular/material/progress-bar';
         }
     `,
     styles: `
-      .progress-bar {
-        position: absolute;
-        z-index: 999;
-      }
+        .progress-bar {
+            position: absolute;
+            z-index: 999;
+        }
     `,
 })
 export class TableProgressBarComponent {

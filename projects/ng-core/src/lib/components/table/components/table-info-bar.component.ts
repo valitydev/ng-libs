@@ -90,13 +90,13 @@ import { TagModule } from '../../tag';
         .details {
             display: flex;
             align-items: center;
-            
+
             .count {
                 min-width: 60px;
             }
-            
+
             ::ng-deep button {
-                margin: -6px 0
+                margin: -6px 0;
             }
         }
     `,

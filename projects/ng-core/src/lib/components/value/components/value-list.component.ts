@@ -23,16 +23,16 @@ import { ValueComponent } from '../value.component';
         }
     `,
     styles: `
-      .list {
-        display: flex;
-        flex-direction: column;
+        .list {
+            display: flex;
+            flex-direction: column;
 
-        & > * {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          min-height: 20px;
+            & > * {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                min-height: 20px;
+            }
         }
-      }
     `,
 })
 export class ValueListComponent {

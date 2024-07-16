@@ -39,7 +39,7 @@
             #value
             [ngTemplateOutlet]="value"
             [ngTemplateOutletContext]="{
-                value: rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef]
+                value: rowData | vSelect: colDef.formatter ?? colDef.field : '' : [index, colDef],
             }"
             let-value="value"
         >

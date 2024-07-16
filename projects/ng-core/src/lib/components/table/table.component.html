@@ -132,12 +132,12 @@
                                 [mat-sort-header]="col.field"
                                 [ngClass]="{
                                     'pinned-left': col.pinned === 'left',
-                                    'pinned-right': col.pinned === 'right'
+                                    'pinned-right': col.pinned === 'right',
                                 }"
                                 [ngStyle]="{
                                     width: col.width,
                                     'min-width': col.minWidth,
-                                    'max-width': col.maxWidth
+                                    'max-width': col.maxWidth,
                                 }"
                                 mat-header-cell
                             >
@@ -148,12 +148,12 @@
                                 *matHeaderCellDef
                                 [ngClass]="{
                                     'pinned-left': col.pinned === 'left',
-                                    'pinned-right': col.pinned === 'right'
+                                    'pinned-right': col.pinned === 'right',
                                 }"
                                 [ngStyle]="{
                                     width: col.width,
                                     'min-width': col.minWidth,
-                                    'max-width': col.maxWidth
+                                    'max-width': col.maxWidth,
                                 }"
                                 mat-header-cell
                             >
@@ -165,12 +165,12 @@
                             [ngClass]="{
                                 'pinned-left': col.pinned === 'left',
                                 'pinned-right': col.pinned === 'right',
-                                td: true
+                                td: true,
                             }"
                             [ngStyle]="{
                                 width: col.width,
                                 'min-width': col.minWidth,
-                                'max-width': col.maxWidth
+                                'max-width': col.maxWidth,
                             }"
                             mat-cell
                             style="vertical-align: top; padding: 6px 16px"
@@ -203,7 +203,7 @@
                                                         | vSelect
                                                             : col.formatter ?? col.field
                                                             : ''
-                                                            : [index, col]
+                                                            : [index, col],
                                                 }
                                             "
                                         ></ng-container>
@@ -294,7 +294,7 @@
             [formControl]="exactFilterControl"
             [states]="[
                 { label: 'partial match search', icon: 'remove_moderator' },
-                { label: 'full match search', icon: 'policy' }
+                { label: 'full match search', icon: 'policy' },
             ]"
         ></v-switch-button>
     }
