@@ -1,6 +1,6 @@
 {
   "name": "@vality/ng-core",
-  "version": "18.2.0",
+  "version": "18.3.0",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -8,7 +8,7 @@
     }
   },
   "dependencies": {
-    "@angular/material-date-fns-adapter": "^18.0.5",
+    "@angular/material-date-fns-adapter": "^18.1.0",
     "@ng-matero/extensions": "^18.0.3",
     "@s-libs/js-core": "^18.0.0",
     "@s-libs/micro-dash": "^18.0.0",
@@ -21,10 +21,10 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/cdk": "^18.0.0",
-    "@angular/common": "^18.0.0",
-    "@angular/core": "^18.0.0",
-    "@angular/material": "^18.0.0",
+    "@angular/cdk": "^18.1.0",
+    "@angular/common": "^18.1.0",
+    "@angular/core": "^18.1.0",
+    "@angular/material": "^18.1.0",
     "@types/lodash-es": "^4.0.0",
     "date-fns": "^3.0.0",
     "lodash-es": "^4.0.0",
