@@ -34,41 +34,32 @@
                     ></v-select-column>
                 }
                 @for (col of normColumns(); track col; let colIndex = $index) {
+                    @let stickyStart = col.params.sticky === 'start';
+                    @let stickyEnd = col.params.sticky === 'end';
+                    @let columnClasses =
+                        {
+                            column: true,
+                            'column__sticky-start': stickyStart,
+                            'column__sticky-end': stickyEnd,
+                        };
                     <ng-container
                         [matColumnDef]="col.field"
-                        [sticky]="col.params.sticky === 'start'"
-                        [stickyEnd]="col.params.sticky === 'end'"
+                        [sticky]="stickyStart"
+                        [stickyEnd]="stickyEnd"
                     >
-                        <th
-                            *matHeaderCellDef
-                            [ngClass]="{
-                                'column__sticky-start': col.params.sticky === 'start',
-                                'column__sticky-end': col.params.sticky === 'end',
-                            }"
-                            class="column"
-                            mat-header-cell
-                        >
+                        <th *matHeaderCellDef [ngClass]="columnClasses" mat-header-cell>
                             <v-value [value]="col.header | async" inline></v-value>
                         </th>
                         <ng-template let-element let-rowIndex="index" matCellDef>
-                            @let cell =
-                                (columnsData$$ | async)?.[
-                                    (rowIndex | virtualScrollIndex: scrollViewport)
-                                ]?.[colIndex];
-                            @let nextCell =
-                                (columnsData$$ | async)?.[
-                                    (rowIndex | virtualScrollIndex: scrollViewport) + 1
-                                ]?.[colIndex];
+                            @let realRowIndex = rowIndex | virtualScrollIndex: scrollViewport;
+                            @let cell = (columnsData$$ | async)?.[realRowIndex]?.[colIndex];
+                            @let nextCell = (columnsData$$ | async)?.[realRowIndex + 1]?.[colIndex];
                             <td
-                                [ngClass]="{
-                                    'column__sticky-start': col.params.sticky === 'start',
-                                    'column__sticky-end': col.params.sticky === 'end',
-                                }"
+                                [ngClass]="columnClasses"
                                 [ngStyle]="col?.params?.style"
                                 [style.border-bottom]="
                                     nextCell?.isChild && !col.child ? 'none' : ''
                                 "
-                                class="column"
                                 mat-cell
                             >
                                 <v-value
@@ -78,15 +69,7 @@
                                 ></v-value>
                             </td>
                         </ng-template>
-                        <td
-                            *matFooterCellDef
-                            [ngClass]="{
-                                'column__sticky-start': col.params.sticky === 'start',
-                                'column__sticky-end': col.params.sticky === 'end',
-                            }"
-                            class="column"
-                            mat-footer-cell
-                        >
+                        <td *matFooterCellDef [ngClass]="columnClasses" mat-footer-cell>
                             <v-value [progress]="true" inline></v-value>
                         </td>
                     </ng-container>
