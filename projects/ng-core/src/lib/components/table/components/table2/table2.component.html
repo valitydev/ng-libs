@@ -1,12 +1,12 @@
 <div class="wrapper">
     <v-table-info-bar
-        [count]="count$ | async"
+        [count]="isTreeData() ? treeData()?.length : data()?.length"
         [filteredCount]="0"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
-        [selectedCount]="0"
+        [selectedCount]="selected()?.length"
         [size]="size()"
         (downloadCsv)="downloadCsv()"
         (load)="load()"
