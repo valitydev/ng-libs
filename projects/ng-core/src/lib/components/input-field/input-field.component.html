@@ -6,6 +6,11 @@
     }"
     class="v-input-field"
 >
+    @if (icon()) {
+        <div class="prefix" matPrefix>
+            <mat-icon>{{ icon() }}</mat-icon>
+        </div>
+    }
     <mat-label>{{ label }}</mat-label>
     <input
         [formControl]="control"

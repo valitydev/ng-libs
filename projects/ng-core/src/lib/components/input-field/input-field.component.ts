@@ -16,4 +16,5 @@ export class InputFieldComponent<T> extends FormControlSuperclass<T> {
     @Input() appearance: MatFormFieldAppearance = 'fill';
     @Input() size?: 'small' | '';
     cleanButton = input(false, { transform: booleanAttribute });
+    icon = input<string>();
 }
