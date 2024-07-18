@@ -42,7 +42,7 @@ export class NormColumn<T extends object, C extends object = object> {
         commonParams: ColumnParams = {},
     ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
-        const defaultHeaderValue = startCase(field ?? '');
+        const defaultHeaderValue = startCase((field || '').split('.').at(-1));
         this.header = getPossiblyAsyncObservable(header).pipe(
             map((value) =>
                 typeof value === 'object'

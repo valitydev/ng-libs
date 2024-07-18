@@ -48,7 +48,7 @@
                     </mat-icon>
                 </button>
                 <button
-                    [disabled]="progress()"
+                    [disabled]="progress() || !count()"
                     mat-icon-button
                     matTooltip="Download CSV"
                     (click)="downloadCsv.emit()"
@@ -56,7 +56,7 @@
                     <mat-icon>file_save</mat-icon>
                 </button>
             </div>
-            @if (!standaloneFilter()) {
+            @if (!standaloneFilter() && false) {
                 <div>
                     <v-input-field
                         [formControl]="filterControl"

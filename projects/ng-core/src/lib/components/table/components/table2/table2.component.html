@@ -1,6 +1,7 @@
 <div class="wrapper">
     <v-table-info-bar
         [count]="isTreeData() ? treeData()?.length : data()?.length"
+        [filter]="(filter$ | async) ?? ''"
         [filteredCount]="0"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
@@ -8,7 +9,9 @@
         [progress]="progress()"
         [selectedCount]="selected()?.length"
         [size]="size()"
+        [standaloneFilter]="externalFilter()"
         (downloadCsv)="downloadCsv()"
+        (filterChange)="filter$.next($event)"
         (load)="load()"
         (preload)="preload()"
     >

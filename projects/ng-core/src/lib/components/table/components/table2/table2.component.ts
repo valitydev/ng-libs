@@ -17,6 +17,7 @@ import {
     PipeTransform,
     Pipe,
     runInInjectionContext,
+    OnInit,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -25,8 +26,17 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
-import { combineLatest, Observable, switchMap, take, forkJoin, of } from 'rxjs';
-import { shareReplay, map } from 'rxjs/operators';
+import {
+    combineLatest,
+    Observable,
+    switchMap,
+    take,
+    forkJoin,
+    of,
+    BehaviorSubject,
+    debounceTime,
+} from 'rxjs';
+import { shareReplay, map, distinctUntilChanged } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -38,7 +48,7 @@ import { InfinityScrollDirective } from '../infinity-scroll.directive';
 import { NoRecordsComponent } from '../no-records.component';
 import { SelectColumnComponent } from '../select-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
-import { TableInfoBarComponent } from '../table-info-bar.component';
+import { TableInfoBarComponent } from '../table-info-bar/table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
@@ -80,14 +90,20 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         SelectColumnComponent,
     ],
 })
-export class Table2Component<T extends object, C extends object> {
+export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>([]);
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
-    progress = input(false, { transform: booleanAttribute });
+    progress = input(false, { transform: Boolean });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
+
+    // Filter
+    filter = input<string>('');
+    filterChange = output<string>();
+    externalFilter = input(false, { transform: booleanAttribute });
+    filter$ = new BehaviorSubject<string>('');
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
@@ -132,7 +148,7 @@ export class Table2Component<T extends object, C extends object> {
                     })),
                 );
             }
-            return data.map((d, idx) =>
+            return (data || []).map((d, idx) =>
                 cols.map((c) => ({
                     value: c
                         .cell(d, idx)
@@ -182,6 +198,22 @@ export class Table2Component<T extends object, C extends object> {
             },
             { allowSignalWrites: true },
         );
+        effect(() => {
+            this.filter$.next(this.filter());
+        });
+    }
+
+    ngOnInit() {
+        this.filter$
+            .pipe(
+                map((filter) => filter?.trim?.() ?? ''),
+                distinctUntilChanged(),
+                debounceTime(500),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe((filter) => {
+                this.filterChange.emit(filter);
+            });
     }
 
     load() {
