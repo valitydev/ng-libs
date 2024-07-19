@@ -128,11 +128,19 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     dataSource = new TableDataSource<T>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    displayedNormColumns$ = toObservable(this.normColumns).pipe(
+        switchMap((cols) =>
+            combineLatest(cols.map((c) => c.hidden)).pipe(
+                map((c) => cols.filter((_, idx) => !c[idx])),
+            ),
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
         toObservable(this.isTreeData),
         toObservable(this.treeInlineData),
         toObservable(this.data),
-        toObservable(this.normColumns),
+        this.displayedNormColumns$,
     ]).pipe(
         map(([isTree, inlineData, data, cols]) => {
             if (isTree) {
@@ -169,10 +177,15 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    displayedColumns = computed(() => [
-        ...(this.rowSelectable() ? [this.columnDefs.select] : []),
-        ...this.normColumns().map((c) => c.field),
-    ]);
+    displayedColumns$ = combineLatest([
+        this.displayedNormColumns$,
+        toObservable(this.rowSelectable),
+    ]).pipe(
+        map(([normColumns, rowSelectable]) => [
+            ...(rowSelectable ? [this.columnDefs.select] : []),
+            ...normColumns.map((c) => c.field),
+        ]),
+    );
     columnDefs = COLUMN_DEFS;
 
     scrollViewport = viewChild('scrollViewport', { read: ElementRef });
@@ -246,7 +259,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     private generateCsvData(): Observable<string> {
         return combineLatest([
-            toObservable(this.normColumns, { injector: this.injector }).pipe(
+            this.displayedNormColumns$.pipe(
                 switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
             ),
             this.columnsData$.pipe(take(1)),
