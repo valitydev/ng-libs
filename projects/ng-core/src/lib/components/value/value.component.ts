@@ -12,6 +12,7 @@ import {
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
+import { Observable } from 'rxjs';
 
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
@@ -40,6 +41,7 @@ import { valueToString } from './utils/value-to-string';
 })
 export class ValueComponent {
     value = input<Value | null>();
+    lazyValue = input<Observable<Value> | null>();
     resultingValue = input<string>();
     progress = input(false, { transform: booleanAttribute });
     inline = input(false, { transform: booleanAttribute });
@@ -50,7 +52,7 @@ export class ValueComponent {
     lazyVisibleChange = output<boolean>();
 
     lazyVisible = signal(false);
-    isLoaded = computed(() => !this.value()?.lazy || this.lazyVisible());
+    isLoaded = computed(() => !this.lazyValue() || this.lazyVisible());
     renderedValue = computed(
         () =>
             this.resultingValue() ??

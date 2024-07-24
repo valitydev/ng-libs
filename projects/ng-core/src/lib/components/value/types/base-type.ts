@@ -8,7 +8,6 @@ export type BaseValue<V = unknown> = {
     description?: string | number | boolean;
     tooltip?: string;
     color?: Color;
-    lazy?: boolean;
 
     click?: (event: MouseEvent) => void;
     link?: (event: MouseEvent) => void;
