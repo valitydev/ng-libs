@@ -1,3 +1,5 @@
+@let columnsData = columnsData$$ | async;
+
 <div class="wrapper">
     <v-table-info-bar
         [count]="isTreeData() ? treeData()?.length : data()?.length"
@@ -55,8 +57,8 @@
                         </th>
                         <ng-template let-element let-rowIndex="index" matCellDef>
                             @let realRowIndex = rowIndex | virtualScrollIndex: scrollViewport;
-                            @let cell = (columnsData$$ | async)?.[realRowIndex]?.[colIndex];
-                            @let nextCell = (columnsData$$ | async)?.[realRowIndex + 1]?.[colIndex];
+                            @let cell = columnsData?.[realRowIndex]?.[colIndex];
+                            @let nextCell = columnsData?.[realRowIndex + 1]?.[colIndex];
                             <td
                                 [ngClass]="columnClasses"
                                 [ngStyle]="col?.params?.style"
@@ -69,7 +71,6 @@
                                     [emptySymbol]="!(cell?.isChild && !col?.child)"
                                     [value]="cell?.value | async"
                                     inline
-                                    lazy
                                 ></v-value>
                             </td>
                         </ng-template>
