@@ -15,7 +15,6 @@ import {
     ElementRef,
     runInInjectionContext,
     OnInit,
-    ChangeDetectorRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -205,7 +204,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
-        private cdr: ChangeDetectorRef,
     ) {
         effect(
             () => {

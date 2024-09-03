@@ -19,7 +19,7 @@
     >
         <ng-content select="v-table-actions"></ng-content>
     </v-table-info-bar>
-    <mat-card class="card">
+    <mat-card #scrollViewport class="card">
         <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
         <table [dataSource]="dataSource" mat-table>
