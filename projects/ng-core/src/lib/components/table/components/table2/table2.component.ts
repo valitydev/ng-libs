@@ -15,6 +15,7 @@ import {
     ElementRef,
     runInInjectionContext,
     OnInit,
+    ChangeDetectorRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -188,13 +189,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
+        private cdr: ChangeDetectorRef,
     ) {
         effect(
             () => {
                 this.dataSource.data = (
                     this.isTreeData() ? this.treeInlineData() : this.data()
                 ) as never;
-                console.log(this.dataSource.data);
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires
@@ -242,7 +243,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     showMore() {
-        this.more.emit({ size: this.loadSize() });
+        this.dataSource.paginator.more();
+        // TODO: refresh table when scrolling and data is already loaded
+        // eslint-disable-next-line no-self-assign
+        this.dataSource.data = this.dataSource.data;
+        if (this.hasMore() && this.dataSource.paginator.pageSize > this.dataSource.data.length) {
+            this.more.emit({ size: this.loadSize() });
+        }
     }
 
     downloadCsv() {
@@ -269,5 +276,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     private reload() {
         this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
+        this.dataSource.paginator.reload();
     }
 }
