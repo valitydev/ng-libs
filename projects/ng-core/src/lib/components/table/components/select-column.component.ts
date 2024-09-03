@@ -56,7 +56,7 @@ import { BaseColumnComponent } from './base-column.component';
         .column {
             padding-left: 4px;
             padding-right: 4px;
-            max-width: 48px;
+            width: 48px;
             border-right: 1px solid;
             text-overflow: clip;
         }
