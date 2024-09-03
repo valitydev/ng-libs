@@ -33,7 +33,7 @@ import {
     BehaviorSubject,
     debounceTime,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -52,6 +52,8 @@ import { COLUMN_DEFS } from './consts';
 
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
 export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
+export type TreeInlineDataItem<T extends object, C extends object> = { value?: T; child?: C };
+export type TreeInlineData<T extends object, C extends object> = TreeInlineDataItem<T, C>[];
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -111,7 +113,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     more = output<UpdateOptions>();
 
     isTreeData = computed(() => !!this.treeData());
-    treeInlineData = computed<{ value?: T; child?: object }[]>(() =>
+    treeInlineData = computed<TreeInlineData<T, C>>(() =>
         this.isTreeData()
             ? (this.treeData() ?? []).flatMap((d) => {
                   const children = d.children ?? [];
@@ -122,7 +124,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
               })
             : [],
     );
-    dataSource = new TableDataSource<T>();
+    dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
@@ -172,6 +174,20 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         map((d) => d?.length),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
+    dataSourceData = computed<T[] | TreeInlineData<T, C>>(() =>
+        this.isTreeData() ? this.treeInlineData() : this.data(),
+    );
+    hasShowMore$ = combineLatest([
+        toObservable(this.hasMore),
+        toObservable(this.dataSourceData),
+        this.dataSource.paginator.page.pipe(
+            startWith(null),
+            map(() => this.dataSource.paginator.pageSize),
+        ),
+    ]).pipe(
+        map(([hasMore, data, pageSize]) => hasMore || pageSize < data.length),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
     displayedColumns$ = combineLatest([
         this.displayedNormColumns$,
@@ -193,9 +209,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     ) {
         effect(
             () => {
-                this.dataSource.data = (
-                    this.isTreeData() ? this.treeInlineData() : this.data()
-                ) as never;
+                this.dataSource.data = this.dataSourceData();
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires
@@ -214,6 +228,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     ngOnInit() {
+        this.hasShowMore$.subscribe(console.log);
         this.filter$
             .pipe(
                 map((filter) => filter?.trim?.() ?? ''),

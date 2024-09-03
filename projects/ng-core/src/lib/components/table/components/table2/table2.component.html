@@ -74,8 +74,8 @@
             <tr *matHeaderRowDef="displayedColumns$ | async; sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
             <tr
-                *matFooterRowDef="hasMore() ? (displayedColumns$ | async) : []"
-                [ngClass]="{ row__hidden: !hasMore() }"
+                *matFooterRowDef="(hasShowMore$ | async) ? (displayedColumns$ | async) : []"
+                [ngClass]="{ row__hidden: !(hasShowMore$ | async) }"
                 [vInfinityScrollProgress]="progress()"
                 mat-row
                 vInfinityScroll
