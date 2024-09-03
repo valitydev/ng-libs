@@ -62,7 +62,11 @@ export class ValueComponent {
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     renderedValue$ = combineLatest([toObservable(this.resultingValue), this.resValue$]).pipe(
-        map(([resultingValue, resValue]) => resultingValue ?? valueToString(resValue)),
+        map(
+            ([resultingValue, resValue]) =>
+                resultingValue ??
+                runInInjectionContext(this.injector, () => valueToString(resValue)),
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
