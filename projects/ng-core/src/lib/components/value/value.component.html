@@ -1,7 +1,7 @@
-@if (progress() || !value()) {
+@if (progress()) {
     <v-content-loading></v-content-loading>
 } @else {
-    @if (value(); as v) {
+    @if (resValue$ | async; as v) {
         @if (isLoaded()) {
             @if (v.template) {
                 <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
@@ -32,12 +32,13 @@
                             <v-menu-value [value]="v"></v-menu-value>
                         }
                         @default {
-                            @if (renderedValue()) {
+                            @let renderedValue = renderedValue$ | async;
+                            @if (renderedValue) {
                                 <span
                                     [ngClass]="{ value__click: v.click, value__link: v.link }"
                                     (click)="click($event)"
                                 >
-                                    {{ renderedValue() }}
+                                    {{ renderedValue }}
                                 </span>
                             } @else if (emptySymbol()) {
                                 <span style="color: #ccc">{{ emptySymbol() }}</span>
@@ -57,5 +58,7 @@
                 <mat-icon>sync</mat-icon>
             </button>
         }
+    } @else {
+        <v-content-loading></v-content-loading>
     }
 }

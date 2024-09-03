@@ -1,10 +1,10 @@
 import { EventEmitter } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { TableVirtualScrollDataSource } from 'ng-table-virtual-scroll';
+import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class TableDataSource<T extends object> extends TableVirtualScrollDataSource<T> {
+export class TableDataSource<T extends object> extends MatTableDataSource<T> {
     override get paginator() {
         return this.__paginator as never;
     }

@@ -8,11 +8,14 @@ import {
     booleanAttribute,
     runInInjectionContext,
     Injector,
+    ChangeDetectionStrategy,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Observable } from 'rxjs';
+import { Observable, combineLatest, switchMap, of, isObservable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
@@ -38,6 +41,7 @@ import { valueToString } from './utils/value-to-string';
     host: {
         '[class.inline]': 'inline()',
     },
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ValueComponent {
     value = input<Value | null>();
@@ -53,10 +57,13 @@ export class ValueComponent {
 
     lazyVisible = signal(false);
     isLoaded = computed(() => !this.lazyValue() || this.lazyVisible());
-    renderedValue = computed(
-        () =>
-            this.resultingValue() ??
-            runInInjectionContext(this.injector, () => valueToString(this.value())),
+    resValue$ = combineLatest([toObservable(this.value), toObservable(this.lazyValue)]).pipe(
+        switchMap(([value, lazyValue]) => (isObservable(lazyValue) ? lazyValue : of(value))),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    renderedValue$ = combineLatest([toObservable(this.resultingValue), this.resValue$]).pipe(
+        map(([resultingValue, resValue]) => resultingValue ?? valueToString(resValue)),
+        shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
     constructor(private injector: Injector) {}

@@ -1,4 +1,3 @@
-import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -14,8 +13,6 @@ import {
     Injector,
     viewChild,
     ElementRef,
-    PipeTransform,
-    Pipe,
     runInInjectionContext,
     OnInit,
 } from '@angular/core';
@@ -25,7 +22,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
 import {
     combineLatest,
     Observable,
@@ -56,12 +52,13 @@ import { COLUMN_DEFS } from './consts';
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
 export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
 
-@Pipe({ standalone: true, name: 'virtualScrollIndex' })
-export class VirtualScrollIndexPipe implements PipeTransform {
-    transform(index: number, scrollViewport: CdkVirtualScrollViewport) {
-        return index + scrollViewport.getRenderedRange().start;
-    }
-}
+export const TABLE_WRAPPER_STYLE = `
+    display: block;
+    overflow: auto;
+    padding: 8px;
+    margin: -8px;
+    height: 100%;
+`;
 
 @Component({
     standalone: true,
@@ -83,12 +80,10 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         MatTooltip,
         MatIconButton,
         InfinityScrollDirective,
-        TableVirtualScrollModule,
-        ScrollingModule,
-        VirtualScrollIndexPipe,
         ValueListComponent,
         SelectColumnComponent,
     ],
+    host: { style: TABLE_WRAPPER_STYLE },
 })
 export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>([]);
@@ -199,6 +194,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 this.dataSource.data = (
                     this.isTreeData() ? this.treeInlineData() : this.data()
                 ) as never;
+                console.log(this.dataSource.data);
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires

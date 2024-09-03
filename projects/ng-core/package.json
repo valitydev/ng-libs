@@ -16,7 +16,6 @@
     "@s-libs/rxjs-core": "^18.0.0",
     "dinero.js": "^2.0.0-alpha.14",
     "fuse.js": "^7.0.0",
-    "ng-table-virtual-scroll": "^1.6.1",
     "papaparse": "^5.4.1",
     "tslib": "^2.3.0"
   },
