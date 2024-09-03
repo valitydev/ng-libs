@@ -226,7 +226,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     ngOnInit() {
-        this.hasShowMore$.subscribe(console.log);
         this.filter$
             .pipe(
                 map((filter) => filter?.trim?.() ?? ''),

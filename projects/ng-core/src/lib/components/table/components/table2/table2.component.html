@@ -2,7 +2,7 @@
 
 <div class="wrapper">
     <v-table-info-bar
-        [count]="isTreeData() ? treeData()?.length : data()?.length"
+        [count]="dataSourceData().length"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="0"
         [hasMore]="hasMore()"
