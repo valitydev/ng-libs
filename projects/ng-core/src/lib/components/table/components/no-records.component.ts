@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input, booleanAttribute } from '@an
         .no-records {
             position: absolute;
             z-index: 999;
-            top: 50%;
+            top: calc(50% + (56px / 2));
             left: 50%;
             transform: translateX(-50%) translateY(-50%);
         }

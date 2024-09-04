@@ -1,12 +1,15 @@
 import { EventEmitter } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { TableVirtualScrollDataSource } from 'ng-table-virtual-scroll';
+import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class TableDataSource<T extends object> extends TableVirtualScrollDataSource<T> {
+export class TableDataSource<T extends object> extends MatTableDataSource<
+    T,
+    OnePageTableDataSourcePaginator & MatPaginator
+> {
     override get paginator() {
-        return this.__paginator as never;
+        return this.__paginator as OnePageTableDataSourcePaginator & MatPaginator;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -19,16 +22,47 @@ export class TableDataSource<T extends object> extends TableVirtualScrollDataSou
 
 class OnePageTableDataSourcePaginator implements Partial<MatPaginator> {
     pageIndex = 0;
-    pageSize = Number.MAX_SAFE_INTEGER;
+    pageSize = 0;
     page = new EventEmitter<PageEvent>();
     initialized = new BehaviorSubject(undefined);
-    length = Number.MAX_SAFE_INTEGER;
 
-    update() {
+    get length() {
+        return this.pageSize;
+    }
+    set length(v: number) {}
+
+    get displayedPages() {
+        return this.pageSize / this.partSize;
+    }
+
+    private partSize!: number;
+
+    constructor(partSize?: number) {
+        this.setSize(partSize);
+    }
+
+    setSize(partSize = 25) {
+        if (partSize !== this.partSize) {
+            this.pageSize = this.partSize = partSize;
+            this.reload();
+        }
+    }
+
+    reload() {
+        this.pageSize = this.partSize;
+        this.update();
+    }
+
+    more() {
+        this.pageSize += this.partSize;
+        this.update();
+    }
+
+    private update() {
         this.page.next({
-            pageIndex: 0,
-            pageSize: Number.MAX_SAFE_INTEGER,
-            length: Number.MAX_SAFE_INTEGER,
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize,
+            length: this.length,
         });
     }
 }

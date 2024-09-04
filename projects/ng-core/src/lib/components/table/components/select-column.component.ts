@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
     Component,
     input,
     booleanAttribute,
@@ -10,6 +9,7 @@ import {
     OnDestroy,
     OnChanges,
     output,
+    ChangeDetectionStrategy,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -26,7 +26,8 @@ import { BaseColumnComponent } from './base-column.component';
     selector: 'v-select-column',
     template: `
         <ng-container [matColumnDef]="name()" [sticky]="true">
-            <th *matHeaderCellDef mat-header-cell>
+            @let columnClasses = 'column';
+            <th *matHeaderCellDef [class]="columnClasses" mat-header-cell>
                 <mat-checkbox
                     [checked]="selection.hasValue() && (isAllSelected$ | async)"
                     [disabled]="!!progress() || (filtered() && !(isAllSelected$ | async))"
@@ -35,7 +36,7 @@ import { BaseColumnComponent } from './base-column.component';
                 >
                 </mat-checkbox>
             </th>
-            <td *matCellDef="let row" mat-cell>
+            <td *matCellDef="let row" [class]="columnClasses" mat-cell>
                 <mat-checkbox
                     [checked]="selection.isSelected(row)"
                     [disabled]="!!progress()"
@@ -44,11 +45,22 @@ import { BaseColumnComponent } from './base-column.component';
                 >
                 </mat-checkbox>
             </td>
-            <td *matFooterCellDef mat-footer-cell></td>
+            <td *matFooterCellDef [class]="columnClasses" mat-footer-cell>
+                <mat-checkbox disabled></mat-checkbox>
+            </td>
         </ng-container>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [CommonModule, MatTableModule, MatCheckboxModule],
+    styles: `
+        .column {
+            padding-left: 4px;
+            padding-right: 4px;
+            width: 48px;
+            border-right: 1px solid;
+            text-overflow: clip;
+        }
+    `,
 })
 export class SelectColumnComponent<T extends object>
     extends BaseColumnComponent

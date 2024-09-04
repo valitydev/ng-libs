@@ -1,4 +1,3 @@
-import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -14,9 +13,8 @@ import {
     Injector,
     viewChild,
     ElementRef,
-    PipeTransform,
-    Pipe,
     runInInjectionContext,
+    OnInit,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -24,9 +22,17 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import { TableVirtualScrollModule } from 'ng-table-virtual-scroll';
-import { combineLatest, Observable, switchMap, take, forkJoin, of } from 'rxjs';
-import { shareReplay, map } from 'rxjs/operators';
+import {
+    combineLatest,
+    Observable,
+    switchMap,
+    take,
+    forkJoin,
+    of,
+    BehaviorSubject,
+    debounceTime,
+} from 'rxjs';
+import { shareReplay, map, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -38,20 +44,23 @@ import { InfinityScrollDirective } from '../infinity-scroll.directive';
 import { NoRecordsComponent } from '../no-records.component';
 import { SelectColumnComponent } from '../select-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
-import { TableInfoBarComponent } from '../table-info-bar.component';
+import { TableInfoBarComponent } from '../table-info-bar/table-info-bar.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
 
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
 export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
+export type TreeInlineDataItem<T extends object, C extends object> = { value?: T; child?: C };
+export type TreeInlineData<T extends object, C extends object> = TreeInlineDataItem<T, C>[];
 
-@Pipe({ standalone: true, name: 'virtualScrollIndex' })
-export class VirtualScrollIndexPipe implements PipeTransform {
-    transform(index: number, scrollViewport: CdkVirtualScrollViewport) {
-        return index + scrollViewport.getRenderedRange().start;
-    }
-}
+export const TABLE_WRAPPER_STYLE = `
+    display: block;
+    overflow: auto;
+    padding: 8px;
+    margin: -8px;
+    height: 100%;
+`;
 
 @Component({
     standalone: true,
@@ -73,21 +82,25 @@ export class VirtualScrollIndexPipe implements PipeTransform {
         MatTooltip,
         MatIconButton,
         InfinityScrollDirective,
-        TableVirtualScrollModule,
-        ScrollingModule,
-        VirtualScrollIndexPipe,
         ValueListComponent,
         SelectColumnComponent,
     ],
+    host: { style: TABLE_WRAPPER_STYLE },
 })
-export class Table2Component<T extends object, C extends object> {
+export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>([]);
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
-    progress = input(false, { transform: booleanAttribute });
+    progress = input(false, { transform: Boolean });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
+
+    // Filter
+    filter = input<string>('');
+    filterChange = output<string>();
+    externalFilter = input(false, { transform: booleanAttribute });
+    filter$ = new BehaviorSubject<string>('');
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
@@ -99,7 +112,7 @@ export class Table2Component<T extends object, C extends object> {
     more = output<UpdateOptions>();
 
     isTreeData = computed(() => !!this.treeData());
-    treeInlineData = computed<{ value?: T; child?: object }[]>(() =>
+    treeInlineData = computed<TreeInlineData<T, C>>(() =>
         this.isTreeData()
             ? (this.treeData() ?? []).flatMap((d) => {
                   const children = d.children ?? [];
@@ -110,13 +123,21 @@ export class Table2Component<T extends object, C extends object> {
               })
             : [],
     );
-    dataSource = new TableDataSource<T>();
+    dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    displayedNormColumns$ = toObservable(this.normColumns).pipe(
+        switchMap((cols) =>
+            combineLatest(cols.map((c) => c.hidden)).pipe(
+                map((c) => cols.filter((_, idx) => !c[idx])),
+            ),
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
         toObservable(this.isTreeData),
         toObservable(this.treeInlineData),
         toObservable(this.data),
-        toObservable(this.normColumns),
+        this.displayedNormColumns$,
     ]).pipe(
         map(([isTree, inlineData, data, cols]) => {
             if (isTree) {
@@ -132,7 +153,7 @@ export class Table2Component<T extends object, C extends object> {
                     })),
                 );
             }
-            return data.map((d, idx) =>
+            return (data || []).map((d, idx) =>
                 cols.map((c) => ({
                     value: c
                         .cell(d, idx)
@@ -152,11 +173,30 @@ export class Table2Component<T extends object, C extends object> {
         map((d) => d?.length),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
+    dataSourceData = computed<T[] | TreeInlineData<T, C>>(() =>
+        this.isTreeData() ? this.treeInlineData() : this.data(),
+    );
+    hasShowMore$ = combineLatest([
+        toObservable(this.hasMore),
+        toObservable(this.dataSourceData),
+        this.dataSource.paginator.page.pipe(
+            startWith(null),
+            map(() => this.dataSource.paginator.pageSize),
+        ),
+    ]).pipe(
+        map(([hasMore, data, pageSize]) => hasMore || pageSize < data.length),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
-    displayedColumns = computed(() => [
-        ...(this.rowSelectable() ? [this.columnDefs.select] : []),
-        ...this.normColumns().map((c) => c.field),
-    ]);
+    displayedColumns$ = combineLatest([
+        this.displayedNormColumns$,
+        toObservable(this.rowSelectable),
+    ]).pipe(
+        map(([normColumns, rowSelectable]) => [
+            ...(rowSelectable ? [this.columnDefs.select] : []),
+            ...normColumns.map((c) => c.field),
+        ]),
+    );
     columnDefs = COLUMN_DEFS;
 
     scrollViewport = viewChild('scrollViewport', { read: ElementRef });
@@ -167,9 +207,7 @@ export class Table2Component<T extends object, C extends object> {
     ) {
         effect(
             () => {
-                this.dataSource.data = (
-                    this.isTreeData() ? this.treeInlineData() : this.data()
-                ) as never;
+                this.dataSource.data = this.dataSourceData();
             },
             {
                 // TODO: not a necessary line, but after adding viewChild signal requires
@@ -182,6 +220,22 @@ export class Table2Component<T extends object, C extends object> {
             },
             { allowSignalWrites: true },
         );
+        effect(() => {
+            this.filter$.next(this.filter());
+        });
+    }
+
+    ngOnInit() {
+        this.filter$
+            .pipe(
+                map((filter) => filter?.trim?.() ?? ''),
+                distinctUntilChanged(),
+                debounceTime(500),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe((filter) => {
+                this.filterChange.emit(filter);
+            });
     }
 
     load() {
@@ -201,7 +255,13 @@ export class Table2Component<T extends object, C extends object> {
     }
 
     showMore() {
-        this.more.emit({ size: this.loadSize() });
+        this.dataSource.paginator.more();
+        // TODO: refresh table when scrolling and data is already loaded
+        // eslint-disable-next-line no-self-assign
+        this.dataSource.data = this.dataSource.data;
+        if (this.hasMore() && this.dataSource.paginator.pageSize > this.dataSource.data.length) {
+            this.more.emit({ size: this.loadSize() });
+        }
     }
 
     downloadCsv() {
@@ -214,7 +274,7 @@ export class Table2Component<T extends object, C extends object> {
 
     private generateCsvData(): Observable<string> {
         return combineLatest([
-            toObservable(this.normColumns, { injector: this.injector }).pipe(
+            this.displayedNormColumns$.pipe(
                 switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
             ),
             this.columnsData$.pipe(take(1)),
@@ -228,5 +288,6 @@ export class Table2Component<T extends object, C extends object> {
     private reload() {
         this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
+        this.dataSource.paginator.reload();
     }
 }

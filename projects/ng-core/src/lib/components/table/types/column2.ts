@@ -1,7 +1,7 @@
 import { get } from 'lodash-es';
 import isNil from 'lodash-es/isNil';
 import startCase from 'lodash-es/startCase';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
@@ -24,6 +24,7 @@ export interface Column2<T extends object, C extends object = object> extends Co
     header?: PossiblyAsync<Partial<Value> | string>;
     cell?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<T>>;
     child?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<C>>;
+    hidden?: PossiblyAsync<boolean>;
 }
 
 export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<R, P>): Fn<R, P> {
@@ -35,14 +36,15 @@ export class NormColumn<T extends object, C extends object = object> {
     header!: Observable<Value>;
     cell!: Fn<Observable<Value>, CellFnArgs<T>>;
     child?: Fn<Observable<Value>, CellFnArgs<C>>;
+    hidden!: Observable<boolean>;
     params!: ColumnParams;
 
     constructor(
-        { field, header, cell, child, ...params }: Column2<T, C>,
+        { field, header, cell, child, hidden, ...params }: Column2<T, C>,
         commonParams: ColumnParams = {},
     ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
-        const defaultHeaderValue = startCase(field ?? '');
+        const defaultHeaderValue = startCase((field || '').split('.').at(-1));
         this.header = getPossiblyAsyncObservable(header).pipe(
             map((value) =>
                 typeof value === 'object'
@@ -83,5 +85,6 @@ export class NormColumn<T extends object, C extends object = object> {
             ...params,
             style: Object.assign({}, commonParams?.style, params?.style),
         };
+        this.hidden = isNil(hidden) ? of(false) : getPossiblyAsyncObservable(hidden);
     }
 }
