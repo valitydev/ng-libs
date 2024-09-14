@@ -1,61 +1,62 @@
 @if (progress || !(resValue$ | async)) {
     <v-content-loading></v-content-loading>
-} @else if (resValue$ | async) {
-    @let v = resValue$ | async;
-    @if (isLoaded$ | async) {
-        @if (v.template) {
-            <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
-        } @else {
-            @if (v.color) {
-                <v-tag [color]="v.color">
-                    <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
-                </v-tag>
+} @else {
+    @if (resValue$ | async; as v) {
+        @if (isLoaded$ | async) {
+            @if (v.template) {
+                <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
             } @else {
-                <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
-            }
-
-            <ng-template #tooltipTemplate>
-                @if (v.tooltip) {
-                    <span [matTooltip]="v.tooltip ?? ''" class="tooltip">
-                        <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-                    </span>
+                @if (v.color) {
+                    <v-tag [color]="v.color">
+                        <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
+                    </v-tag>
                 } @else {
-                    <span [title]="v.value">
-                        <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
-                    </span>
+                    <ng-container *ngTemplateOutlet="tooltipTemplate"></ng-container>
                 }
-            </ng-template>
 
-            <ng-template #valueTemplate>
-                @switch (v.type) {
-                    @case ('menu') {
-                        <v-menu-value [value]="v"></v-menu-value>
+                <ng-template #tooltipTemplate>
+                    @if (v.tooltip) {
+                        <span [matTooltip]="v.tooltip ?? ''" class="tooltip">
+                            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                        </span>
+                    } @else {
+                        <span [title]="v.value">
+                            <ng-container *ngTemplateOutlet="valueTemplate"></ng-container>
+                        </span>
                     }
-                    @default {
-                        @let renderedValue = renderedValue$ | async;
-                        @if (renderedValue) {
-                            <span
-                                [ngClass]="{ value__click: v.click, value__link: v.link }"
-                                (click)="click($event)"
-                            >
-                                {{ renderedValue }}
-                            </span>
-                        } @else if (emptySymbol) {
-                            <span style="color: #ccc">{{ emptySymbol }}</span>
+                </ng-template>
+
+                <ng-template #valueTemplate>
+                    @switch (v.type) {
+                        @case ('menu') {
+                            <v-menu-value [value]="v"></v-menu-value>
+                        }
+                        @default {
+                            @let renderedValue = renderedValue$ | async;
+                            @if (renderedValue) {
+                                <span
+                                    [ngClass]="{ value__click: v.click, value__link: v.link }"
+                                    (click)="click($event)"
+                                >
+                                    {{ renderedValue }}
+                                </span>
+                            } @else if (emptySymbol) {
+                                <span style="color: #ccc">{{ emptySymbol }}</span>
+                            }
                         }
                     }
-                }
-            </ng-template>
-        }
+                </ng-template>
+            }
 
-        @if (v.description) {
-            <div [title]="v.description" class="description mat-caption mat-secondary-text">
-                {{ v.description }}
-            </div>
+            @if (v.description) {
+                <div [title]="v.description" class="description mat-caption mat-secondary-text">
+                    {{ v.description }}
+                </div>
+            }
+        } @else {
+            <button class="button" mat-icon-button (click)="this.toggleLazyVisible()">
+                <mat-icon>sync</mat-icon>
+            </button>
         }
-    } @else {
-        <button class="button" mat-icon-button (click)="this.toggleLazyVisible()">
-            <mat-icon>sync</mat-icon>
-        </button>
     }
 }
