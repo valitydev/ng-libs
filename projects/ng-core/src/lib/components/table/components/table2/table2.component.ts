@@ -11,10 +11,10 @@ import {
     signal,
     output,
     Injector,
-    viewChild,
     ElementRef,
     runInInjectionContext,
     OnInit,
+    ViewChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -31,8 +31,9 @@ import {
     of,
     BehaviorSubject,
     debounceTime,
+    scan,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, startWith } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, startWith, delay } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -139,28 +140,53 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         toObservable(this.data),
         this.displayedNormColumns$,
     ]).pipe(
-        map(([isTree, inlineData, data, cols]) => {
-            if (isTree) {
-                return inlineData.map((d, idx) =>
-                    cols.map((c) => ({
-                        value: (d.child && c.child
-                            ? c.child(d.child, idx)
-                            : d.value
-                              ? c.cell(d.value, idx)
-                              : of<Value>({ value: '' })
-                        ).pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                        isChild: !d.value,
-                    })),
-                );
-            }
-            return (data || []).map((d, idx) =>
-                cols.map((c) => ({
-                    value: c
-                        .cell(d, idx)
-                        .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                })),
-            );
-        }),
+        scan(
+            (acc, [isTree, inlineData, data, cols]) => {
+                const isColsNotChanged = acc.cols === cols;
+                return {
+                    res: isTree
+                        ? inlineData.map((d, idx) =>
+                              cols.map((c) => ({
+                                  value: (d.child && c.child
+                                      ? c.child(d.child, idx)
+                                      : d.value
+                                        ? c.cell(d.value, idx)
+                                        : of<Value>({ value: '' })
+                                  ).pipe(
+                                      shareReplay({
+                                          refCount: true,
+                                          bufferSize: 1,
+                                          windowTime: 30_000,
+                                      }),
+                                  ),
+                                  isChild: !d.value,
+                              })),
+                          )
+                        : (data || []).map((d, idx) =>
+                              isColsNotChanged && data[idx] === acc.data[idx]
+                                  ? acc.res[idx]
+                                  : cols.map((c) => ({
+                                        value: c.cell(d, idx).pipe(
+                                            delay(0),
+                                            shareReplay({
+                                                refCount: true,
+                                                bufferSize: 1,
+                                                windowTime: 30_000,
+                                            }),
+                                        ),
+                                    })),
+                          ),
+                    data: data,
+                    cols: cols,
+                };
+            },
+            { data: [], cols: [], res: [] } as {
+                data: T[];
+                cols: NormColumn<T>[];
+                res: { value: Observable<Value>; isChild?: boolean }[][];
+            },
+        ),
+        map((v) => v.res),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
@@ -199,7 +225,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     columnDefs = COLUMN_DEFS;
 
-    scrollViewport = viewChild('scrollViewport', { read: ElementRef });
+    @ViewChild('scrollViewport') scrollViewport!: ElementRef;
 
     constructor(
         private dr: DestroyRef,
@@ -286,7 +312,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private reload() {
-        this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
+        this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
         this.dataSource.paginator.reload();
     }

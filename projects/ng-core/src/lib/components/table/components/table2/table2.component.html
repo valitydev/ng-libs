@@ -47,7 +47,7 @@
                     [stickyEnd]="stickyEnd"
                 >
                     <th *matHeaderCellDef [ngClass]="columnClasses" mat-header-cell>
-                        <v-value [value]="col?.header | async" inline></v-value>
+                        <v-value [value]="col?.header | async" emptySymbol="" inline></v-value>
                     </th>
                     <ng-template let-element let-rowIndex="index" matCellDef>
                         @let cell = columnsData?.[rowIndex]?.[colIndex];
