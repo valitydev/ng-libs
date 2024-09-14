@@ -11,7 +11,7 @@ export function formatCurrency(
     exponent?: number,
     isMajor: boolean = false,
 ): string {
-    if (!exponent) {
+    if (typeof exponent !== 'number') {
         exponent = getCurrencyExponent(currencyCode) || 0;
     }
     return ngFormatCurrency(

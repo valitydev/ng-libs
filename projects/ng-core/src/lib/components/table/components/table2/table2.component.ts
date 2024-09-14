@@ -227,7 +227,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     columnDefs = COLUMN_DEFS;
 
-    @ViewChild('scrollViewport') scrollViewport!: ElementRef;
+    @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
 
     constructor(
         private dr: DestroyRef,
