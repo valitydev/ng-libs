@@ -37,6 +37,7 @@ import { shareReplay, map, distinctUntilChanged, startWith, delay } from 'rxjs/o
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
+import { ProgressModule } from '../../../progress';
 import { Value, ValueComponent, ValueListComponent } from '../../../value';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
@@ -85,6 +86,7 @@ export const TABLE_WRAPPER_STYLE = `
         InfinityScrollDirective,
         ValueListComponent,
         SelectColumnComponent,
+        ProgressModule,
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
