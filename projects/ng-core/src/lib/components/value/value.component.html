@@ -1,8 +1,8 @@
-@if (progress()) {
+@if (progress) {
     <v-content-loading></v-content-loading>
 } @else {
     @if (resValue$ | async; as v) {
-        @if (isLoaded()) {
+        @if (isLoaded$ | async) {
             @if (v.template) {
                 <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
             } @else {
@@ -40,8 +40,8 @@
                                 >
                                     {{ renderedValue }}
                                 </span>
-                            } @else if (emptySymbol()) {
-                                <span style="color: #ccc">{{ emptySymbol() }}</span>
+                            } @else if (emptySymbol) {
+                                <span style="color: #ccc">{{ emptySymbol }}</span>
                             }
                         }
                     }

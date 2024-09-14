@@ -1,27 +1,26 @@
 import { CommonModule } from '@angular/common';
 import {
     Component,
-    input,
-    computed,
-    signal,
-    output,
     booleanAttribute,
     runInInjectionContext,
     Injector,
     ChangeDetectionStrategy,
+    Input,
+    Output,
+    EventEmitter,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Observable, combineLatest, switchMap, of, isObservable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { combineLatest, switchMap, of, isObservable, BehaviorSubject, Observable } from 'rxjs';
+import { map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
 
 import { MenuValueComponent } from './components/menu-value.component';
 import { Value } from './types/value';
+import { createInputSubject } from './utils/create-input-subject';
 import { valueToString } from './utils/value-to-string';
 
 @Component({
@@ -39,29 +38,37 @@ import { valueToString } from './utils/value-to-string';
     templateUrl: './value.component.html',
     styleUrl: './value.component.scss',
     host: {
-        '[class.inline]': 'inline()',
+        '[class.inline]': 'inline',
     },
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ValueComponent {
-    value = input<Value | null>();
-    lazyValue = input<Observable<Value> | null>();
-    resultingValue = input<string>();
-    progress = input(false, { transform: booleanAttribute });
-    inline = input(false, { transform: booleanAttribute });
-    emptySymbol = input(undefined, {
-        transform: (v) => (v === true || v === '' ? '―' : typeof v === 'string' ? v : ''),
-    });
+    @Input() value: Value | null = null;
+    value$ = createInputSubject(this, 'value', this.value);
 
-    lazyVisibleChange = output<boolean>();
+    @Input() lazyValue: Observable<Value> | undefined = undefined;
+    lazyValue$ = createInputSubject(this, 'lazyValue', this.lazyValue);
 
-    lazyVisible = signal(false);
-    isLoaded = computed(() => !this.lazyValue() || this.lazyVisible());
-    resValue$ = combineLatest([toObservable(this.value), toObservable(this.lazyValue)]).pipe(
+    @Input({ transform: booleanAttribute }) progress = false;
+    @Input({ transform: booleanAttribute }) inline = false;
+    @Input({ transform: (v: unknown): string => (typeof v === 'string' ? v : '―') })
+    emptySymbol = '―';
+
+    resultingValue$ = of(null);
+
+    @Output() lazyVisibleChange = new EventEmitter<boolean>();
+
+    lazyVisible = new BehaviorSubject(false);
+    isLoaded$ = combineLatest([of(null), this.lazyVisible]).pipe(
+        map(([lazyValue, lazyVisible]) => !lazyValue || lazyVisible),
+        distinctUntilChanged(),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    resValue$ = combineLatest([this.value$, this.lazyValue$]).pipe(
         switchMap(([value, lazyValue]) => (isObservable(lazyValue) ? lazyValue : of(value))),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    renderedValue$ = combineLatest([toObservable(this.resultingValue), this.resValue$]).pipe(
+    renderedValue$ = combineLatest([this.resultingValue$, this.resValue$]).pipe(
         map(
             ([resultingValue, resValue]) =>
                 resultingValue ??
@@ -73,19 +80,17 @@ export class ValueComponent {
     constructor(private injector: Injector) {}
 
     toggleLazyVisible() {
-        this.lazyVisible.set(true);
-        this.lazyVisibleChange.emit(this.lazyVisible());
+        this.lazyVisible.next(true);
+        this.lazyVisibleChange.emit(true);
     }
 
     click(event: MouseEvent) {
-        if (this.value()?.click) {
-            runInInjectionContext(this.injector, () => {
-                this.value()?.click?.(event);
-            });
-        } else if (typeof this.value()?.link === 'function') {
-            runInInjectionContext(this.injector, () => {
-                this.value()?.link?.(event);
-            });
-        }
+        runInInjectionContext(this.injector, () => {
+            if (this.value?.click) {
+                this.value.click(event);
+            } else if (typeof this.value?.link === 'function') {
+                this.value.link(event);
+            }
+        });
     }
 }
