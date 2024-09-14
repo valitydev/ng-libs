@@ -33,7 +33,7 @@
                         }
                         @default {
                             @let renderedValue = renderedValue$ | async;
-                            @if (renderedValue) {
+                            @if (renderedValue !== null && renderedValue !== undefined) {
                                 <span
                                     [ngClass]="{ value__click: v.click, value__link: v.link }"
                                     (click)="click($event)"

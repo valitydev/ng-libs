@@ -10,7 +10,7 @@ export type CurrencyAmountValue = TypedParamsValue<
 >;
 
 export function currencyAmountValueToString(value: CurrencyAmountValue) {
-    if (!value?.value) {
+    if (typeof value?.value !== 'number') {
         return '';
     }
     const locale = inject(LOCALE_ID);
