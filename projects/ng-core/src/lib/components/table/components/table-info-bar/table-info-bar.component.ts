@@ -59,10 +59,12 @@ export class TableInfoBarComponent implements OnInit {
 
     countText = computed(() =>
         this.count()
-            ? (this.filteredCount() ? this.filteredCount() + '/' : '') +
+            ? (this.filter() && this.filteredCount() !== this.count()
+                  ? this.filteredCount() + '/'
+                  : '') +
               (this.hasMore() ? '>' : '') +
               this.count()
-            : this.progress()
+            : this.progress() || this.count() !== 0
               ? '...'
               : '0',
     );

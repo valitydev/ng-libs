@@ -20,6 +20,7 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
@@ -32,6 +33,8 @@ import {
     BehaviorSubject,
     debounceTime,
     scan,
+    share,
+    defer,
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, startWith, delay } from 'rxjs/operators';
 
@@ -39,6 +42,7 @@ import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { Value, ValueComponent, ValueListComponent } from '../../../value';
+import { sortDataByDefault } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
@@ -87,6 +91,7 @@ export const TABLE_WRAPPER_STYLE = `
         ValueListComponent,
         SelectColumnComponent,
         ProgressModule,
+        MatSortModule,
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
@@ -104,12 +109,16 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     filterChange = output<string>();
     externalFilter = input(false, { transform: booleanAttribute });
     filter$ = new BehaviorSubject<string>('');
+    filteredData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
     rowSelected = input<T[]>([]);
     rowSelectedChange = output<T[]>();
     selected = signal<T[]>([]);
+
+    // Sort
+    @ViewChild(MatSort) sortComponent!: MatSort;
 
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
@@ -158,7 +167,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                       shareReplay({
                                           refCount: true,
                                           bufferSize: 1,
-                                          windowTime: 30_000,
                                       }),
                                   ),
                                   isChild: !d.value,
@@ -173,7 +181,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                             shareReplay({
                                                 refCount: true,
                                                 bufferSize: 1,
-                                                windowTime: 30_000,
                                             }),
                                         ),
                                     })),
@@ -197,22 +204,30 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = this.columnsData$$.pipe(
-        map((d) => d?.length),
+    count$ = combineLatest([
+        this.filter$,
+        this.filteredData$,
+        defer(() => toObservable(this.dataSourceData, { injector: this.injector })),
+    ]).pipe(
+        map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     dataSourceData = computed<T[] | TreeInlineData<T, C>>(() =>
         this.isTreeData() ? this.treeInlineData() : this.data(),
     );
-    hasShowMore$ = combineLatest([
+    hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
         toObservable(this.dataSourceData),
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
+        this.filteredData$,
     ]).pipe(
-        map(([hasMore, data, pageSize]) => hasMore || pageSize < data.length),
+        map(
+            ([hasMore, data, pageSize, filteredData]) =>
+                (hasMore || pageSize < data.length) && filteredData === data,
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -254,15 +269,33 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     ngOnInit() {
-        this.filter$
+        const filter$ = this.filter$.pipe(
+            map((filter) => filter?.trim?.() ?? ''),
+            distinctUntilChanged(),
+            debounceTime(500),
+            share(),
+        );
+        filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
+            this.filterChange.emit(filter);
+        });
+        combineLatest([
+            filter$,
+            toObservable(this.dataSourceData, { injector: this.injector }),
+            toObservable(this.isTreeData, { injector: this.injector }).pipe(distinctUntilChanged()),
+        ])
             .pipe(
-                map((filter) => filter?.trim?.() ?? ''),
-                distinctUntilChanged(),
-                debounceTime(500),
+                map(([f, v, isTreeData]) => {
+                    return f
+                        ? v.filter((i) =>
+                              JSON.stringify(isTreeData ? (i as never)?.['value'] : i).includes(f),
+                          )
+                        : v;
+                }),
                 takeUntilDestroyed(this.dr),
             )
-            .subscribe((filter) => {
-                this.filterChange.emit(filter);
+            .subscribe((filtered) => {
+                this.filteredData$.next(filtered);
+                this.updateSortFilter(filtered);
             });
     }
 
@@ -317,5 +350,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
         this.dataSource.paginator.reload();
+    }
+
+    private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
+        this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
+        this.dataSource.sort = this.sortComponent;
     }
 }

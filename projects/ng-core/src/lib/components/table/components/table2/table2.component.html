@@ -4,7 +4,7 @@
     <v-table-info-bar
         [count]="dataSourceData().length"
         [filter]="(filter$ | async) ?? ''"
-        [filteredCount]="0"
+        [filteredCount]="count$ | async"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [preloadSize]="maxSize()"
@@ -22,7 +22,7 @@
     <mat-card #scrollViewport class="card">
         <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
-        <table [dataSource]="dataSource" mat-table>
+        <table [dataSource]="dataSource" mat-table matSort>
             @if (rowSelectable()) {
                 <v-select-column
                     [data]="data()"
@@ -74,8 +74,8 @@
             <tr *matHeaderRowDef="displayedColumns$ | async; sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
             <tr
-                *matFooterRowDef="(hasShowMore$ | async) ? (displayedColumns$ | async) : []"
-                [ngClass]="{ row__hidden: !(hasShowMore$ | async) }"
+                *matFooterRowDef="(hasAutoShowMore$ | async) ? (displayedColumns$ | async) : []"
+                [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) }"
                 [vInfinityScrollProgress]="progress()"
                 mat-row
                 vInfinityScroll
