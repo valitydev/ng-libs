@@ -45,8 +45,8 @@ export class TableInfoBarComponent implements OnInit {
     preloadSize = input(0, { transform: numberAttribute });
 
     count = input<number | undefined | null>(undefined);
-    filteredCount = input<number | undefined>(0);
-    selectedCount = input<number | undefined>(0);
+    filteredCount = input<number | undefined | null>(0);
+    selectedCount = input<number | undefined | null>(0);
 
     filter = input<string>('');
     standaloneFilter = input(false, { transform: booleanAttribute });
