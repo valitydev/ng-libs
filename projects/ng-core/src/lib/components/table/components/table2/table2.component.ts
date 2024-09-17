@@ -212,8 +212,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    dataSourceData = computed<T[] | TreeInlineData<T, C>>(() =>
-        this.isTreeData() ? this.treeInlineData() : this.data(),
+    dataSourceData = computed<T[] | TreeInlineData<T, C>>(
+        () => (this.isTreeData() ? this.treeInlineData() : this.data()) ?? [],
     );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
