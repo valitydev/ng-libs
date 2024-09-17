@@ -15,13 +15,14 @@ import {
     runInInjectionContext,
     OnInit,
     ViewChild,
+    AfterViewChecked,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTable } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
     combineLatest,
@@ -95,7 +96,9 @@ export const TABLE_WRAPPER_STYLE = `
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
-export class Table2Component<T extends object, C extends object> implements OnInit {
+export class Table2Component<T extends object, C extends object>
+    implements OnInit, AfterViewChecked
+{
     data = input<T[]>([]);
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
@@ -242,6 +245,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     columnDefs = COLUMN_DEFS;
 
+    @ViewChild('table') table!: MatTable<T>;
     @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
 
     constructor(
@@ -297,6 +301,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 this.filteredData$.next(filtered);
                 this.updateSortFilter(filtered);
             });
+    }
+
+    ngAfterViewChecked(): void {
+        if (this.table) {
+            this.table.updateStickyColumnStyles();
+        }
     }
 
     load() {
