@@ -22,7 +22,7 @@
     <mat-card #scrollViewport class="card">
         <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
-        <table #table [dataSource]="dataSource" mat-table matSort>
+        <table #matTable [dataSource]="dataSource" mat-table matSort>
             @if (rowSelectable()) {
                 <v-select-column
                     [data]="data()"

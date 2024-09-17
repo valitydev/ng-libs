@@ -15,7 +15,6 @@ import {
     runInInjectionContext,
     OnInit,
     ViewChild,
-    AfterViewChecked,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
@@ -36,8 +35,9 @@ import {
     scan,
     share,
     defer,
+    first,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, startWith, delay } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, startWith, delay, filter } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -96,9 +96,7 @@ export const TABLE_WRAPPER_STYLE = `
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
-export class Table2Component<T extends object, C extends object>
-    implements OnInit, AfterViewChecked
-{
+export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>([]);
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
@@ -245,8 +243,8 @@ export class Table2Component<T extends object, C extends object>
     );
     columnDefs = COLUMN_DEFS;
 
-    @ViewChild('table') table!: MatTable<T>;
     @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
+    @ViewChild('matTable', { static: false }) table!: MatTable<T>;
 
     constructor(
         private dr: DestroyRef,
@@ -267,9 +265,6 @@ export class Table2Component<T extends object, C extends object>
             },
             { allowSignalWrites: true },
         );
-        effect(() => {
-            this.filter$.next(this.filter());
-        });
     }
 
     ngOnInit() {
@@ -279,6 +274,11 @@ export class Table2Component<T extends object, C extends object>
             debounceTime(500),
             share(),
         );
+        toObservable(this.filter, { injector: this.injector })
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe((filter) => {
+                this.filter$.next(filter);
+            });
         filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
             this.filterChange.emit(filter);
         });
@@ -301,12 +301,17 @@ export class Table2Component<T extends object, C extends object>
                 this.filteredData$.next(filtered);
                 this.updateSortFilter(filtered);
             });
-    }
-
-    ngAfterViewChecked(): void {
-        if (this.table) {
-            this.table.updateStickyColumnStyles();
-        }
+        // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
+        toObservable(this.dataSourceData, { injector: this.injector })
+            .pipe(
+                filter((v) => !!v?.length),
+                first(),
+                delay(100),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe(() => {
+                this.table.updateStickyColumnStyles();
+            });
     }
 
     load() {
