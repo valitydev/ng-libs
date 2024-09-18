@@ -44,6 +44,7 @@ import { ProgressModule } from '../../../progress';
 import { Value, ValueComponent, ValueListComponent } from '../../../value';
 import { sortDataByDefault } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
+import { cachedHeadMap } from '../../utils/cached-head-map';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -125,25 +126,14 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     isTreeData = computed(() => !!this.treeData());
     treeInlineData$: Observable<TreeInlineData<T, C>> = toObservable(this.treeData).pipe(
-        scan(
-            (acc, treeData) =>
-                (treeData ?? [])
-                    .flatMap<TreeInlineDataItem<T, C>>((d) => {
-                        const children = d.children ?? [];
-                        return [
-                            children.length
-                                ? { value: d.value, child: children[0] }
-                                : { value: d.value },
-                            ...children.slice(1).map((child) => ({ child })),
-                        ];
-                    })
-                    .map((el, idx) =>
-                        el.value === acc[idx]?.value && el.child === acc[idx]?.child
-                            ? acc[idx]
-                            : el,
-                    ),
-            [] as TreeInlineData<T, C>,
-        ),
+        cachedHeadMap((d) => {
+            const children = d.children ?? [];
+            return [
+                children.length ? { value: d.value, child: children[0] } : { value: d.value },
+                ...children.slice(1).map((child) => ({ child })),
+            ];
+        }),
+        map((v) => v.flat()),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
@@ -185,7 +175,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         isTree
                             ? (data as TreeInlineData<T, C>).map((d, idx) => [
                                   d,
-                                  isColsNotChanged && d === acc.data[idx]
+                                  isColsNotChanged &&
+                                  d === acc.data[idx] &&
+                                  // This is not the last value, because we need to calculate isNextChild
+                                  idx !== acc.data.length - 1
                                       ? (acc.res.get(d) as never)
                                       : cols.map((c) => ({
                                             value: (d.child && c.child
