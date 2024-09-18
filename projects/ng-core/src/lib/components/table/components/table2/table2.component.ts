@@ -300,18 +300,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
             this.filterChange.emit(filter);
         });
-        combineLatest([
-            filter$,
-            toObservable(this.dataSourceData, { injector: this.injector }),
-            toObservable(this.isTreeData, { injector: this.injector }).pipe(distinctUntilChanged()),
-        ])
+        combineLatest([filter$, toObservable(this.dataSourceData, { injector: this.injector })])
             .pipe(
-                map(([f, v, isTreeData]) => {
-                    return f
-                        ? v.filter((i) =>
-                              JSON.stringify(isTreeData ? (i as never)?.['value'] : i).includes(f),
-                          )
-                        : v;
+                map(([f, v]) => {
+                    return f ? v.filter((i) => JSON.stringify(i).includes(f)) : v;
                 }),
                 takeUntilDestroyed(this.dr),
             )
