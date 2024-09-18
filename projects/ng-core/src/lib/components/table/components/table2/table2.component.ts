@@ -187,7 +187,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                                   ? c.cell(d.value, idx)
                                                   : of<Value>({ value: '' })
                                             ).pipe(
-                                                delay(0),
                                                 shareReplay({
                                                     refCount: true,
                                                     bufferSize: 1,
@@ -204,7 +203,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                       ? (acc.res.get(d) as never)
                                       : cols.map((c) => ({
                                             value: c.cell(d, idx).pipe(
-                                                delay(0),
                                                 shareReplay({
                                                     refCount: true,
                                                     bufferSize: 1,
