@@ -304,7 +304,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         combineLatest([filter$, this.dataSourceData$])
             .pipe(
                 map(([f, v]) => {
-                    return f ? v.filter((i) => JSON.stringify(i).includes(f)) : v;
+                    return f ? v.filter((i) => JSON.stringify(i).toLowerCase().includes(f)) : v;
                 }),
                 takeUntilDestroyed(this.dr),
             )
