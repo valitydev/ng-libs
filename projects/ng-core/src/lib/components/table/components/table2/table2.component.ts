@@ -34,7 +34,6 @@ import {
     debounceTime,
     scan,
     share,
-    defer,
     first,
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, startWith, delay, filter } from 'rxjs/operators';
@@ -125,18 +124,37 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     more = output<UpdateOptions>();
 
     isTreeData = computed(() => !!this.treeData());
-    treeInlineData = computed<TreeInlineData<T, C>>(() =>
-        this.isTreeData()
-            ? (this.treeData() ?? []).flatMap((d) => {
-                  const children = d.children ?? [];
-                  return [
-                      children.length ? { value: d.value, child: children[0] } : { value: d.value },
-                      ...children.slice(1).map((child) => ({ child })),
-                  ];
-              })
-            : [],
+    treeInlineData$: Observable<TreeInlineData<T, C>> = toObservable(this.treeData).pipe(
+        scan(
+            (acc, treeData) =>
+                (treeData ?? [])
+                    .flatMap<TreeInlineDataItem<T, C>>((d) => {
+                        const children = d.children ?? [];
+                        return [
+                            children.length
+                                ? { value: d.value, child: children[0] }
+                                : { value: d.value },
+                            ...children.slice(1).map((child) => ({ child })),
+                        ];
+                    })
+                    .map((el, idx) =>
+                        el.value === acc[idx]?.value && el.child === acc[idx]?.child
+                            ? acc[idx]
+                            : el,
+                    ),
+            [] as TreeInlineData<T, C>,
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
     );
     dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
+    dataSourceData$: Observable<T[] | TreeInlineData<T, C>> = combineLatest([
+        this.treeInlineData$,
+        toObservable(this.data),
+        toObservable(this.isTreeData),
+    ]).pipe(
+        map(([treeData, data, isTreeData]) => (isTreeData ? treeData : data)),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
@@ -153,12 +171,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         >
     > = combineLatest([
         toObservable(this.isTreeData),
-        toObservable(this.treeInlineData),
-        toObservable(this.data),
+        this.dataSourceData$,
         this.displayedNormColumns$,
     ]).pipe(
         scan(
-            (acc, [isTree, inlineData, data, cols]) => {
+            (acc, [isTree, data, cols]) => {
                 const isColsNotChanged = acc.cols === cols;
                 return {
                     res: new Map<
@@ -166,27 +183,31 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
                     >(
                         isTree
-                            ? inlineData.map((d, idx) => [
+                            ? (data as TreeInlineData<T, C>).map((d, idx) => [
                                   d,
-                                  cols.map((c) => ({
-                                      value: (d.child && c.child
-                                          ? c.child(d.child, idx)
-                                          : d.value
-                                            ? c.cell(d.value, idx)
-                                            : of<Value>({ value: '' })
-                                      ).pipe(
-                                          shareReplay({
-                                              refCount: true,
-                                              bufferSize: 1,
-                                          }),
-                                      ),
-                                      isChild: !d.value,
-                                      isNextChild: !inlineData[idx + 1]?.value,
-                                  })),
+                                  isColsNotChanged && d === acc.data[idx]
+                                      ? (acc.res.get(d) as never)
+                                      : cols.map((c) => ({
+                                            value: (d.child && c.child
+                                                ? c.child(d.child, idx)
+                                                : d.value
+                                                  ? c.cell(d.value, idx)
+                                                  : of<Value>({ value: '' })
+                                            ).pipe(
+                                                delay(0),
+                                                shareReplay({
+                                                    refCount: true,
+                                                    bufferSize: 1,
+                                                }),
+                                            ),
+                                            isChild: !d.value,
+                                            isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
+                                                ?.value,
+                                        })),
                               ])
-                            : (data || []).map((d, idx) => [
+                            : ((data as T[]) || []).map((d, idx) => [
                                   d,
-                                  isColsNotChanged && data[idx] === acc.data[idx]
+                                  isColsNotChanged && d === acc.data[idx]
                                       ? (acc.res.get(d) as never)
                                       : cols.map((c) => ({
                                             value: c.cell(d, idx).pipe(
@@ -204,7 +225,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 };
             },
             { data: [], cols: [], res: new Map() } as {
-                data: T[];
+                data: T[] | TreeInlineData<T, C>;
                 cols: NormColumn<T>[];
                 res: Map<
                     T | TreeInlineDataItem<T, C>,
@@ -223,20 +244,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([
-        this.filter$,
-        this.filteredData$,
-        defer(() => toObservable(this.dataSourceData, { injector: this.injector })),
-    ]).pipe(
+    count$ = combineLatest([this.filter$, this.filteredData$, this.dataSourceData$]).pipe(
         map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    dataSourceData = computed<T[] | TreeInlineData<T, C>>(
-        () => (this.isTreeData() ? this.treeInlineData() : this.data()) ?? [],
-    );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        toObservable(this.dataSourceData),
+        this.dataSourceData$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
@@ -270,15 +284,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     ) {
         effect(
             () => {
-                this.dataSource.data = this.dataSourceData();
-            },
-            {
-                // TODO: not a necessary line, but after adding viewChild signal requires
-                allowSignalWrites: true,
-            },
-        );
-        effect(
-            () => {
                 this.selected.set(this.rowSelected());
             },
             { allowSignalWrites: true },
@@ -286,6 +291,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     ngOnInit() {
+        this.dataSourceData$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
+            this.dataSource.data = data;
+        });
         const filter$ = this.filter$.pipe(
             map((filter) => filter?.trim?.() ?? ''),
             distinctUntilChanged(),
@@ -300,7 +308,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
             this.filterChange.emit(filter);
         });
-        combineLatest([filter$, toObservable(this.dataSourceData, { injector: this.injector })])
+        combineLatest([filter$, this.dataSourceData$])
             .pipe(
                 map(([f, v]) => {
                     return f ? v.filter((i) => JSON.stringify(i).includes(f)) : v;
@@ -312,7 +320,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 this.updateSortFilter(filtered);
             });
         // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
-        toObservable(this.dataSourceData, { injector: this.injector })
+        this.dataSourceData$
             .pipe(
                 filter((v) => !!v?.length),
                 first(),
