@@ -50,12 +50,11 @@
                         <v-value [value]="col?.header | async" emptySymbol="" inline></v-value>
                     </th>
                     <ng-template let-element let-rowIndex="index" matCellDef>
-                        @let cell = columnsData?.[rowIndex]?.[colIndex];
-                        @let nextCell = columnsData?.[rowIndex + 1]?.[colIndex];
+                        @let cell = columnsData?.get?.(element)?.[colIndex];
                         <td
                             [ngClass]="columnClasses"
                             [ngStyle]="col?.params?.style"
-                            [style.border-bottom]="nextCell?.isChild && !col.child ? 'none' : ''"
+                            [style.border-bottom]="cell?.isNextChild && !col.child ? 'none' : ''"
                             mat-cell
                         >
                             <v-value

@@ -51,7 +51,9 @@ export class ValueComponent {
 
     @Input({ transform: booleanAttribute }) progress = false;
     @Input({ transform: booleanAttribute }) inline = false;
-    @Input({ transform: (v: unknown): string => (typeof v === 'string' ? v : '―') })
+    @Input({
+        transform: (v: unknown): string => (v === false ? '' : typeof v === 'string' ? v : '―'),
+    })
     emptySymbol = '―';
 
     resultingValue$ = of(null);

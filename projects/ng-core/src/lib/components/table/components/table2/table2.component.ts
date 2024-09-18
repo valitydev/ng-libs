@@ -146,7 +146,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
+    columnsData$$: Observable<
+        Map<
+            T | TreeInlineDataItem<T, C>,
+            { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+        >
+    > = combineLatest([
         toObservable(this.isTreeData),
         toObservable(this.treeInlineData),
         toObservable(this.data),
@@ -156,51 +161,64 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             (acc, [isTree, inlineData, data, cols]) => {
                 const isColsNotChanged = acc.cols === cols;
                 return {
-                    res: isTree
-                        ? inlineData.map((d, idx) =>
-                              cols.map((c) => ({
-                                  value: (d.child && c.child
-                                      ? c.child(d.child, idx)
-                                      : d.value
-                                        ? c.cell(d.value, idx)
-                                        : of<Value>({ value: '' })
-                                  ).pipe(
-                                      shareReplay({
-                                          refCount: true,
-                                          bufferSize: 1,
-                                      }),
-                                  ),
-                                  isChild: !d.value,
-                              })),
-                          )
-                        : (data || []).map((d, idx) =>
-                              isColsNotChanged && data[idx] === acc.data[idx]
-                                  ? acc.res[idx]
-                                  : cols.map((c) => ({
-                                        value: c.cell(d, idx).pipe(
-                                            delay(0),
-                                            shareReplay({
-                                                refCount: true,
-                                                bufferSize: 1,
-                                            }),
-                                        ),
-                                    })),
-                          ),
+                    res: new Map<
+                        TreeInlineDataItem<T, C> | T,
+                        { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+                    >(
+                        isTree
+                            ? inlineData.map((d, idx) => [
+                                  d,
+                                  cols.map((c) => ({
+                                      value: (d.child && c.child
+                                          ? c.child(d.child, idx)
+                                          : d.value
+                                            ? c.cell(d.value, idx)
+                                            : of<Value>({ value: '' })
+                                      ).pipe(
+                                          shareReplay({
+                                              refCount: true,
+                                              bufferSize: 1,
+                                          }),
+                                      ),
+                                      isChild: !d.value,
+                                      isNextChild: !inlineData[idx + 1]?.value,
+                                  })),
+                              ])
+                            : (data || []).map((d, idx) => [
+                                  d,
+                                  isColsNotChanged && data[idx] === acc.data[idx]
+                                      ? (acc.res.get(d) as never)
+                                      : cols.map((c) => ({
+                                            value: c.cell(d, idx).pipe(
+                                                delay(0),
+                                                shareReplay({
+                                                    refCount: true,
+                                                    bufferSize: 1,
+                                                }),
+                                            ),
+                                        })),
+                              ]),
+                    ),
                     data: data,
                     cols: cols,
                 };
             },
-            { data: [], cols: [], res: [] } as {
+            { data: [], cols: [], res: new Map() } as {
                 data: T[];
                 cols: NormColumn<T>[];
-                res: { value: Observable<Value>; isChild?: boolean }[][];
+                res: Map<
+                    T | TreeInlineDataItem<T, C>,
+                    { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+                >;
             },
         ),
         map((v) => v.res),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) => combineLatest(d.map((v) => combineLatest(v.map((v) => v.value))))),
+        switchMap((d) =>
+            combineLatest(Array.from(d.values()).map((v) => combineLatest(v.map((v) => v.value)))),
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
