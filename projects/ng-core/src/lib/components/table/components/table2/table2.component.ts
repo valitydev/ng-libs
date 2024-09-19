@@ -142,7 +142,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         toObservable(this.data),
         toObservable(this.isTreeData),
     ]).pipe(
-        map(([treeData, data, isTreeData]) => (isTreeData ? treeData : data)),
+        map(([treeData, data, isTreeData]) => (isTreeData ? treeData : data) ?? []),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
