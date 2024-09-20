@@ -2,9 +2,9 @@
 
 <div class="wrapper">
     <v-table-info-bar
-        [count]="dataSourceData().length"
+        [count]="(dataSourceData$ | async)?.length"
         [filter]="(filter$ | async) ?? ''"
-        [filteredCount]="0"
+        [filteredCount]="count$ | async"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [preloadSize]="maxSize()"
@@ -20,9 +20,9 @@
         <ng-content select="v-table-actions"></ng-content>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
-        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>
+        <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
-        <table [dataSource]="dataSource" mat-table>
+        <table #matTable [dataSource]="dataSource" mat-table matSort>
             @if (rowSelectable()) {
                 <v-select-column
                     [data]="data()"
@@ -47,15 +47,14 @@
                     [stickyEnd]="stickyEnd"
                 >
                     <th *matHeaderCellDef [ngClass]="columnClasses" mat-header-cell>
-                        <v-value [value]="col?.header | async" inline></v-value>
+                        <v-value [value]="col?.header | async" emptySymbol="" inline></v-value>
                     </th>
                     <ng-template let-element let-rowIndex="index" matCellDef>
-                        @let cell = columnsData?.[rowIndex]?.[colIndex];
-                        @let nextCell = columnsData?.[rowIndex + 1]?.[colIndex];
+                        @let cell = columnsData?.get?.(element)?.[colIndex];
                         <td
                             [ngClass]="columnClasses"
                             [ngStyle]="col?.params?.style"
-                            [style.border-bottom]="nextCell?.isChild && !col.child ? 'none' : ''"
+                            [style.border-bottom]="cell?.isNextChild && !col.child ? 'none' : ''"
                             mat-cell
                         >
                             <v-value
@@ -66,7 +65,7 @@
                         </td>
                     </ng-template>
                     <td *matFooterCellDef [ngClass]="columnClasses" mat-footer-cell>
-                        <v-value [progress]="true" inline></v-value>
+                        <v-content-loading></v-content-loading>
                     </td>
                 </ng-container>
             }
@@ -74,8 +73,8 @@
             <tr *matHeaderRowDef="displayedColumns$ | async; sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
             <tr
-                *matFooterRowDef="(hasShowMore$ | async) ? (displayedColumns$ | async) : []"
-                [ngClass]="{ row__hidden: !(hasShowMore$ | async) }"
+                *matFooterRowDef="(hasAutoShowMore$ | async) ? (displayedColumns$ | async) : []"
+                [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) }"
                 [vInfinityScrollProgress]="progress()"
                 mat-row
                 vInfinityScroll

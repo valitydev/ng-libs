@@ -11,16 +11,17 @@ import {
     signal,
     output,
     Injector,
-    viewChild,
     ElementRef,
     runInInjectionContext,
     OnInit,
+    ViewChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatTableModule, MatTable } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
     combineLatest,
@@ -31,13 +32,19 @@ import {
     of,
     BehaviorSubject,
     debounceTime,
+    scan,
+    share,
+    first,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, startWith } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, startWith, delay, filter } from 'rxjs/operators';
 
 import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
+import { ProgressModule } from '../../../progress';
 import { Value, ValueComponent, ValueListComponent } from '../../../value';
+import { sortDataByDefault } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
+import { cachedHeadMap } from '../../utils/cached-head-map';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -84,6 +91,8 @@ export const TABLE_WRAPPER_STYLE = `
         InfinityScrollDirective,
         ValueListComponent,
         SelectColumnComponent,
+        ProgressModule,
+        MatSortModule,
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
@@ -101,6 +110,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     filterChange = output<string>();
     externalFilter = input(false, { transform: booleanAttribute });
     filter$ = new BehaviorSubject<string>('');
+    filteredData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
@@ -108,22 +118,33 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     rowSelectedChange = output<T[]>();
     selected = signal<T[]>([]);
 
+    // Sort
+    @ViewChild(MatSort) sortComponent!: MatSort;
+
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
     isTreeData = computed(() => !!this.treeData());
-    treeInlineData = computed<TreeInlineData<T, C>>(() =>
-        this.isTreeData()
-            ? (this.treeData() ?? []).flatMap((d) => {
-                  const children = d.children ?? [];
-                  return [
-                      children.length ? { value: d.value, child: children[0] } : { value: d.value },
-                      ...children.slice(1).map((child) => ({ child })),
-                  ];
-              })
-            : [],
+    treeInlineData$: Observable<TreeInlineData<T, C>> = toObservable(this.treeData).pipe(
+        cachedHeadMap((d) => {
+            const children = d.children ?? [];
+            return [
+                children.length ? { value: d.value, child: children[0] } : { value: d.value },
+                ...children.slice(1).map((child) => ({ child })),
+            ];
+        }),
+        map((v) => v.flat()),
+        shareReplay({ refCount: true, bufferSize: 1 }),
     );
     dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
+    dataSourceData$: Observable<T[] | TreeInlineData<T, C>> = combineLatest([
+        this.treeInlineData$,
+        toObservable(this.data),
+        toObservable(this.isTreeData),
+    ]).pipe(
+        map(([treeData, data, isTreeData]) => (isTreeData ? treeData : data) ?? []),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
@@ -133,58 +154,104 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    columnsData$$: Observable<{ value: Observable<Value>; isChild?: boolean }[][]> = combineLatest([
+    columnsData$$: Observable<
+        Map<
+            T | TreeInlineDataItem<T, C>,
+            { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+        >
+    > = combineLatest([
         toObservable(this.isTreeData),
-        toObservable(this.treeInlineData),
-        toObservable(this.data),
+        this.dataSourceData$,
         this.displayedNormColumns$,
     ]).pipe(
-        map(([isTree, inlineData, data, cols]) => {
-            if (isTree) {
-                return inlineData.map((d, idx) =>
-                    cols.map((c) => ({
-                        value: (d.child && c.child
-                            ? c.child(d.child, idx)
-                            : d.value
-                              ? c.cell(d.value, idx)
-                              : of<Value>({ value: '' })
-                        ).pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                        isChild: !d.value,
-                    })),
-                );
-            }
-            return (data || []).map((d, idx) =>
-                cols.map((c) => ({
-                    value: c
-                        .cell(d, idx)
-                        .pipe(shareReplay({ refCount: true, bufferSize: 1, windowTime: 30_000 })),
-                })),
-            );
-        }),
+        scan(
+            (acc, [isTree, data, cols]) => {
+                const isColsNotChanged = acc.cols === cols;
+                return {
+                    res: new Map<
+                        TreeInlineDataItem<T, C> | T,
+                        { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+                    >(
+                        isTree
+                            ? (data as TreeInlineData<T, C>).map((d, idx) => [
+                                  d,
+                                  isColsNotChanged &&
+                                  d === acc.data[idx] &&
+                                  // This is not the last value, because we need to calculate isNextChild
+                                  idx !== acc.data.length - 1
+                                      ? (acc.res.get(d) as never)
+                                      : cols.map((c) => ({
+                                            value: (d.child && c.child
+                                                ? c.child(d.child, idx)
+                                                : d.value
+                                                  ? c.cell(d.value, idx)
+                                                  : of<Value>({ value: '' })
+                                            ).pipe(
+                                                shareReplay({
+                                                    refCount: true,
+                                                    bufferSize: 1,
+                                                }),
+                                            ),
+                                            isChild: !d.value,
+                                            isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
+                                                ?.value,
+                                        })),
+                              ])
+                            : ((data as T[]) || []).map((d, idx) => [
+                                  d,
+                                  isColsNotChanged && d === acc.data[idx]
+                                      ? (acc.res.get(d) as never)
+                                      : cols.map((c) => ({
+                                            value: c.cell(d, idx).pipe(
+                                                shareReplay({
+                                                    refCount: true,
+                                                    bufferSize: 1,
+                                                }),
+                                            ),
+                                        })),
+                              ]),
+                    ),
+                    data: data,
+                    cols: cols,
+                };
+            },
+            { data: [], cols: [], res: new Map() } as {
+                data: T[] | TreeInlineData<T, C>;
+                cols: NormColumn<T>[];
+                res: Map<
+                    T | TreeInlineDataItem<T, C>,
+                    { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
+                >;
+            },
+        ),
+        map((v) => v.res),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) => combineLatest(d.map((v) => combineLatest(v.map((v) => v.value))))),
+        switchMap((d) =>
+            combineLatest(Array.from(d.values()).map((v) => combineLatest(v.map((v) => v.value)))),
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = this.columnsData$$.pipe(
-        map((d) => d?.length),
+    count$ = combineLatest([this.filter$, this.filteredData$, this.dataSourceData$]).pipe(
+        map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    dataSourceData = computed<T[] | TreeInlineData<T, C>>(() =>
-        this.isTreeData() ? this.treeInlineData() : this.data(),
-    );
-    hasShowMore$ = combineLatest([
+    hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        toObservable(this.dataSourceData),
+        this.dataSourceData$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
+        this.filteredData$,
     ]).pipe(
-        map(([hasMore, data, pageSize]) => hasMore || pageSize < data.length),
+        map(
+            ([hasMore, data, pageSize, filteredData]) =>
+                (hasMore || pageSize < data.length) && filteredData === data,
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -199,7 +266,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     columnDefs = COLUMN_DEFS;
 
-    scrollViewport = viewChild('scrollViewport', { read: ElementRef });
+    @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
+    @ViewChild('matTable', { static: false }) table!: MatTable<T>;
 
     constructor(
         private dr: DestroyRef,
@@ -207,34 +275,51 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     ) {
         effect(
             () => {
-                this.dataSource.data = this.dataSourceData();
-            },
-            {
-                // TODO: not a necessary line, but after adding viewChild signal requires
-                allowSignalWrites: true,
-            },
-        );
-        effect(
-            () => {
                 this.selected.set(this.rowSelected());
             },
             { allowSignalWrites: true },
         );
-        effect(() => {
-            this.filter$.next(this.filter());
-        });
     }
 
     ngOnInit() {
-        this.filter$
+        this.dataSourceData$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
+            this.dataSource.data = data;
+        });
+        const filter$ = this.filter$.pipe(
+            map((filter) => filter?.trim?.() ?? ''),
+            distinctUntilChanged(),
+            debounceTime(500),
+            share(),
+        );
+        toObservable(this.filter, { injector: this.injector })
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe((filter) => {
+                this.filter$.next(filter);
+            });
+        filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
+            this.filterChange.emit(filter);
+        });
+        combineLatest([filter$, this.dataSourceData$])
             .pipe(
-                map((filter) => filter?.trim?.() ?? ''),
-                distinctUntilChanged(),
-                debounceTime(500),
+                map(([f, v]) => {
+                    return f ? v.filter((i) => JSON.stringify(i).toLowerCase().includes(f)) : v;
+                }),
                 takeUntilDestroyed(this.dr),
             )
-            .subscribe((filter) => {
-                this.filterChange.emit(filter);
+            .subscribe((filtered) => {
+                this.filteredData$.next(filtered);
+                this.updateSortFilter(filtered);
+            });
+        // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
+        this.dataSourceData$
+            .pipe(
+                filter((v) => !!v?.length),
+                first(),
+                delay(100),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe(() => {
+                this.table.updateStickyColumnStyles();
             });
     }
 
@@ -286,8 +371,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private reload() {
-        this.scrollViewport()?.nativeElement?.scrollTo?.(0, 0);
+        this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
         this.dataSource.paginator.reload();
+    }
+
+    private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
+        this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
+        this.dataSource.sort = this.sortComponent;
     }
 }

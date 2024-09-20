@@ -19,7 +19,7 @@ export class UrlService {
     );
 
     get url() {
-        return this.router.url
+        return this.router.url && this.router.url !== '/'
             ? this.router.url.split('?', 1)[0].split('#', 1)[0]
             : window.location.pathname;
     }
