@@ -1,9 +1,21 @@
+function isNumber(a: unknown): boolean {
+    return typeof a === 'number' || /^\d+$/.test(String(a));
+}
+
 /**
  * Use with sorting (arr.sort(fn))
  */
 export function compareDifferentTypes<T>(a: T, b: T): number {
-    return (typeof a === 'number' || /^\d+$/.test(String(a))) &&
-        (typeof b === 'number' || /^\d+$/.test(String(a)))
-        ? Number(a) - Number(b)
-        : String(a).trim().localeCompare(String(b));
+    const aIsNum = isNumber(a);
+    const bIsNum = isNumber(b);
+    if (aIsNum || bIsNum) {
+        if (aIsNum && bIsNum) {
+            return Number(a) - Number(b);
+        } else if (aIsNum) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+    return String(a).localeCompare(String(b));
 }
