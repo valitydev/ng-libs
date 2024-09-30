@@ -250,7 +250,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        toObservable(this.filter),
         this.dataSourceData$,
         this.filteredData$,
         this.dataSource.paginator.page.pipe(
@@ -259,10 +258,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
     ]).pipe(
         map(
-            ([hasMore, filter, data, filteredData, size]) =>
-                hasMore &&
-                !filter &&
-                (filteredData.length === data.length || filteredData.length > size),
+            ([hasMore, data, filteredData, size]) =>
+                (hasMore && filteredData.length === data.length) || filteredData.length > size,
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
