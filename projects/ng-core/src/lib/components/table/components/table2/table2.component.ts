@@ -110,6 +110,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
+    noDownload = input(false, { transform: booleanAttribute });
 
     // Filter
     filter = input('', { transform: (v: string | null | undefined) => (v || '').trim() });
@@ -331,9 +332,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                     ),
                 ),
             ),
+            toObservable(this.isTreeData, { injector: this.injector }),
         ])
             .pipe(
-                map(([search, sort, source, data]) => {
+                map(([search, sort, source, data, isTreeData]) => {
+                    if (isTreeData) {
+                        return source;
+                    }
                     let displayedData: T[] | TreeInlineData<T, C>;
                     if (search) {
                         const lowerCaseSearch = search.toLowerCase();
