@@ -11,18 +11,27 @@
         [progress]="progress()"
         [selectedCount]="selected()?.length"
         [size]="size()"
-        [standaloneFilter]="externalFilter()"
+        [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
         (filterChange)="filter$.next($event)"
         (load)="load()"
         (preload)="preload()"
     >
         <ng-content select="v-table-actions"></ng-content>
+        <v-table-inputs><ng-content select="v-table-inputs"></ng-content></v-table-inputs>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
         <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
-        <table #matTable [dataSource]="dataSource" mat-table matSort>
+        <table
+            #matTable
+            [dataSource]="dataSource"
+            [matSortActive]="sort().active"
+            [matSortDirection]="sort().direction"
+            mat-table
+            matSort
+            (matSortChange)="this.sortChange.emit($event)"
+        >
             @if (rowSelectable()) {
                 <v-select-column
                     [data]="data()"
@@ -46,9 +55,16 @@
                     [sticky]="stickyStart"
                     [stickyEnd]="stickyEnd"
                 >
-                    <th *matHeaderCellDef [ngClass]="columnClasses" mat-header-cell>
+                    <th
+                        *matHeaderCellDef
+                        [disabled]="!(col.sort | async)"
+                        [mat-sort-header]="col.field"
+                        [ngClass]="columnClasses"
+                        mat-header-cell
+                    >
                         <v-value [value]="col?.header | async" emptySymbol="" inline></v-value>
                     </th>
+
                     <ng-template let-element let-rowIndex="index" matCellDef>
                         @let cell = columnsData?.get?.(element)?.[colIndex];
                         <td

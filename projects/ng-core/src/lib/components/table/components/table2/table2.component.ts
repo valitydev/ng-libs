@@ -17,10 +17,10 @@ import {
     ViewChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatIconButton } from '@angular/material/button';
+import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule, MatTable } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
@@ -36,15 +36,17 @@ import {
     share,
     first,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, startWith, delay, filter } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, delay, filter } from 'rxjs/operators';
 
-import { downloadFile, createCsv } from '../../../../utils';
+import { downloadFile, createCsv, compareDifferentTypes } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { Value, ValueComponent, ValueListComponent } from '../../../value';
-import { sortDataByDefault } from '../../consts';
+import { valueToString } from '../../../value/utils/value-to-string';
+import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { cachedHeadMap } from '../../utils/cached-head-map';
+import { modelToSubject } from '../../utils/model-to-subject';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -52,6 +54,7 @@ import { NoRecordsComponent } from '../no-records.component';
 import { SelectColumnComponent } from '../select-column.component';
 import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
 import { TableInfoBarComponent } from '../table-info-bar/table-info-bar.component';
+import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
@@ -93,6 +96,8 @@ export const TABLE_WRAPPER_STYLE = `
         SelectColumnComponent,
         ProgressModule,
         MatSortModule,
+        TableInputsComponent,
+        MatButton,
     ],
     host: { style: TABLE_WRAPPER_STYLE },
 })
@@ -108,7 +113,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     // Filter
     filter = input<string>('');
     filterChange = output<string>();
-    externalFilter = input(false, { transform: booleanAttribute });
+    standaloneFilter = input(false, { transform: booleanAttribute });
     filter$ = new BehaviorSubject<string>('');
     filteredData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
@@ -119,6 +124,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     selected = signal<T[]>([]);
 
     // Sort
+    sort = input<Sort>(DEFAULT_SORT);
+    sortChange = output<Sort>();
+    sort$ = modelToSubject(this.sort, this.sortChange);
     @ViewChild(MatSort) sortComponent!: MatSort;
 
     update = output<UpdateOptions>();
@@ -241,16 +249,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
+        toObservable(this.filter),
         this.dataSourceData$,
-        this.dataSource.paginator.page.pipe(
-            startWith(null),
-            map(() => this.dataSource.paginator.pageSize),
-        ),
         this.filteredData$,
     ]).pipe(
         map(
-            ([hasMore, data, pageSize, filteredData]) =>
-                (hasMore || pageSize < data.length) && filteredData === data,
+            ([hasMore, filter, data, filteredData]) =>
+                hasMore && !filter && filteredData.length === data.length,
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -299,15 +304,64 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
             this.filterChange.emit(filter);
         });
-        combineLatest([filter$, this.dataSourceData$])
+        combineLatest([
+            filter$.pipe(map((v) => v.toLowerCase())),
+            this.sort$,
+            this.dataSourceData$,
+            this.columnsData$$.pipe(
+                switchMap((d) =>
+                    combineLatest(
+                        Array.from(d.values()).map((v) => combineLatest(v.map((i) => i.value))),
+                    ).pipe(
+                        map(
+                            (r) =>
+                                new Map(
+                                    Array.from(d.keys()).map((k, idx) => [
+                                        k,
+                                        r[idx].map((c) => ({
+                                            strValue: runInInjectionContext(this.injector, () =>
+                                                valueToString(c),
+                                            ),
+                                            description: String(c?.description ?? ''),
+                                            value: c,
+                                        })),
+                                    ]),
+                                ),
+                        ),
+                    ),
+                ),
+            ),
+        ])
             .pipe(
-                map(([f, v]) => {
-                    return f ? v.filter((i) => JSON.stringify(i).toLowerCase().includes(f)) : v;
+                map(([filter, sort, source, data]) => {
+                    const filtered = filter
+                        ? source.filter(
+                              (el) =>
+                                  (data.get(el) ?? []).some(
+                                      (v) =>
+                                          v.strValue.toLowerCase().includes(filter) ||
+                                          v.description.toLowerCase().includes(filter),
+                                  ) || JSON.stringify(el).toLowerCase().includes(filter),
+                          )
+                        : source.slice();
+                    if (!sort.active) {
+                        return filtered;
+                    }
+                    const colIdx = this.columns().findIndex((c) => c.field === sort.active);
+                    const sorted = filtered.sort((a, b) =>
+                        compareDifferentTypes(
+                            (data.get(a) ?? [])[colIdx]?.strValue,
+                            (data.get(b) ?? [])[colIdx]?.strValue,
+                        ),
+                    );
+                    if (sort.direction === 'desc') {
+                        return sorted.reverse();
+                    }
+                    return sorted;
                 }),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
-                this.filteredData$.next(filtered);
                 this.updateSortFilter(filtered);
             });
         // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
@@ -377,7 +431,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
+        this.filteredData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;
+        this.dataSource.paginator.reload();
     }
 }
