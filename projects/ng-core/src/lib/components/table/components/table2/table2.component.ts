@@ -35,8 +35,9 @@ import {
     scan,
     share,
     first,
+    merge,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, delay, filter } from 'rxjs/operators';
+import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
 import { downloadFile, createCsv, compareDifferentTypes } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
@@ -252,10 +253,16 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         toObservable(this.filter),
         this.dataSourceData$,
         this.filteredData$,
+        this.dataSource.paginator.page.pipe(
+            startWith(null),
+            map(() => this.dataSource.paginator.pageSize),
+        ),
     ]).pipe(
         map(
-            ([hasMore, filter, data, filteredData]) =>
-                hasMore && !filter && filteredData.length === data.length,
+            ([hasMore, filter, data, filteredData, size]) =>
+                hasMore &&
+                !filter &&
+                (filteredData.length === data.length || filteredData.length > size),
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -364,6 +371,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
             });
+        merge(filter$, this.sort$)
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe(() => {
+                this.reset();
+            });
         // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
         this.dataSourceData$
             .pipe(
@@ -425,15 +437,18 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private reload() {
-        this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.update.emit({ size: this.loadSize() });
-        this.dataSource.paginator.reload();
+        this.reset();
     }
 
     private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
         this.filteredData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;
+    }
+
+    private reset() {
+        this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.dataSource.paginator.reload();
     }
 }
