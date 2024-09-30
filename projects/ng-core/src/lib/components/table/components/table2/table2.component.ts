@@ -302,7 +302,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             this.filterChange.emit(filter);
         });
         combineLatest([
-            filter$.pipe(map((v) => v.toLowerCase())),
+            filter$,
             this.sort$,
             this.dataSourceData$,
             this.columnsData$$.pipe(
@@ -336,27 +336,30 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 map(([search, sort, source, data]) => {
                     let displayedData: T[] | TreeInlineData<T, C>;
                     if (search) {
+                        const lowerCaseSearch = search.toLowerCase();
                         displayedData = source
                             .map((value) => ({
                                 value,
                                 priority: (data.get(value) ?? []).reduce((sum, v) => {
                                     if (v.strValue === search) {
-                                        sum += 1000;
+                                        sum += 3000;
                                     } else if (v.strValue.includes(search)) {
-                                        sum += 100;
-                                    } else if (v.strValue.toLowerCase().includes(search)) {
-                                        sum += 1;
+                                        sum += 300;
+                                    } else if (v.strValue.toLowerCase().includes(lowerCaseSearch)) {
+                                        sum += 3;
                                     }
                                     if (v.description === search) {
-                                        sum += 1000;
+                                        sum += 2000;
                                     } else if (v.description.includes(search)) {
-                                        sum += 100;
-                                    } else if (v.description.toLowerCase().includes(search)) {
-                                        sum += 1;
+                                        sum += 200;
+                                    } else if (
+                                        v.description.toLowerCase().includes(lowerCaseSearch)
+                                    ) {
+                                        sum += 2;
                                     }
                                     if (v.json.includes(search)) {
                                         sum += 10;
-                                    } else if (v.json.toLowerCase().includes(search)) {
+                                    } else if (v.json.toLowerCase().includes(lowerCaseSearch)) {
                                         sum += 1;
                                     }
                                     return sum;
