@@ -75,6 +75,7 @@
                         >
                             <v-value
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
+                                [highlight]="filter$ | async"
                                 [value]="cell?.value | async"
                                 inline
                             ></v-value>

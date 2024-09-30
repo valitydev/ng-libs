@@ -111,10 +111,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     maxSize = input(1000, { transform: numberAttribute });
 
     // Filter
-    filter = input<string>('');
+    filter = input('', { transform: (v: string | null | undefined) => (v || '').trim() });
     filterChange = output<string>();
+    filter$ = modelToSubject(this.filter, this.filterChange);
     standaloneFilter = input(false, { transform: booleanAttribute });
-    filter$ = new BehaviorSubject<string>('');
     displayedData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
     // Select
