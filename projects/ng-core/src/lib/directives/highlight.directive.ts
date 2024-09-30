@@ -11,6 +11,8 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
 import { map, distinctUntilChanged } from 'rxjs/operators';
 
+import { SPACES } from '../components/table/utils/normalize-string';
+
 @Directive({
     standalone: true,
     selector: '[vHighlight]',
@@ -40,7 +42,7 @@ export class HighlightDirective implements OnInit {
                     if (!search) {
                         return text;
                     }
-                    const re = new RegExp(`(${search})`, 'gi');
+                    const re = new RegExp(`(${search.replace(SPACES, '\\s')})`, 'gi');
                     return text.replace(re, `<mark>$1</mark>`);
                 }),
                 distinctUntilChanged(),

@@ -47,6 +47,7 @@ import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { cachedHeadMap } from '../../utils/cached-head-map';
 import { modelToSubject } from '../../utils/model-to-subject';
+import { normalizeString } from '../../utils/normalize-string';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -316,9 +317,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                         k,
                                         r[idx].map((c) => ({
                                             strValue: runInInjectionContext(this.injector, () =>
-                                                valueToString(c),
+                                                normalizeString(valueToString(c)),
                                             ),
-                                            description: String(c?.description ?? ''),
+                                            description: normalizeString(
+                                                String(c?.description ?? ''),
+                                            ),
                                             value: c,
                                             json: JSON.stringify(c),
                                         })),
@@ -330,30 +333,30 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             ),
         ])
             .pipe(
-                map(([filter, sort, source, data]) => {
+                map(([search, sort, source, data]) => {
                     let displayedData: T[] | TreeInlineData<T, C>;
-                    if (filter) {
+                    if (search) {
                         displayedData = source
                             .map((value) => ({
                                 value,
                                 priority: (data.get(value) ?? []).reduce((sum, v) => {
-                                    if (v.strValue === filter) {
+                                    if (v.strValue === search) {
                                         sum += 1000;
-                                    } else if (v.strValue.includes(filter)) {
+                                    } else if (v.strValue.includes(search)) {
                                         sum += 100;
-                                    } else if (v.strValue.toLowerCase().includes(filter)) {
+                                    } else if (v.strValue.toLowerCase().includes(search)) {
                                         sum += 1;
                                     }
-                                    if (v.description === filter) {
+                                    if (v.description === search) {
                                         sum += 1000;
-                                    } else if (v.description.includes(filter)) {
+                                    } else if (v.description.includes(search)) {
                                         sum += 100;
-                                    } else if (v.description.toLowerCase().includes(filter)) {
+                                    } else if (v.description.toLowerCase().includes(search)) {
                                         sum += 1;
                                     }
-                                    if (v.json.includes(filter)) {
+                                    if (v.json.includes(search)) {
                                         sum += 10;
-                                    } else if (v.json.toLowerCase().includes(filter)) {
+                                    } else if (v.json.toLowerCase().includes(search)) {
                                         sum += 1;
                                     }
                                     return sum;
