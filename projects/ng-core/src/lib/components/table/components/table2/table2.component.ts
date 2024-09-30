@@ -3,7 +3,6 @@ import {
     ChangeDetectionStrategy,
     Component,
     input,
-    effect,
     computed,
     DestroyRef,
     booleanAttribute,
@@ -116,13 +115,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     filterChange = output<string>();
     standaloneFilter = input(false, { transform: booleanAttribute });
     filter$ = new BehaviorSubject<string>('');
-    filteredData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
+    displayedData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
-    rowSelected = input<T[]>([]);
-    rowSelectedChange = output<T[]>();
-    selected = signal<T[]>([]);
+    rowSelected = input<T[] | TreeInlineData<T, C>>([]);
+    rowSelectedChange = output<T[] | TreeInlineData<T, C>>();
+    selected$ = modelToSubject(this.rowSelected, this.rowSelectedChange);
 
     // Sort
     sort = input<Sort>(DEFAULT_SORT);
@@ -244,14 +243,14 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([this.filter$, this.filteredData$, this.dataSourceData$]).pipe(
+    count$ = combineLatest([this.filter$, this.displayedData$, this.dataSourceData$]).pipe(
         map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
         this.dataSourceData$,
-        this.filteredData$,
+        this.displayedData$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
@@ -281,14 +280,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
-    ) {
-        effect(
-            () => {
-                this.selected.set(this.rowSelected());
-            },
-            { allowSignalWrites: true },
-        );
-    }
+    ) {}
 
     ngOnInit() {
         this.dataSourceData$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
@@ -404,12 +396,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     showMore() {
         this.dataSource.paginator.more();
-        // TODO: refresh table when scrolling and data is already loaded
-        // eslint-disable-next-line no-self-assign
-        this.dataSource.data = this.dataSource.data;
         if (this.hasMore() && this.dataSource.paginator.pageSize > this.dataSource.data.length) {
             this.more.emit({ size: this.loadSize() });
         }
+        this.refreshTable();
     }
 
     downloadCsv() {
@@ -439,7 +429,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
-        this.filteredData$.next(filtered);
+        this.displayedData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;
     }
@@ -447,5 +437,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     private reset() {
         this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
         this.dataSource.paginator.reload();
+        this.refreshTable();
+    }
+
+    // TODO: Refresh table when pagination is updated
+    private refreshTable() {
+        // eslint-disable-next-line no-self-assign
+        this.dataSource.data = this.dataSource.data;
     }
 }

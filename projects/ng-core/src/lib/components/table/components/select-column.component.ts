@@ -62,7 +62,7 @@ import { BaseColumnComponent } from './base-column.component';
         }
     `,
 })
-export class SelectColumnComponent<T extends object>
+export class SelectColumnComponent<T>
     extends BaseColumnComponent
     implements OnInit, OnDestroy, OnChanges
 {
@@ -71,7 +71,10 @@ export class SelectColumnComponent<T extends object>
 
     data = input<T[]>([]);
     progress = input<boolean | number | null | undefined>(false);
-    filtered = input<boolean, unknown>(false, { transform: booleanAttribute }); // TODO: remove
+    /**
+     * @deprecated
+     */
+    filtered = input<boolean, unknown>(false, { transform: booleanAttribute });
 
     selection = new SelectionModel<T>(true, []);
     isAllSelected$ = combineLatest([

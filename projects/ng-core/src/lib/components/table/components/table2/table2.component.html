@@ -9,7 +9,7 @@
         [isPreload]="isPreload()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
-        [selectedCount]="selected()?.length"
+        [selectedCount]="(selected$ | async)?.length"
         [size]="size()"
         [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
@@ -34,11 +34,11 @@
         >
             @if (rowSelectable()) {
                 <v-select-column
-                    [data]="data()"
+                    [data]="$any(displayedData$ | async) ?? []"
                     [name]="columnDefs.select"
                     [progress]="progress()"
-                    [selected]="selected()"
-                    (selectedChange)="rowSelectedChange.emit($event); selected.set($event)"
+                    [selected]="$any(selected$ | async) ?? []"
+                    (selectedChange)="rowSelectedChange.emit($event)"
                 ></v-select-column>
             }
             @for (col of displayedNormColumns$ | async; track col; let colIndex = $index) {
