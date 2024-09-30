@@ -320,6 +320,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                                             ),
                                             description: String(c?.description ?? ''),
                                             value: c,
+                                            json: JSON.stringify(c),
                                         })),
                                     ]),
                                 ),
@@ -330,21 +331,45 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ])
             .pipe(
                 map(([filter, sort, source, data]) => {
-                    const filtered = filter
-                        ? source.filter(
-                              (el) =>
-                                  (data.get(el) ?? []).some(
-                                      (v) =>
-                                          v.strValue.toLowerCase().includes(filter) ||
-                                          v.description.toLowerCase().includes(filter),
-                                  ) || JSON.stringify(el).toLowerCase().includes(filter),
-                          )
-                        : source.slice();
+                    let displayedData: T[] | TreeInlineData<T, C>;
+                    if (filter) {
+                        displayedData = source
+                            .map((value) => ({
+                                value,
+                                priority: (data.get(value) ?? []).reduce((sum, v) => {
+                                    if (v.strValue === filter) {
+                                        sum += 1000;
+                                    } else if (v.strValue.includes(filter)) {
+                                        sum += 100;
+                                    } else if (v.strValue.toLowerCase().includes(filter)) {
+                                        sum += 1;
+                                    }
+                                    if (v.description === filter) {
+                                        sum += 1000;
+                                    } else if (v.description.includes(filter)) {
+                                        sum += 100;
+                                    } else if (v.description.toLowerCase().includes(filter)) {
+                                        sum += 1;
+                                    }
+                                    if (v.json.includes(filter)) {
+                                        sum += 10;
+                                    } else if (v.json.toLowerCase().includes(filter)) {
+                                        sum += 1;
+                                    }
+                                    return sum;
+                                }, 0),
+                            }))
+                            .filter((v) => v.priority)
+                            .sort((a, b) => b.priority - a.priority)
+                            .map(({ value }) => value);
+                    } else {
+                        displayedData = source.slice();
+                    }
                     if (!sort.active) {
-                        return filtered;
+                        return displayedData;
                     }
                     const colIdx = this.columns().findIndex((c) => c.field === sort.active);
-                    const sorted = filtered.sort((a, b) =>
+                    const sorted = displayedData.sort((a, b) =>
                         compareDifferentTypes(
                             (data.get(a) ?? [])[colIdx]?.strValue,
                             (data.get(b) ?? [])[colIdx]?.strValue,
@@ -360,6 +385,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
             });
+        filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
+            this.sortChange.emit(DEFAULT_SORT);
+        });
         merge(filter$, this.sort$)
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
