@@ -1,32 +1,85 @@
+import { runInInjectionContext, Injector, inject } from '@angular/core';
 import { Sort } from '@angular/material/sort';
+import { combineLatest, switchMap, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { compareDifferentTypes } from '../../../../../utils';
+import { valueToString } from '../../../../value/utils/value-to-string';
 import { NormColumn } from '../../../types';
+import { normalizeString } from '../../../utils/normalize-string';
 
-import { DisplayedData, DisplayedDataItem } from './to-columns-data';
+import { DisplayedData, DisplayedDataItem, ColumnData } from './to-columns-data';
+
+export type FilterSearchData<T extends object, C extends object> = Map<
+    DisplayedDataItem<T, C>,
+    { byColumns: string[][]; byRow: string }
+>;
+
+export function columnsDataToFilterSearchData<T extends object, C extends object>(
+    src$: Observable<Map<DisplayedDataItem<T, C>, ColumnData>>,
+) {
+    const injector = inject(Injector);
+    return src$.pipe(
+        switchMap((data) =>
+            combineLatest(
+                Array.from(data.values()).map((v) => combineLatest(v.map((i) => i.value))),
+            ).pipe(
+                map(
+                    (rowData) =>
+                        new Map(
+                            Array.from(data.keys()).map((item, idx) => [
+                                item,
+                                {
+                                    byColumns: rowData[idx].map((el) => [
+                                        runInInjectionContext(injector, () =>
+                                            normalizeString(valueToString(el)),
+                                        ),
+                                        normalizeString(String(el?.description ?? '')),
+                                    ]),
+                                    byRow: JSON.stringify(item),
+                                },
+                            ]),
+                        ),
+                ),
+            ),
+        ),
+    );
+}
+
+function getWeight(
+    searchValue: string,
+    search: string,
+    lowerCaseSearch: string,
+    unimportance: number = 0,
+) {
+    if (searchValue === search) {
+        return 1000000 - unimportance;
+    } else if (searchValue.includes(search)) {
+        return 10000 - unimportance;
+    } else if (searchValue.toLowerCase().includes(lowerCaseSearch)) {
+        return 100 - unimportance;
+    }
+    return 0;
+}
 
 function filterData<T extends object, C extends object>(
-    data: Map<DisplayedDataItem<T, C>, string[][]>,
+    data: FilterSearchData<T, C>,
     search: string,
 ) {
     const lowerCaseSearch = search.toLowerCase();
     return Array.from(data.entries())
         .map(([value, searchValuesCols]) => ({
             value,
-            priority: searchValuesCols.reduce(
-                (priority, searchValues) =>
-                    searchValues.reduce((colPriority, searchValue, idx) => {
-                        if (searchValue === search) {
-                            colPriority += 1_000_000 - idx;
-                        } else if (searchValue.includes(search)) {
-                            colPriority += 1_000 - idx;
-                        } else if (searchValue.toLowerCase().includes(lowerCaseSearch)) {
-                            colPriority += 1 - idx;
-                        }
-                        return colPriority;
-                    }, priority),
-                0,
-            ),
+            priority:
+                searchValuesCols.byColumns.reduce(
+                    (priority, searchValues) =>
+                        searchValues.reduce(
+                            (colPriority, searchValue, idx) =>
+                                colPriority + getWeight(searchValue, search, lowerCaseSearch, idx),
+                            priority,
+                        ),
+                    0,
+                ) + getWeight(searchValuesCols.byRow, search, lowerCaseSearch, 1),
         }))
         .filter((v) => v.priority)
         .sort((a, b) => b.priority - a.priority)
@@ -35,7 +88,7 @@ function filterData<T extends object, C extends object>(
 
 function sortData<T extends object, C extends object>(
     source: DisplayedData<T, C>,
-    data: Map<DisplayedDataItem<T, C>, string[][]>,
+    data: FilterSearchData<T, C>,
     columns: NormColumn<T, C>[],
     sort: Sort,
 ) {
@@ -44,7 +97,10 @@ function sortData<T extends object, C extends object>(
     }
     const colIdx = columns.findIndex((c) => c.field === sort.active);
     const sortedData = source.sort((a, b) =>
-        compareDifferentTypes((data.get(a) ?? [])[colIdx][0], (data.get(b) ?? [])[colIdx][0]),
+        compareDifferentTypes(
+            (data.get(a)?.byColumns ?? [])[colIdx][0],
+            (data.get(b)?.byColumns ?? [])[colIdx][0],
+        ),
     );
     return sort.direction === 'desc' ? sortedData.reverse() : sortedData;
 }
@@ -60,7 +116,7 @@ export function filterSearch<T extends object, C extends object>({
     search: string;
     sort: Sort;
     source: DisplayedData<T, C>;
-    data: Map<DisplayedDataItem<T, C>, string[][]>;
+    data: FilterSearchData<T, C>;
     isTreeData: boolean;
     columns: NormColumn<T, C>[];
 }) {

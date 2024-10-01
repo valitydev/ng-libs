@@ -40,12 +40,10 @@ import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
-import { valueToString } from '../../../value/utils/value-to-string';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
 import { cachedHeadMap } from '../../utils/cached-head-map';
 import { modelToSubject } from '../../utils/model-to-subject';
-import { normalizeString } from '../../utils/normalize-string';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -57,7 +55,7 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
-import { filterSearch } from './utils/filter-search';
+import { filterSearch, columnsDataToFilterSearchData } from './utils/filter-search';
 import { toColumnsData } from './utils/to-columns-data';
 
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
@@ -238,28 +236,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             filter$,
             this.sort$,
             this.dataSourceData$,
-            this.columnsData$$.pipe(
-                switchMap((d) =>
-                    combineLatest(
-                        Array.from(d.values()).map((v) => combineLatest(v.map((i) => i.value))),
-                    ).pipe(
-                        map(
-                            (r) =>
-                                // TODO: add search by JSON.stringify(sourceValue)
-                                new Map(
-                                    Array.from(d.keys()).map((k, idx) => [
-                                        k,
-                                        r[idx].map((c) => [
-                                            runInInjectionContext(this.injector, () =>
-                                                normalizeString(valueToString(c)),
-                                            ),
-                                            normalizeString(String(c?.description ?? '')),
-                                        ]),
-                                    ]),
-                                ),
-                        ),
-                    ),
-                ),
+            runInInjectionContext(this.injector, () =>
+                this.columnsData$$.pipe(columnsDataToFilterSearchData),
             ),
             toObservable(this.isTreeData, { injector: this.injector }),
             toObservable(this.normColumns, { injector: this.injector }),
