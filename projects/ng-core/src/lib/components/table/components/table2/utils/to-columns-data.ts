@@ -5,11 +5,11 @@ import { Value } from '../../../../value';
 import { NormColumn } from '../../../types';
 import { TreeInlineDataItem, TreeInlineData } from '../table2.component';
 
-type DisplayedDataItem<T extends object, C extends object> = TreeInlineDataItem<T, C> | T;
-type DisplayedData<T extends object, C extends object> = TreeInlineData<T, C> | T[];
+export type DisplayedDataItem<T extends object, C extends object> = TreeInlineDataItem<T, C> | T;
+export type DisplayedData<T extends object, C extends object> = TreeInlineData<T, C> | T[];
 
-type ColumnDataItem = { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean };
-type ColumnData = ColumnDataItem[];
+export type ColumnDataItem = { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean };
+export type ColumnData = ColumnDataItem[];
 
 export function toColumnsData<T extends object, C extends object>(
     src$: Observable<{ isTree: boolean; data: DisplayedData<T, C>; cols: NormColumn<T>[] }>,

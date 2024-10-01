@@ -36,7 +36,7 @@ import {
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
-import { downloadFile, createCsv, compareDifferentTypes } from '../../../../utils';
+import { downloadFile, createCsv } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
@@ -57,6 +57,7 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
+import { filterSearch } from './utils/filter-search';
 import { toColumnsData } from './utils/to-columns-data';
 
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
@@ -166,7 +167,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     columnsData$$ = combineLatest({
         isTree: toObservable(this.isTreeData),
         data: this.dataSourceData$,
-        cols: this.displayedNormColumns$,
+        cols: toObservable(this.normColumns),
     }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
     columnsData$ = this.columnsData$$.pipe(
         switchMap((d) =>
@@ -244,19 +245,16 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                     ).pipe(
                         map(
                             (r) =>
+                                // TODO: add search by JSON.stringify(sourceValue)
                                 new Map(
                                     Array.from(d.keys()).map((k, idx) => [
                                         k,
-                                        r[idx].map((c) => ({
-                                            strValue: runInInjectionContext(this.injector, () =>
+                                        r[idx].map((c) => [
+                                            runInInjectionContext(this.injector, () =>
                                                 normalizeString(valueToString(c)),
                                             ),
-                                            description: normalizeString(
-                                                String(c?.description ?? ''),
-                                            ),
-                                            value: c,
-                                            json: JSON.stringify(c),
-                                        })),
+                                            normalizeString(String(c?.description ?? '')),
+                                        ]),
                                     ]),
                                 ),
                         ),
@@ -264,64 +262,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 ),
             ),
             toObservable(this.isTreeData, { injector: this.injector }),
+            toObservable(this.normColumns, { injector: this.injector }),
         ])
             .pipe(
-                map(([search, sort, source, data, isTreeData]) => {
-                    if (isTreeData) {
-                        return source;
-                    }
-                    let displayedData: T[] | TreeInlineData<T, C>;
-                    if (search) {
-                        const lowerCaseSearch = search.toLowerCase();
-                        displayedData = source
-                            .map((value) => ({
-                                value,
-                                priority: (data.get(value) ?? []).reduce((sum, v) => {
-                                    if (v.strValue === search) {
-                                        sum += 3000;
-                                    } else if (v.strValue.includes(search)) {
-                                        sum += 300;
-                                    } else if (v.strValue.toLowerCase().includes(lowerCaseSearch)) {
-                                        sum += 3;
-                                    }
-                                    if (v.description === search) {
-                                        sum += 2000;
-                                    } else if (v.description.includes(search)) {
-                                        sum += 200;
-                                    } else if (
-                                        v.description.toLowerCase().includes(lowerCaseSearch)
-                                    ) {
-                                        sum += 2;
-                                    }
-                                    if (v.json.includes(search)) {
-                                        sum += 10;
-                                    } else if (v.json.toLowerCase().includes(lowerCaseSearch)) {
-                                        sum += 1;
-                                    }
-                                    return sum;
-                                }, 0),
-                            }))
-                            .filter((v) => v.priority)
-                            .sort((a, b) => b.priority - a.priority)
-                            .map(({ value }) => value);
-                    } else {
-                        displayedData = source.slice();
-                    }
-                    if (!sort.active) {
-                        return displayedData;
-                    }
-                    const colIdx = this.columns().findIndex((c) => c.field === sort.active);
-                    const sorted = displayedData.sort((a, b) =>
-                        compareDifferentTypes(
-                            (data.get(a) ?? [])[colIdx]?.strValue,
-                            (data.get(b) ?? [])[colIdx]?.strValue,
-                        ),
-                    );
-                    if (sort.direction === 'desc') {
-                        return sorted.reverse();
-                    }
-                    return sorted;
-                }),
+                map(([search, sort, source, data, isTreeData, columns]) =>
+                    filterSearch({ search, sort, source, data, isTreeData, columns }),
+                ),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
