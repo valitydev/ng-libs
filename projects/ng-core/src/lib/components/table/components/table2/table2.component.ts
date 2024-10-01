@@ -28,10 +28,8 @@ import {
     switchMap,
     take,
     forkJoin,
-    of,
     BehaviorSubject,
     debounceTime,
-    scan,
     share,
     first,
     merge,
@@ -41,7 +39,7 @@ import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from
 import { downloadFile, createCsv, compareDifferentTypes } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
-import { Value, ValueComponent, ValueListComponent } from '../../../value';
+import { ValueComponent, ValueListComponent } from '../../../value';
 import { valueToString } from '../../../value/utils/value-to-string';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
@@ -59,6 +57,7 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
+import { toColumnsData } from './utils/to-columns-data';
 
 export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
 export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
@@ -164,79 +163,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    columnsData$$: Observable<
-        Map<
-            T | TreeInlineDataItem<T, C>,
-            { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
-        >
-    > = combineLatest([
-        toObservable(this.isTreeData),
-        this.dataSourceData$,
-        this.displayedNormColumns$,
-    ]).pipe(
-        scan(
-            (acc, [isTree, data, cols]) => {
-                const isColsNotChanged = acc.cols === cols;
-                return {
-                    res: new Map<
-                        TreeInlineDataItem<T, C> | T,
-                        { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
-                    >(
-                        isTree
-                            ? (data as TreeInlineData<T, C>).map((d, idx) => [
-                                  d,
-                                  isColsNotChanged &&
-                                  d === acc.data[idx] &&
-                                  // This is not the last value, because we need to calculate isNextChild
-                                  idx !== acc.data.length - 1
-                                      ? (acc.res.get(d) as never)
-                                      : cols.map((c) => ({
-                                            value: (d.child && c.child
-                                                ? c.child(d.child, idx)
-                                                : d.value
-                                                  ? c.cell(d.value, idx)
-                                                  : of<Value>({ value: '' })
-                                            ).pipe(
-                                                shareReplay({
-                                                    refCount: true,
-                                                    bufferSize: 1,
-                                                }),
-                                            ),
-                                            isChild: !d.value,
-                                            isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
-                                                ?.value,
-                                        })),
-                              ])
-                            : ((data as T[]) || []).map((d, idx) => [
-                                  d,
-                                  isColsNotChanged && d === acc.data[idx]
-                                      ? (acc.res.get(d) as never)
-                                      : cols.map((c) => ({
-                                            value: c.cell(d, idx).pipe(
-                                                shareReplay({
-                                                    refCount: true,
-                                                    bufferSize: 1,
-                                                }),
-                                            ),
-                                        })),
-                              ]),
-                    ),
-                    data: data,
-                    cols: cols,
-                };
-            },
-            { data: [], cols: [], res: new Map() } as {
-                data: T[] | TreeInlineData<T, C>;
-                cols: NormColumn<T>[];
-                res: Map<
-                    T | TreeInlineDataItem<T, C>,
-                    { value: Observable<Value>; isChild?: boolean; isNextChild?: boolean }[]
-                >;
-            },
-        ),
-        map((v) => v.res),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
+    columnsData$$ = combineLatest({
+        isTree: toObservable(this.isTreeData),
+        data: this.dataSourceData$,
+        cols: this.displayedNormColumns$,
+    }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
     columnsData$ = this.columnsData$$.pipe(
         switchMap((d) =>
             combineLatest(Array.from(d.values()).map((v) => combineLatest(v.map((v) => v.value)))),
