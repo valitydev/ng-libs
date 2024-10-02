@@ -25,6 +25,7 @@ export interface Column2<T extends object, C extends object = object> extends Co
     cell?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<T>>;
     child?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<C>>;
     hidden?: PossiblyAsync<boolean>;
+    sort?: PossiblyAsync<boolean>;
 }
 
 export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<R, P>): Fn<R, P> {
@@ -37,10 +38,11 @@ export class NormColumn<T extends object, C extends object = object> {
     cell!: Fn<Observable<Value>, CellFnArgs<T>>;
     child?: Fn<Observable<Value>, CellFnArgs<C>>;
     hidden!: Observable<boolean>;
+    sort!: Observable<boolean>;
     params!: ColumnParams;
 
     constructor(
-        { field, header, cell, child, hidden, ...params }: Column2<T, C>,
+        { field, header, cell, child, hidden, sort, ...params }: Column2<T, C>,
         commonParams: ColumnParams = {},
     ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
@@ -86,5 +88,6 @@ export class NormColumn<T extends object, C extends object = object> {
             style: Object.assign({}, commonParams?.style, params?.style),
         };
         this.hidden = isNil(hidden) ? of(false) : getPossiblyAsyncObservable(hidden);
+        this.sort = isNil(sort) ? of(false) : getPossiblyAsyncObservable(sort);
     }
 }

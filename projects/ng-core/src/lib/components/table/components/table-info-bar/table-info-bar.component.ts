@@ -40,6 +40,7 @@ export class TableInfoBarComponent implements OnInit {
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     isPreload = input(false, { transform: booleanAttribute });
+    noDownload = input(false, { transform: booleanAttribute });
 
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });

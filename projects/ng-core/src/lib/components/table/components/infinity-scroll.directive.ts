@@ -3,36 +3,37 @@ import {
     ElementRef,
     OnInit,
     output,
-    OnDestroy,
     booleanAttribute,
     input,
+    DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs/operators';
+
+import { createIntersectionObserver } from '../utils/create-intersection-observer';
 
 @Directive({
     selector: '[vInfinityScroll]',
     standalone: true,
 })
-export class InfinityScrollDirective implements OnInit, OnDestroy {
+export class InfinityScrollDirective implements OnInit {
     vInfinityScroll = input(true, { transform: booleanAttribute });
     vInfinityScrollProgress = input(false, { transform: booleanAttribute });
     vInfinityScrollMore = output();
 
-    observer!: IntersectionObserver;
-
-    constructor(private elementRef: ElementRef) {}
+    constructor(
+        private elementRef: ElementRef,
+        private dr: DestroyRef,
+    ) {}
 
     ngOnInit() {
-        this.observer = new IntersectionObserver((entries) => {
-            for (const entry of entries) {
-                if (entry.isIntersecting && !this.vInfinityScrollProgress()) {
-                    this.vInfinityScrollMore.emit();
-                }
-            }
-        });
-        this.observer.observe(this.elementRef.nativeElement);
-    }
-
-    ngOnDestroy() {
-        this.observer.disconnect();
+        createIntersectionObserver(this.elementRef.nativeElement)
+            .pipe(
+                filter(() => !this.vInfinityScrollProgress()),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe(() => {
+                this.vInfinityScrollMore.emit();
+            });
     }
 }

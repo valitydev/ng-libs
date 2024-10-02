@@ -1,11 +1,14 @@
 <div class="wrapper">
     @if (standaloneFilter()) {
-        <v-input-field
-            [formControl]="filterControl"
-            class="filter__standalone filter"
-            cleanButton
-            label="Search"
-        ></v-input-field>
+        <div class="header-wrapper">
+            <ng-content select="v-table-inputs"></ng-content>
+            <v-input-field
+                [formControl]="filterControl"
+                class="filter__standalone filter"
+                cleanButton
+                label="Search"
+            ></v-input-field>
+        </div>
     }
     <v-actions>
         <v-actions>
@@ -39,22 +42,20 @@
                 >
                     <mat-icon>
                         {{
-                            hasMore() || progress()
-                                ? isPreload() && hasMore()
-                                    ? 'downloading'
-                                    : 'download'
-                                : 'download_done'
+                            hasMore() ? (isPreload() ? 'downloading' : 'download') : 'download_done'
                         }}
                     </mat-icon>
                 </button>
-                <button
-                    [disabled]="progress() || !count()"
-                    mat-icon-button
-                    matTooltip="Download CSV"
-                    (click)="downloadCsv.emit()"
-                >
-                    <mat-icon>file_save</mat-icon>
-                </button>
+                @if (!noDownload()) {
+                    <button
+                        [disabled]="progress() || !count()"
+                        mat-icon-button
+                        matTooltip="Download CSV"
+                        (click)="downloadCsv.emit()"
+                    >
+                        <mat-icon>file_save</mat-icon>
+                    </button>
+                }
             </div>
             @if (!standaloneFilter()) {
                 <div>

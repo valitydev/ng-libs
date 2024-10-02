@@ -2,34 +2,44 @@
 
 <div class="wrapper">
     <v-table-info-bar
-        [count]="(dataSourceData$ | async)?.length"
+        [count]="(dataSource.data$ | async)?.length"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
+        [noDownload]="noDownload()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
-        [selectedCount]="selected()?.length"
+        [selectedCount]="(selected$ | async)?.length"
         [size]="size()"
-        [standaloneFilter]="externalFilter()"
+        [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
         (filterChange)="filter$.next($event)"
         (load)="load()"
         (preload)="preload()"
     >
         <ng-content select="v-table-actions"></ng-content>
+        <v-table-inputs><ng-content select="v-table-inputs"></ng-content></v-table-inputs>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
         <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
-        <table #matTable [dataSource]="dataSource" mat-table matSort>
+        <table
+            #matTable
+            [dataSource]="dataSource"
+            [matSortActive]="sort().active"
+            [matSortDirection]="sort().direction"
+            mat-table
+            matSort
+            (matSortChange)="this.sortChange.emit($event)"
+        >
             @if (rowSelectable()) {
                 <v-select-column
-                    [data]="data()"
+                    [data]="$any(displayedData$ | async) ?? []"
                     [name]="columnDefs.select"
                     [progress]="progress()"
-                    [selected]="selected()"
-                    (selectedChange)="rowSelectedChange.emit($event); selected.set($event)"
+                    [selected]="$any(selected$ | async) ?? []"
+                    (selectedChange)="rowSelectedChange.emit($event)"
                 ></v-select-column>
             }
             @for (col of displayedNormColumns$ | async; track col; let colIndex = $index) {
@@ -46,9 +56,16 @@
                     [sticky]="stickyStart"
                     [stickyEnd]="stickyEnd"
                 >
-                    <th *matHeaderCellDef [ngClass]="columnClasses" mat-header-cell>
+                    <th
+                        *matHeaderCellDef
+                        [disabled]="!(col.sort | async)"
+                        [mat-sort-header]="col.field"
+                        [ngClass]="columnClasses"
+                        mat-header-cell
+                    >
                         <v-value [value]="col?.header | async" emptySymbol="" inline></v-value>
                     </th>
+
                     <ng-template let-element let-rowIndex="index" matCellDef>
                         @let cell = columnsData?.get?.(element)?.[colIndex];
                         <td
@@ -59,6 +76,7 @@
                         >
                             <v-value
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
+                                [highlight]="filter$ | async"
                                 [value]="cell?.value | async"
                                 inline
                             ></v-value>

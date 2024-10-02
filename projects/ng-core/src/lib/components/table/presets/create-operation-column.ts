@@ -32,6 +32,7 @@ export const createMenuColumn = createColumn(
         sticky: 'end',
         style: {
             padding: 0,
+            width: '0',
         },
     },
 );

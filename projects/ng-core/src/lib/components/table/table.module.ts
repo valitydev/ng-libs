@@ -63,8 +63,9 @@ import { TableComponent } from './table.component';
         MtxTooltip,
         Table2Component,
         ShowMoreButtonComponent,
+        TableInputsComponent,
     ],
-    declarations: [TableComponent, TableActionsComponent, TableCellComponent, TableInputsComponent],
+    declarations: [TableComponent, TableActionsComponent, TableCellComponent],
     exports: [TableComponent, TableActionsComponent, TableInputsComponent, Table2Component],
 })
 export class TableModule {}

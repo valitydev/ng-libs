@@ -32,6 +32,11 @@
 .column {
     max-width: max(20px, 30vw);
 
+    &__sticky-start,
+    &__sticky-end {
+        width: 0;
+    }
+
     &__sticky-start {
         border-right: 1px solid;
     }

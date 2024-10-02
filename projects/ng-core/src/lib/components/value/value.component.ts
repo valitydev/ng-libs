@@ -15,6 +15,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { combineLatest, switchMap, of, isObservable, BehaviorSubject, Observable } from 'rxjs';
 import { map, shareReplay, distinctUntilChanged } from 'rxjs/operators';
 
+import { HighlightDirective } from '../../directives';
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
 
@@ -34,6 +35,7 @@ import { valueToString } from './utils/value-to-string';
         MatTooltip,
         MenuValueComponent,
         ContentLoadingComponent,
+        HighlightDirective,
     ],
     templateUrl: './value.component.html',
     styleUrl: './value.component.scss',
@@ -56,9 +58,11 @@ export class ValueComponent {
     })
     emptySymbol = '―';
 
-    resultingValue$ = of(null);
+    @Input() highlight?: string | null;
 
     @Output() lazyVisibleChange = new EventEmitter<boolean>();
+
+    resultingValue$ = of(null);
 
     lazyVisible = new BehaviorSubject(false);
     isLoaded$ = combineLatest([of(null), this.lazyVisible]).pipe(

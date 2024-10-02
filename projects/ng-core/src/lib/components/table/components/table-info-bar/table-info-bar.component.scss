@@ -1,7 +1,16 @@
 .wrapper {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 8px;
+}
+
+.header-wrapper {
+    display: flex;
+    gap: 16px;
+
+    ::ng-deep & > * {
+        flex: 1;
+    }
 }
 
 .details {

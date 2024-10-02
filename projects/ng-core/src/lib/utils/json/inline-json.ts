@@ -1,18 +1,36 @@
+import startCase from 'lodash-es/startCase';
 import { isPrimitive } from 'utility-types';
 
-export function inlineJson(value: unknown, maxReadableLever = 1, isRoot = true): string {
+function renderList<T>(list: T[], renderItem: (v: T, idx: number) => string, isMore: boolean) {
+    return list.length ? (isMore ? '…' : list.map(renderItem).join(', ')) : '';
+}
+
+function isObject(v: unknown): v is object {
+    return (
+        typeof v === 'object' &&
+        !Array.isArray(v) &&
+        !(v instanceof Map) &&
+        !(v instanceof Set) &&
+        v !== null
+    );
+}
+
+export function inlineJson(
+    value: unknown,
+    maxReadableLever = 1,
+    readableKeys = false,
+    level = 0,
+): string {
+    const isRoot = (level = 0);
     if (isPrimitive(value)) {
         return String(value);
     }
     if (Array.isArray(value) || value instanceof Map || value instanceof Set) {
-        const content =
-            maxReadableLever > 0
-                ? Array.from(value)
-                      .map((v) => inlineJson(v, maxReadableLever, false))
-                      .join(', ')
-                : Array.from(value).length
-                  ? '…'
-                  : '';
+        const content = renderList(
+            Array.from(value),
+            (v) => inlineJson(v, maxReadableLever, readableKeys, level + 1),
+            level > maxReadableLever,
+        );
         if (value instanceof Set) {
             return `Set(${content})`;
         }
@@ -21,17 +39,20 @@ export function inlineJson(value: unknown, maxReadableLever = 1, isRoot = true):
         }
         return isRoot && content ? content : `[${content}]`;
     }
-    if (!Object.keys(value as never).length) {
+    const entries = Array.from(Object.entries(value as object));
+    if (!entries.length) {
         return '{}';
     }
-    const content =
-        maxReadableLever > 0
-            ? Object.entries(value as never)
-                  .map(([k, v]) => `${k}: ${inlineJson(v, maxReadableLever - 1, false)}`)
-                  .join(', ')
-            : '…';
-    if (isRoot) {
+    const content = renderList(
+        entries,
+        ([k, v]) =>
+            (readableKeys ? startCase(k) : k) +
+            (isObject(v) && Object.keys(v).length <= 1 ? '/' : ': ') +
+            inlineJson(v, maxReadableLever, readableKeys, level + 1),
+        level > maxReadableLever,
+    );
+    if (isRoot || entries.length === 1) {
         return content;
     }
-    return `{ ${content} }`;
+    return `{${content}}`;
 }
