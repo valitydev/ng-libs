@@ -2,7 +2,7 @@
 
 <div class="wrapper">
     <v-table-info-bar
-        [count]="(dataSourceData$ | async)?.length"
+        [count]="(dataSource.data$ | async)?.length"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
         [hasMore]="hasMore()"

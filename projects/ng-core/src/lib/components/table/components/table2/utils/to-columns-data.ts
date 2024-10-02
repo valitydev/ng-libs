@@ -3,7 +3,7 @@ import { shareReplay, map } from 'rxjs/operators';
 
 import { Value } from '../../../../value';
 import { NormColumn } from '../../../types';
-import { TreeInlineDataItem, TreeInlineData } from '../table2.component';
+import { TreeInlineDataItem, TreeInlineData } from '../tree-data';
 
 export type DisplayedDataItem<T extends object, C extends object> = TreeInlineDataItem<T, C> | T;
 export type DisplayedData<T extends object, C extends object> = TreeInlineData<T, C> | T[];

@@ -98,8 +98,8 @@ function sortData<T extends object, C extends object>(
     const colIdx = columns.findIndex((c) => c.field === sort.active);
     const sortedData = source.sort((a, b) =>
         compareDifferentTypes(
-            (data.get(a)?.byColumns ?? [])[colIdx][0],
-            (data.get(b)?.byColumns ?? [])[colIdx][0],
+            (data.get(a)?.byColumns ?? [])[colIdx]?.[0],
+            (data.get(b)?.byColumns ?? [])[colIdx]?.[0],
         ),
     );
     return sort.direction === 'desc' ? sortedData.reverse() : sortedData;

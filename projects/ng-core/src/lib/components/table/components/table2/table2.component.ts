@@ -42,7 +42,6 @@ import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
-import { cachedHeadMap } from '../../utils/cached-head-map';
 import { modelToSubject } from '../../utils/model-to-subject';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
@@ -55,13 +54,9 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
+import { TreeData, TreeInlineData } from './tree-data';
 import { filterSearch, columnsDataToFilterSearchData } from './utils/filter-search';
 import { toColumnsData } from './utils/to-columns-data';
-
-export type TreeDataItem<T extends object, C extends object> = { value: T; children: C[] };
-export type TreeData<T extends object, C extends object> = TreeDataItem<T, C>[];
-export type TreeInlineDataItem<T extends object, C extends object> = { value?: T; child?: C };
-export type TreeInlineData<T extends object, C extends object> = TreeInlineDataItem<T, C>[];
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -101,7 +96,7 @@ export const TABLE_WRAPPER_STYLE = `
     host: { style: TABLE_WRAPPER_STYLE },
 })
 export class Table2Component<T extends object, C extends object> implements OnInit {
-    data = input<T[]>([]);
+    data = input<T[]>();
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T>[]>([]);
     progress = input(false, { transform: Boolean });
@@ -132,27 +127,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
-    isTreeData = computed(() => !!this.treeData());
-    treeInlineData$: Observable<TreeInlineData<T, C>> = toObservable(this.treeData).pipe(
-        cachedHeadMap((d) => {
-            const children = d.children ?? [];
-            return [
-                children.length ? { value: d.value, child: children[0] } : { value: d.value },
-                ...children.slice(1).map((child) => ({ child })),
-            ];
-        }),
-        map((v) => v.flat()),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
-    dataSource = new TableDataSource<T | TreeInlineDataItem<T, C>>();
-    dataSourceData$: Observable<T[] | TreeInlineData<T, C>> = combineLatest([
-        this.treeInlineData$,
-        toObservable(this.data),
-        toObservable(this.isTreeData),
-    ]).pipe(
-        map(([treeData, data, isTreeData]) => (isTreeData ? treeData : data) ?? []),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
+    dataSource = new TableDataSource<T, C>();
     normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
@@ -163,8 +138,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnsData$$ = combineLatest({
-        isTree: toObservable(this.isTreeData),
-        data: this.dataSourceData$,
+        isTree: this.dataSource.isTreeData$,
+        data: this.dataSource.data$,
         cols: toObservable(this.normColumns),
     }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
     columnsData$ = this.columnsData$$.pipe(
@@ -175,13 +150,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([this.filter$, this.displayedData$, this.dataSourceData$]).pipe(
+    count$ = combineLatest([this.filter$, this.displayedData$, this.dataSource.data$]).pipe(
         map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        this.dataSourceData$,
+        this.dataSource.data$,
         this.displayedData$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
@@ -215,9 +190,16 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     ) {}
 
     ngOnInit() {
-        this.dataSourceData$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
-            this.dataSource.data = data;
-        });
+        toObservable(this.data, { injector: this.injector })
+            .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
+            .subscribe((data) => {
+                this.dataSource.setData(data);
+            });
+        toObservable(this.treeData, { injector: this.injector })
+            .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
+            .subscribe((data) => {
+                this.dataSource.setTreeData(data);
+            });
         const filter$ = this.filter$.pipe(
             map((filter) => filter?.trim?.() ?? ''),
             distinctUntilChanged(),
@@ -235,11 +217,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         combineLatest([
             filter$,
             this.sort$,
-            this.dataSourceData$,
+            this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
                 this.columnsData$$.pipe(columnsDataToFilterSearchData),
             ),
-            toObservable(this.isTreeData, { injector: this.injector }),
+            this.dataSource.isTreeData$,
             toObservable(this.normColumns, { injector: this.injector }),
         ])
             .pipe(
@@ -260,7 +242,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 this.reset();
             });
         // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
-        this.dataSourceData$
+        this.dataSource.data$
             .pipe(
                 filter((v) => !!v?.length),
                 first(),
