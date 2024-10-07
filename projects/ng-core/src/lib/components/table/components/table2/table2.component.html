@@ -58,7 +58,7 @@
                 >
                     <th
                         *matHeaderCellDef
-                        [disabled]="!(col.sort | async)"
+                        [disabled]="(col.sort | async) === false || hasMore()"
                         [mat-sort-header]="col.field"
                         [ngClass]="columnClasses"
                         mat-header-cell

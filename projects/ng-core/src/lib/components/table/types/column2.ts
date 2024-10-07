@@ -56,7 +56,7 @@ export class NormColumn<T extends object, C extends object = object> {
     cell!: Fn<Observable<Value>, CellFnArgs<T>>;
     child?: Fn<Observable<Value>, CellFnArgs<C>>;
     hidden!: Observable<boolean>;
-    sort!: Observable<boolean>;
+    sort!: Observable<boolean | null>;
     params!: ColumnParams;
 
     constructor(
@@ -82,6 +82,6 @@ export class NormColumn<T extends object, C extends object = object> {
             style: Object.assign({}, commonParams?.style, params?.style),
         };
         this.hidden = isNil(hidden) ? of(false) : getPossiblyAsyncObservable(hidden);
-        this.sort = isNil(sort) ? of(false) : getPossiblyAsyncObservable(sort);
+        this.sort = isNil(sort) ? of(null) : getPossiblyAsyncObservable(sort);
     }
 }
