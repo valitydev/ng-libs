@@ -1,9 +1,10 @@
 import { inject, Injector, runInInjectionContext } from '@angular/core';
-import { switchMap } from 'rxjs';
+import { switchMap, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
 import { Value } from '../../value';
-import { Column2, CellFnArgs } from '../types';
+import { Column2, CellFnArgs, normalizeCell } from '../types';
 
 import { createUniqueColumnDef } from './create-unique-column-def';
 
@@ -16,10 +17,13 @@ export function createColumn<P, A extends object>(
         column: Partial<Column2<T>> = {},
     ): Column2<T> => {
         const injector = inject(Injector);
+        const field = createUniqueColumnDef(column?.header);
         return {
-            field: createUniqueColumnDef(column?.header),
-            cell: (...cellArgs) =>
-                getPossiblyAsyncObservable(getCellParams(...cellArgs)).pipe(
+            field,
+            ...columnObject,
+            ...column,
+            cell: (...cellArgs) => {
+                const cellValue$ = getPossiblyAsyncObservable(getCellParams(...cellArgs)).pipe(
                     switchMap((cellParams) =>
                         getPossiblyAsyncObservable(
                             runInInjectionContext(injector, () =>
@@ -27,9 +31,19 @@ export function createColumn<P, A extends object>(
                             ),
                         ),
                     ),
-                ),
-            ...columnObject,
-            ...column,
+                );
+                if (column.cell) {
+                    const columnCellValue$ = normalizeCell(
+                        field,
+                        column.cell,
+                        !!column?.child,
+                    )(...cellArgs);
+                    return combineLatest([cellValue$, columnCellValue$]).pipe(
+                        map(([a, b]) => Object.assign({}, a, b, { value: b?.value || a?.value })),
+                    );
+                }
+                return cellValue$;
+            },
         };
     };
 }
