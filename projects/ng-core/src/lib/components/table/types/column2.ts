@@ -17,7 +17,7 @@ interface ColumnParams {
     style?: Record<string, unknown>;
 }
 
-type CellValue = 'string' | Value;
+export type CellValue = 'string' | Value;
 
 export interface Column2<T extends object, C extends object = object> extends ColumnParams {
     field: string;

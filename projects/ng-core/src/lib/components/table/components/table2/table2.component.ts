@@ -137,17 +137,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    columnsData$$ = combineLatest({
+    columnsData$ = combineLatest({
         isTree: this.dataSource.isTreeData$,
         data: this.dataSource.data$,
         cols: toObservable(this.normColumns),
     }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
-    columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) =>
-            combineLatest(Array.from(d.values()).map((v) => combineLatest(v.map((v) => v.value)))),
-        ),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
     count$ = combineLatest([this.filter$, this.displayedData$, this.dataSource.data$]).pipe(
@@ -219,7 +213,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             this.sort$,
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
-                this.columnsData$$.pipe(columnsDataToFilterSearchData),
+                this.columnsData$.pipe(columnsDataToFilterSearchData),
             ),
             this.dataSource.isTreeData$,
             toObservable(this.normColumns, { injector: this.injector }),

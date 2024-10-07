@@ -1,8 +1,16 @@
 import { Value } from '../../value';
 import { unknownToString } from '../../value/utils/unknown-to-string';
 import { valueToString } from '../../value/utils/value-to-string';
+import { DisplayedDataItem, ColumnData } from '../components/table2/utils/to-columns-data';
 
-export function tableToCsvObject(cols: Value[], data: Value[][]): string[][] {
+export function tableToCsvObject<T extends object, C extends object>(
+    cols: Value[],
+    displayedData: Map<DisplayedDataItem<T, C>, ColumnData>,
+): string[][] {
+    const data = Array.from(displayedData.values()).map((columnData) =>
+        columnData.map((v) => v.value),
+    );
+
     const res = [
         cols
             .map((v) => {
@@ -10,7 +18,9 @@ export function tableToCsvObject(cols: Value[], data: Value[][]): string[][] {
                 return [res, `${res} (description)`];
             })
             .flat(),
-        ...data.map((r) => r.map((c) => [valueToString(c), unknownToString(c.description)]).flat()),
+        ...data.map((r) =>
+            r.map((c) => [valueToString(c), unknownToString(c?.description)]).flat(),
+        ),
     ];
     // Removing empty description columns (every second column)
     let emptyCols = [];

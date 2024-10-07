@@ -1,4 +1,4 @@
-@let columnsData = columnsData$$ | async;
+@let columnsData = columnsData$ | async;
 
 <div class="wrapper">
     <v-table-info-bar
@@ -76,7 +76,7 @@
                             <v-value
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
                                 [highlight]="filter$ | async"
-                                [value]="cell?.value | async"
+                                [value]="cell?.value"
                                 inline
                             ></v-value>
                         </td>
