@@ -17,7 +17,7 @@ export function createColumn<P, A extends object>(
         column: Partial<Column2<T>> = {},
     ): Column2<T> => {
         const injector = inject(Injector);
-        const field = createUniqueColumnDef(column?.header);
+        const field = column?.field ?? createUniqueColumnDef(column?.header);
         return {
             field,
             ...columnObject,
