@@ -1,7 +1,9 @@
 <div class="wrapper">
     @if (standaloneFilter()) {
         <div class="header-wrapper">
-            <ng-content select="v-table-inputs"></ng-content>
+            @if (hasInputs()) {
+                <ng-content select="v-table-inputs"></ng-content>
+            }
             <v-input-field
                 [formControl]="filterControl"
                 class="filter__standalone filter"

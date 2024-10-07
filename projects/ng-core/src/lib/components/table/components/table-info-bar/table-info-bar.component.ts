@@ -51,6 +51,7 @@ export class TableInfoBarComponent implements OnInit {
 
     filter = input<string>('');
     standaloneFilter = input(false, { transform: booleanAttribute });
+    hasInputs = input(false, { transform: booleanAttribute });
     filterChange = output<string>();
     filterControl = new FormControl('', { nonNullable: true });
 

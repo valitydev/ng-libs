@@ -14,6 +14,7 @@ import {
     runInInjectionContext,
     OnInit,
     ViewChild,
+    ContentChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -177,6 +178,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
     @ViewChild('matTable', { static: false }) table!: MatTable<T>;
+    @ContentChild(TableInputsComponent, { read: ElementRef }) tableInputsContent!: ElementRef;
 
     constructor(
         private dr: DestroyRef,

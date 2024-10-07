@@ -5,6 +5,7 @@
         [count]="(dataSource.data$ | async)?.length"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
+        [hasInputs]="!!tableInputsContent?.nativeElement"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [noDownload]="noDownload()"

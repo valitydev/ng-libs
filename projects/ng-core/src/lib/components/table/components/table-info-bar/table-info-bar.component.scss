@@ -4,6 +4,14 @@
     gap: 8px;
 }
 
+.inputs {
+    display: none;
+}
+
+.inputs:not(:empty) {
+    display: block;
+}
+
 .header-wrapper {
     display: flex;
     gap: 16px;
