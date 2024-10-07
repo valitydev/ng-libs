@@ -86,7 +86,7 @@ function sortData<T extends object, C extends object>(
     columns: NormColumn<T, C>[],
     sort: Sort,
 ) {
-    if (!sort.active) {
+    if (!sort?.active || !sort?.direction) {
         return source;
     }
     const colIdx = columns.findIndex((c) => c.field === sort.active);
