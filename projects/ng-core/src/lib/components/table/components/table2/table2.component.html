@@ -3,6 +3,7 @@
 <div class="wrapper">
     <v-table-info-bar
         [count]="(dataSource.data$ | async)?.length"
+        [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
         [hasInputs]="!!tableInputsContent?.nativeElement"
@@ -27,7 +28,7 @@
         <table
             #matTable
             [dataSource]="dataSource"
-            [matSortActive]="sort().active"
+            [matSortActive]="(columnsDataProgress$ | async) || progress() ? '' : sort().active"
             [matSortDirection]="sort().direction"
             mat-table
             matSort

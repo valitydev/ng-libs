@@ -14,7 +14,7 @@
     }
     <v-actions>
         <v-actions>
-            <div class="count">
+            <div class="badge count">
                 <v-tag
                     [matBadge]="selectedCount() || ''"
                     [matBadgeDisabled]="progress()"
@@ -70,6 +70,14 @@
                         label="Search"
                         size="small"
                     ></v-input-field>
+                </div>
+            }
+            @if (!progress() && dataProgress()) {
+                <div
+                    class="badge"
+                    matTooltip="Preparing data for sorting, filtering and downloading..."
+                >
+                    <v-tag progress>Preparing data…</v-tag>
                 </div>
             }
         </v-actions>

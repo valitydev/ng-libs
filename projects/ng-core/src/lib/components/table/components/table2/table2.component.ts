@@ -34,6 +34,7 @@ import {
     share,
     first,
     merge,
+    tap,
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
@@ -143,14 +144,28 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         data: this.dataSource.data$,
         cols: toObservable(this.normColumns),
     }).pipe(toObservableColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    columnsDataProgress$ = new BehaviorSubject(false);
     columnsData$ = this.columnsData$$.pipe(
+        tap(() => {
+            this.columnsDataProgress$.next(true);
+        }),
         toColumnsData,
+        tap(() => {
+            this.columnsDataProgress$.next(false);
+        }),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([this.filter$, this.displayedData$, this.dataSource.data$]).pipe(
-        map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
+    count$ = combineLatest([
+        this.filter$,
+        this.displayedData$,
+        this.dataSource.data$,
+        this.columnsDataProgress$,
+    ]).pipe(
+        map(([filter, filtered, source, columnsDataProgress]) =>
+            filter && !columnsDataProgress ? filtered?.length : source?.length,
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     hasAutoShowMore$ = combineLatest([

@@ -1,4 +1,4 @@
-import { Observable, scan, of, switchMap, combineLatest, throttleTime, timer } from 'rxjs';
+import { Observable, scan, of, switchMap, combineLatest, timer } from 'rxjs';
 import { shareReplay, map } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
@@ -85,8 +85,11 @@ export function toColumnsData<T extends object, C extends object>(
     src$: Observable<Map<DisplayedDataItem<T, C>, ScanColumnData>>,
 ): Observable<Map<DisplayedDataItem<T, C>, ColumnData>> {
     return src$.pipe(
-        switchMap((columnsData) =>
-            combineLatest(
+        switchMap((columnsData) => {
+            if (!columnsData.size) {
+                return of(new Map());
+            }
+            return combineLatest(
                 Array.from(columnsData.values()).map((v) =>
                     combineLatest(v.map((cell) => timer(0).pipe(switchMap(() => cell.value)))),
                 ),
@@ -100,8 +103,7 @@ export function toColumnsData<T extends object, C extends object>(
                             ]),
                         ),
                 ),
-            ),
-        ),
-        throttleTime(100),
+            );
+        }),
     );
 }

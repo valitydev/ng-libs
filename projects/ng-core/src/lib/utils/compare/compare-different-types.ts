@@ -1,5 +1,5 @@
 function isNumber(v: unknown): boolean {
-    return typeof v === 'number' || /^\d+$/.test(String(v));
+    return !!v && (typeof v === 'number' || /^-?\d+.*$/.test(String(v).trim()));
 }
 
 function toNumber(v: unknown): number {
@@ -12,8 +12,8 @@ function toNumber(v: unknown): number {
  * Use with sorting (arr.sort(fn))
  */
 export function compareDifferentTypes<T>(a: T, b: T): number {
-    const aIsNum = isNumber(typeof a === 'string' ? a[0] : a);
-    const bIsNum = isNumber(typeof b === 'string' ? b[0] : b);
+    const aIsNum = isNumber(a);
+    const bIsNum = isNumber(b);
     if (aIsNum || bIsNum) {
         if (aIsNum && bIsNum) {
             return toNumber(a) - toNumber(b);
