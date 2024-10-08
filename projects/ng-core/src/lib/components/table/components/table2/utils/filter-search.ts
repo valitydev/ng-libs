@@ -23,7 +23,7 @@ export function columnsDataToFilterSearchData<T extends object, C extends object
         map(
             (data) =>
                 new Map(
-                    Array.from(data.entries()).map(([item, value], idx) => [
+                    Array.from(data.entries()).map(([item, value]) => [
                         item,
                         {
                             byColumns: value.map((el) => [
