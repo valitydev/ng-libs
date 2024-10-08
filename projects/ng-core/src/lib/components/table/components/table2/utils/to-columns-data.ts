@@ -1,5 +1,5 @@
-import { Observable, scan, of, switchMap, combineLatest, share, race, timer } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, scan, of, switchMap, combineLatest, race, timer, throttleTime } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
 import { Value } from '../../../../value';
@@ -47,7 +47,13 @@ export function toColumnsData<T extends object, C extends object>(
                                                 : d.value
                                                   ? c.cell(d.value, idx)
                                                   : of<Value>({ value: '' })
-                                            ).pipe(raceWithAsyncNull, share()),
+                                            ).pipe(
+                                                raceWithAsyncNull,
+                                                shareReplay({
+                                                    bufferSize: 1,
+                                                    refCount: true,
+                                                }),
+                                            ),
                                             isChild: !d.value,
                                             isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
                                                 ?.value,
@@ -58,7 +64,13 @@ export function toColumnsData<T extends object, C extends object>(
                                   isColsNotChanged && d === acc.data[idx]
                                       ? (acc.res.get(d) as never)
                                       : cols.map((c) => ({
-                                            value: c.cell(d, idx).pipe(raceWithAsyncNull, share()),
+                                            value: c.cell(d, idx).pipe(
+                                                raceWithAsyncNull,
+                                                shareReplay({
+                                                    bufferSize: 1,
+                                                    refCount: true,
+                                                }),
+                                            ),
                                         })),
                               ]),
                     ),
@@ -76,6 +88,7 @@ export function toColumnsData<T extends object, C extends object>(
             combineLatest(
                 Array.from(v.res.values()).map((v) => combineLatest(v.map((cell) => cell.value))),
             ).pipe(
+                throttleTime(100, undefined, { trailing: true }),
                 map(
                     (res) =>
                         new Map(
