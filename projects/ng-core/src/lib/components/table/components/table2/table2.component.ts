@@ -56,8 +56,8 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
 import { TreeData, TreeInlineData } from './tree-data';
-import { filterSearch, columnsDataToFilterSearchData } from './utils/filter-search';
-import { toColumnsData } from './utils/to-columns-data';
+import { filterSort, columnsDataToFilterSearchData } from './utils/filter-sort';
+import { toObservableColumnsData, toColumnsData } from './utils/to-columns-data';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -138,11 +138,15 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
-    columnsData$ = combineLatest({
+    columnsData$$ = combineLatest({
         isTree: this.dataSource.isTreeData$,
         data: this.dataSource.data$,
         cols: toObservable(this.normColumns),
-    }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    }).pipe(toObservableColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    columnsData$ = this.columnsData$$.pipe(
+        toColumnsData,
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
     count$ = combineLatest([this.filter$, this.displayedData$, this.dataSource.data$]).pipe(
@@ -222,7 +226,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         ])
             .pipe(
                 map(([search, sort, source, data, isTreeData, columns]) =>
-                    filterSearch({ search, sort, source, data, isTreeData, columns }),
+                    filterSort({ search, sort, source, data, isTreeData, columns }),
                 ),
                 takeUntilDestroyed(this.dr),
             )

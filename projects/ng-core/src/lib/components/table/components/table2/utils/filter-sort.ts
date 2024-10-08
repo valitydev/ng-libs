@@ -99,7 +99,7 @@ function sortData<T extends object, C extends object>(
     return sort.direction === 'desc' ? sortedData.reverse() : sortedData;
 }
 
-export function filterSearch<T extends object, C extends object>({
+export function filterSort<T extends object, C extends object>({
     search,
     sort,
     source,

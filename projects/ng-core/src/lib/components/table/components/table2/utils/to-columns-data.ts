@@ -1,5 +1,5 @@
-import { Observable, scan, of, switchMap, combineLatest, race, timer, throttleTime } from 'rxjs';
-import { map, shareReplay, startWith } from 'rxjs/operators';
+import { Observable, scan, of, switchMap, combineLatest, throttleTime, timer } from 'rxjs';
+import { shareReplay, map } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
 import { Value } from '../../../../value';
@@ -21,13 +21,7 @@ type ScanColumnDataItem = Overwrite<ColumnDataItem, { value: Observable<Value | 
 type ScanColumnData = ScanColumnDataItem[];
 
 function toScannedValue(src$: Observable<Value>) {
-    return race(
-        timer(0).pipe(switchMap(() => src$)),
-        timer(100).pipe(
-            switchMap(() => src$),
-            startWith(null),
-        ),
-    ).pipe(
+    return src$.pipe(
         shareReplay({
             bufferSize: 1,
             refCount: true,
@@ -35,9 +29,9 @@ function toScannedValue(src$: Observable<Value>) {
     );
 }
 
-export function toColumnsData<T extends object, C extends object>(
+export function toObservableColumnsData<T extends object, C extends object>(
     src$: Observable<{ isTree: boolean; data: DisplayedData<T, C>; cols: NormColumn<T>[] }>,
-): Observable<Map<DisplayedDataItem<T, C>, ColumnData>> {
+): Observable<Map<DisplayedDataItem<T, C>, ScanColumnData>> {
     return src$.pipe(
         scan(
             (acc, { isTree, data, cols }) => {
@@ -53,13 +47,12 @@ export function toColumnsData<T extends object, C extends object>(
                                   idx !== acc.data.length - 1
                                       ? (acc.res.get(d) as ScanColumnData)
                                       : cols.map((c) => ({
-                                            value: toScannedValue(
-                                                d.child && c.child
-                                                    ? c.child(d.child, idx)
-                                                    : d.value
-                                                      ? c.cell(d.value, idx)
-                                                      : of<Value>({ value: '' }),
-                                            ),
+                                            value: (d.child && c.child
+                                                ? c.child(d.child, idx)
+                                                : d.value
+                                                  ? c.cell(d.value, idx)
+                                                  : of<Value>({ value: '' })
+                                            ).pipe(toScannedValue),
                                             isChild: !d.value,
                                             isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
                                                 ?.value,
@@ -70,7 +63,7 @@ export function toColumnsData<T extends object, C extends object>(
                                   isColsNotChanged && d === acc.data[idx]
                                       ? (acc.res.get(d) as ScanColumnData)
                                       : cols.map((c) => ({
-                                            value: toScannedValue(c.cell(d, idx)),
+                                            value: c.cell(d, idx).pipe(toScannedValue),
                                         })),
                               ]),
                     ),
@@ -84,15 +77,24 @@ export function toColumnsData<T extends object, C extends object>(
                 res: Map<DisplayedDataItem<T, C>, ScanColumnData>;
             },
         ),
-        switchMap((v) =>
+        map(({ res }) => res),
+    );
+}
+
+export function toColumnsData<T extends object, C extends object>(
+    src$: Observable<Map<DisplayedDataItem<T, C>, ScanColumnData>>,
+): Observable<Map<DisplayedDataItem<T, C>, ColumnData>> {
+    return src$.pipe(
+        switchMap((columnsData) =>
             combineLatest(
-                Array.from(v.res.values()).map((v) => combineLatest(v.map((cell) => cell.value))),
+                Array.from(columnsData.values()).map((v) =>
+                    combineLatest(v.map((cell) => timer(0).pipe(switchMap(() => cell.value)))),
+                ),
             ).pipe(
-                throttleTime(100, undefined, { trailing: true }),
                 map(
                     (res) =>
                         new Map(
-                            Array.from(v.res.entries()).map(([k, v], idx) => [
+                            Array.from(columnsData.entries()).map(([k, v], idx) => [
                                 k,
                                 v.map((cell, colIdx) => ({ ...cell, value: res[idx][colIdx] })),
                             ]),
@@ -100,5 +102,6 @@ export function toColumnsData<T extends object, C extends object>(
                 ),
             ),
         ),
+        throttleTime(100),
     );
 }
