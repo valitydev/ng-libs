@@ -1,5 +1,5 @@
 import { Observable, scan, of, switchMap, combineLatest, race, timer, throttleTime } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { map, shareReplay, startWith } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
 import { Value } from '../../../../value';
@@ -20,8 +20,19 @@ export type ColumnData = ColumnDataItem[];
 type ScanColumnDataItem = Overwrite<ColumnDataItem, { value: Observable<Value | null> }>;
 type ScanColumnData = ScanColumnDataItem[];
 
-function raceWithAsyncNull<T>(src$: Observable<T>): Observable<T | null> {
-    return race(timer(0).pipe(switchMap(() => src$)), timer(100).pipe(map(() => null)));
+function toScannedValue(src$: Observable<Value>) {
+    return race(
+        timer(0).pipe(switchMap(() => src$)),
+        timer(100).pipe(
+            switchMap(() => src$),
+            startWith(null),
+        ),
+    ).pipe(
+        shareReplay({
+            bufferSize: 1,
+            refCount: true,
+        }),
+    );
 }
 
 export function toColumnsData<T extends object, C extends object>(
@@ -42,40 +53,29 @@ export function toColumnsData<T extends object, C extends object>(
                                   idx !== acc.data.length - 1
                                       ? (acc.res.get(d) as ScanColumnData)
                                       : cols.map((c) => ({
-                                            value: (d.child && c.child
-                                                ? c.child(d.child, idx)
-                                                : d.value
-                                                  ? c.cell(d.value, idx)
-                                                  : of<Value>({ value: '' })
-                                            ).pipe(
-                                                raceWithAsyncNull,
-                                                shareReplay({
-                                                    bufferSize: 1,
-                                                    refCount: true,
-                                                }),
+                                            value: toScannedValue(
+                                                d.child && c.child
+                                                    ? c.child(d.child, idx)
+                                                    : d.value
+                                                      ? c.cell(d.value, idx)
+                                                      : of<Value>({ value: '' }),
                                             ),
                                             isChild: !d.value,
                                             isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
                                                 ?.value,
                                         })),
                               ])
-                            : ((data as T[]) || []).map((d, idx) => [
+                            : (data as T[]).map((d, idx) => [
                                   d,
                                   isColsNotChanged && d === acc.data[idx]
-                                      ? (acc.res.get(d) as never)
+                                      ? (acc.res.get(d) as ScanColumnData)
                                       : cols.map((c) => ({
-                                            value: c.cell(d, idx).pipe(
-                                                raceWithAsyncNull,
-                                                shareReplay({
-                                                    bufferSize: 1,
-                                                    refCount: true,
-                                                }),
-                                            ),
+                                            value: toScannedValue(c.cell(d, idx)),
                                         })),
                               ]),
                     ),
-                    data: data,
-                    cols: cols,
+                    data,
+                    cols,
                 };
             },
             { data: [], cols: [], res: new Map() } as {
