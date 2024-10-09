@@ -3,8 +3,10 @@
 <div class="wrapper">
     <v-table-info-bar
         [count]="(dataSource.data$ | async)?.length"
+        [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
         [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
+        [hasInputs]="!!tableInputsContent?.nativeElement"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [noDownload]="noDownload()"
@@ -22,12 +24,11 @@
         <v-table-inputs><ng-content select="v-table-inputs"></ng-content></v-table-inputs>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
-        <!--        <v-table-progress-bar [progress]="progress()"></v-table-progress-bar>-->
         <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
         <table
             #matTable
             [dataSource]="dataSource"
-            [matSortActive]="sort().active"
+            [matSortActive]="(columnsDataProgress$ | async) || progress() ? '' : sort().active"
             [matSortDirection]="sort().direction"
             mat-table
             matSort
@@ -58,7 +59,7 @@
                 >
                     <th
                         *matHeaderCellDef
-                        [disabled]="!(col.sort | async)"
+                        [disabled]="(col.sort | async) === false || hasMore()"
                         [mat-sort-header]="col.field"
                         [ngClass]="columnClasses"
                         mat-header-cell

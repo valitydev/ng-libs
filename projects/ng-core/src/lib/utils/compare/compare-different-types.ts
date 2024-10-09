@@ -1,5 +1,11 @@
-function isNumber(a: unknown): boolean {
-    return typeof a === 'number' || /^\d+$/.test(String(a));
+function isNumber(v: unknown): boolean {
+    return !!v && (typeof v === 'number' || /^-?\d+.*$/.test(String(v).trim()));
+}
+
+function toNumber(v: unknown): number {
+    return typeof v === 'string'
+        ? parseFloat(v.replace(',', '.').replace(/[^0-9.-]+/g, ''))
+        : Number(v);
 }
 
 /**
@@ -10,7 +16,7 @@ export function compareDifferentTypes<T>(a: T, b: T): number {
     const bIsNum = isNumber(b);
     if (aIsNum || bIsNum) {
         if (aIsNum && bIsNum) {
-            return Number(a) - Number(b);
+            return toNumber(a) - toNumber(b);
         } else if (aIsNum) {
             return -1;
         } else {

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, numberAttribute } from '@angular/core';
 import { random } from 'lodash-es';
 
@@ -7,9 +8,10 @@ import { random } from 'lodash-es';
     templateUrl: './content-loading.component.html',
     styleUrls: ['./content-loading.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [CommonModule],
 })
 export class ContentLoadingComponent {
     width = input(random(35, 80) + '%');
     textSize = input(0, { transform: numberAttribute });
-    hiddenText = input();
+    hiddenText = input<string | undefined | null>();
 }

@@ -41,6 +41,7 @@ export class TableInfoBarComponent implements OnInit {
     hasMore = input(false, { transform: booleanAttribute });
     isPreload = input(false, { transform: booleanAttribute });
     noDownload = input(false, { transform: booleanAttribute });
+    dataProgress = input(false, { transform: booleanAttribute });
 
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });
@@ -51,6 +52,7 @@ export class TableInfoBarComponent implements OnInit {
 
     filter = input<string>('');
     standaloneFilter = input(false, { transform: booleanAttribute });
+    hasInputs = input(false, { transform: booleanAttribute });
     filterChange = output<string>();
     filterControl = new FormControl('', { nonNullable: true });
 

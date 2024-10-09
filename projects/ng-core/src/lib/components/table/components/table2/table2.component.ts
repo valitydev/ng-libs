@@ -14,6 +14,7 @@ import {
     runInInjectionContext,
     OnInit,
     ViewChild,
+    ContentChild,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -33,6 +34,7 @@ import {
     share,
     first,
     merge,
+    tap,
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
@@ -55,8 +57,8 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
 import { TreeData, TreeInlineData } from './tree-data';
-import { filterSearch, columnsDataToFilterSearchData } from './utils/filter-search';
-import { toColumnsData } from './utils/to-columns-data';
+import { filterSort, columnsDataToFilterSearchData } from './utils/filter-sort';
+import { toObservableColumnsData, toColumnsData } from './utils/to-columns-data';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -141,17 +143,29 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         isTree: this.dataSource.isTreeData$,
         data: this.dataSource.data$,
         cols: toObservable(this.normColumns),
-    }).pipe(toColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    }).pipe(toObservableColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    columnsDataProgress$ = new BehaviorSubject(false);
     columnsData$ = this.columnsData$$.pipe(
-        switchMap((d) =>
-            combineLatest(Array.from(d.values()).map((v) => combineLatest(v.map((v) => v.value)))),
-        ),
+        tap(() => {
+            this.columnsDataProgress$.next(true);
+        }),
+        toColumnsData,
+        tap(() => {
+            this.columnsDataProgress$.next(false);
+        }),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([this.filter$, this.displayedData$, this.dataSource.data$]).pipe(
-        map(([filter, filtered, source]) => (filter ? filtered?.length : source?.length)),
+    count$ = combineLatest([
+        this.filter$,
+        this.displayedData$,
+        this.dataSource.data$,
+        this.columnsDataProgress$,
+    ]).pipe(
+        map(([filter, filtered, source, columnsDataProgress]) =>
+            filter && !columnsDataProgress ? filtered?.length : source?.length,
+        ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     hasAutoShowMore$ = combineLatest([
@@ -183,6 +197,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
     @ViewChild('matTable', { static: false }) table!: MatTable<T>;
+    @ContentChild(TableInputsComponent, { read: ElementRef }) tableInputsContent!: ElementRef;
 
     constructor(
         private dr: DestroyRef,
@@ -219,14 +234,14 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             this.sort$,
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
-                this.columnsData$$.pipe(columnsDataToFilterSearchData),
+                this.columnsData$.pipe(columnsDataToFilterSearchData),
             ),
             this.dataSource.isTreeData$,
             toObservable(this.normColumns, { injector: this.injector }),
         ])
             .pipe(
                 map(([search, sort, source, data, isTreeData, columns]) =>
-                    filterSearch({ search, sort, source, data, isTreeData, columns }),
+                    filterSort({ search, sort, source, data, isTreeData, columns }),
                 ),
                 takeUntilDestroyed(this.dr),
             )

@@ -17,7 +17,7 @@ interface ColumnParams {
     style?: Record<string, unknown>;
 }
 
-type CellValue = 'string' | Value;
+export type CellValue = 'string' | Value;
 
 export interface Column2<T extends object, C extends object = object> extends ColumnParams {
     field: string;
@@ -32,13 +32,31 @@ export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<
     return typeof fn === 'function' ? (fn as Fn<R, P>) : () => fn;
 }
 
+export function normalizeCell<T extends object, C extends object>(
+    field: string,
+    cell: Column2<T, C>['cell'],
+    hasChild: boolean = false,
+): Fn<Observable<Value>, CellFnArgs<T>> {
+    const cellFn = normalizePossiblyFn(cell);
+    return (...args) =>
+        getPossiblyAsyncObservable(cellFn(...args)).pipe(
+            map((value) => {
+                const defaultValue = hasChild ? { value: '' } : { value: get(args[0], field) };
+                if (isNil(value)) {
+                    return defaultValue;
+                }
+                return typeof value === 'object' ? { ...defaultValue, ...value } : { value };
+            }),
+        );
+}
+
 export class NormColumn<T extends object, C extends object = object> {
     field!: string;
     header!: Observable<Value>;
     cell!: Fn<Observable<Value>, CellFnArgs<T>>;
     child?: Fn<Observable<Value>, CellFnArgs<C>>;
     hidden!: Observable<boolean>;
-    sort!: Observable<boolean>;
+    sort!: Observable<boolean | null>;
     params!: ColumnParams;
 
     constructor(
@@ -54,33 +72,9 @@ export class NormColumn<T extends object, C extends object = object> {
                     : { value: value ?? defaultHeaderValue },
             ),
         );
-        const cellFn = normalizePossiblyFn(cell);
-        this.cell = (...args) =>
-            getPossiblyAsyncObservable(cellFn(...args)).pipe(
-                map((value) => {
-                    const defaultValue = child
-                        ? { value: '' }
-                        : { value: get(args[0], this.field) };
-                    if (isNil(value)) {
-                        return defaultValue;
-                    }
-                    return typeof value === 'object' ? { ...defaultValue, ...value } : { value };
-                }),
-            );
+        this.cell = normalizeCell(this.field, cell, !!child);
         if (child) {
-            const childFn = normalizePossiblyFn(child);
-            this.child = (...args) =>
-                getPossiblyAsyncObservable(childFn(...args)).pipe(
-                    map((value) => {
-                        const defaultValue = { value: get(args[0], this.field) };
-                        if (isNil(value)) {
-                            return defaultValue;
-                        }
-                        return typeof value === 'object'
-                            ? { ...defaultValue, ...value }
-                            : { value };
-                    }),
-                );
+            this.child = normalizeCell(this.field, child);
         }
         this.params = {
             ...commonParams,
@@ -88,6 +82,6 @@ export class NormColumn<T extends object, C extends object = object> {
             style: Object.assign({}, commonParams?.style, params?.style),
         };
         this.hidden = isNil(hidden) ? of(false) : getPossiblyAsyncObservable(hidden);
-        this.sort = isNil(sort) ? of(false) : getPossiblyAsyncObservable(sort);
+        this.sort = isNil(sort) ? of(null) : getPossiblyAsyncObservable(sort);
     }
 }

@@ -8,7 +8,9 @@ import {
     Input,
     Output,
     EventEmitter,
+    input,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -45,13 +47,13 @@ import { valueToString } from './utils/value-to-string';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ValueComponent {
-    @Input() value: Value | null = null;
+    @Input() value: Value | null | undefined = null;
     value$ = createInputSubject(this, 'value', this.value);
 
     @Input() lazyValue: Observable<Value> | undefined = undefined;
     lazyValue$ = createInputSubject(this, 'lazyValue', this.lazyValue);
 
-    @Input({ transform: booleanAttribute }) progress = false;
+    progress = input(false, { transform: booleanAttribute });
     @Input({ transform: booleanAttribute }) inline = false;
     @Input({
         transform: (v: unknown): string => (v === false ? '' : typeof v === 'string' ? v : '―'),
@@ -80,6 +82,13 @@ export class ValueComponent {
                 resultingValue ??
                 runInInjectionContext(this.injector, () => valueToString(resValue)),
         ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    inProgress$ = combineLatest([
+        toObservable(this.progress),
+        this.resValue$.pipe(map((v) => v?.inProgress ?? false)),
+    ]).pipe(
+        map(([compProgress, valueProgress]) => compProgress || valueProgress),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 

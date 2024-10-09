@@ -13,6 +13,8 @@ export type BaseValue<V = unknown> = {
     link?: (event: MouseEvent) => void;
 
     template?: TemplateRef<unknown>;
+
+    inProgress?: boolean;
 };
 
 export type TypedValue<T, V = unknown> = BaseValue<V> & { type: T };

@@ -2,7 +2,7 @@ import { EventEmitter, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject, Observable, combineLatest, switchMap, of } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
 import {
@@ -21,17 +21,14 @@ export class TableDataSource<T extends object, C extends object = never> extends
 > {
     isTreeData$ = new BehaviorSubject(false);
     sourceData$ = new BehaviorSubject<T[] | TreeData<T, C>>([]);
-    data$: Observable<T[] | TreeInlineData<T, C>> = combineLatest([
-        this.sourceData$,
-        this.isTreeData$,
-    ]).pipe(
-        switchMap(([data, isTreeData]) =>
+    data$: Observable<T[] | TreeInlineData<T, C>> = this.isTreeData$.pipe(
+        switchMap((isTreeData) =>
             isTreeData
-                ? of(data as TreeData<T, C>).pipe(
+                ? (this.sourceData$ as Observable<TreeData<T, C>>).pipe(
                       cachedHeadMap(treeDataItemToInlineDataItem),
                       map((v) => v.flat()),
                   )
-                : of(data as T[]),
+                : this.sourceData$,
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -52,12 +49,16 @@ export class TableDataSource<T extends object, C extends object = never> extends
 
     setData(data: T[]) {
         this.sourceData$.next(data);
-        this.isTreeData$.next(false);
+        if (this.isTreeData$.value) {
+            this.isTreeData$.next(false);
+        }
     }
 
     setTreeData(data: TreeData<T, C>) {
         this.sourceData$.next(data);
-        this.isTreeData$.next(true);
+        if (!this.isTreeData$.value) {
+            this.isTreeData$.next(true);
+        }
     }
 }
 

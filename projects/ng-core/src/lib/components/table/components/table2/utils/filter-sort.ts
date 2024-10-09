@@ -1,6 +1,6 @@
 import { runInInjectionContext, Injector, inject } from '@angular/core';
 import { Sort } from '@angular/material/sort';
-import { combineLatest, switchMap, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { compareDifferentTypes } from '../../../../../utils';
@@ -20,28 +20,22 @@ export function columnsDataToFilterSearchData<T extends object, C extends object
 ) {
     const injector = inject(Injector);
     return src$.pipe(
-        switchMap((data) =>
-            combineLatest(
-                Array.from(data.values()).map((v) => combineLatest(v.map((i) => i.value))),
-            ).pipe(
-                map(
-                    (rowData) =>
-                        new Map(
-                            Array.from(data.keys()).map((item, idx) => [
-                                item,
-                                {
-                                    byColumns: rowData[idx].map((el) => [
-                                        runInInjectionContext(injector, () =>
-                                            normalizeString(valueToString(el)),
-                                        ),
-                                        normalizeString(String(el?.description ?? '')),
-                                    ]),
-                                    byRow: JSON.stringify(item),
-                                },
+        map(
+            (data) =>
+                new Map(
+                    Array.from(data.entries()).map(([item, value]) => [
+                        item,
+                        {
+                            byColumns: value.map((el) => [
+                                runInInjectionContext(injector, () =>
+                                    normalizeString(valueToString(el?.value)),
+                                ),
+                                normalizeString(String(el?.value?.description ?? '')),
                             ]),
-                        ),
+                            byRow: JSON.stringify(item),
+                        },
+                    ]),
                 ),
-            ),
         ),
     );
 }
@@ -92,7 +86,7 @@ function sortData<T extends object, C extends object>(
     columns: NormColumn<T, C>[],
     sort: Sort,
 ) {
-    if (!sort.active) {
+    if (!sort?.active || !sort?.direction) {
         return source;
     }
     const colIdx = columns.findIndex((c) => c.field === sort.active);
@@ -105,7 +99,7 @@ function sortData<T extends object, C extends object>(
     return sort.direction === 'desc' ? sortedData.reverse() : sortedData;
 }
 
-export function filterSearch<T extends object, C extends object>({
+export function filterSort<T extends object, C extends object>({
     search,
     sort,
     source,
