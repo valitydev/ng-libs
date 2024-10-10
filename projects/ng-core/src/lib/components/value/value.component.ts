@@ -25,6 +25,7 @@ import { MenuValueComponent } from './components/menu-value.component';
 import { Value } from './types/value';
 import { createInputSubject } from './utils/create-input-subject';
 import { valueToString } from './utils/value-to-string';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'v-value',
@@ -92,7 +93,10 @@ export class ValueComponent {
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
-    constructor(private injector: Injector) {}
+    constructor(
+        private injector: Injector,
+        private router: Router,
+    ) {}
 
     toggleLazyVisible() {
         this.lazyVisible.next(true);
@@ -100,11 +104,15 @@ export class ValueComponent {
     }
 
     click(event: MouseEvent) {
-        runInInjectionContext(this.injector, () => {
+        return runInInjectionContext(this.injector, () => {
             if (this.value?.click) {
-                this.value.click(event);
+                return this.value.click(event);
             } else if (typeof this.value?.link === 'function') {
-                this.value.link(event);
+                const linkArgs = this.value.link(event);
+                if (typeof linkArgs === 'string') {
+                    return this.router.navigateByUrl(linkArgs);
+                }
+                return this.router.navigate(...linkArgs);
             }
         });
     }
