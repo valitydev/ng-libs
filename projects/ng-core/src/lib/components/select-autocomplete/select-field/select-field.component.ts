@@ -12,7 +12,7 @@ import { getHintText } from '../utils/get-hint-text';
     styleUrls: ['./select-field.component.scss'],
     providers: createControlProviders(() => SelectFieldComponent),
 })
-export class SelectFieldComponent<T> extends FormControlSuperclass<T[]> {
+export class SelectFieldComponent<T = unknown> extends FormControlSuperclass<T[]> {
     @Input() options: Option<T>[] = [];
     @Output() searchChange = new EventEmitter<string>();
 
