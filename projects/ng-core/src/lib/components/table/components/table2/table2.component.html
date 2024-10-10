@@ -68,7 +68,7 @@
                     </th>
 
                     <ng-template let-element let-rowIndex="index" matCellDef>
-                        @let cell = columnsData?.get?.(element)?.[colIndex];
+                        @let cell = columnsData?.get?.(element)?.get(col);
                         <td
                             [ngClass]="columnClasses"
                             [ngStyle]="col?.params?.style"

@@ -38,7 +38,13 @@ import {
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
-import { downloadFile, createCsv } from '../../../../utils';
+import {
+    downloadFile,
+    createCsv,
+    arrayAttribute,
+    ArrayAttributeTransform,
+    Nil,
+} from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
@@ -100,7 +106,9 @@ export const TABLE_WRAPPER_STYLE = `
 export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
     treeData = input<TreeData<T, C>>();
-    columns = input<Column2<T>[]>([]);
+    columns = input<Column2<T, C>[], ArrayAttributeTransform<Column2<T, C>>>([], {
+        transform: arrayAttribute,
+    });
     progress = input(false, { transform: Boolean });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
@@ -108,7 +116,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     noDownload = input(false, { transform: booleanAttribute });
 
     // Filter
-    filter = input('', { transform: (v: string | null | undefined) => (v || '').trim() });
+    filter = input('', { transform: (v: string | Nil) => (v || '').trim() });
     filterChange = output<string>();
     filter$ = modelToSubject(this.filter, this.filterChange);
     standaloneFilter = input(false, { transform: booleanAttribute });
@@ -130,7 +138,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     more = output<UpdateOptions>();
 
     dataSource = new TableDataSource<T, C>();
-    normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    normColumns = computed<NormColumn<T, C>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
             combineLatest(cols.map((c) => c.hidden)).pipe(

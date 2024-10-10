@@ -18,7 +18,7 @@ export type ColumnDataItem = {
 export type ColumnData = ColumnDataItem[];
 
 type ScanColumnDataItem = Overwrite<ColumnDataItem, { value: Observable<Value | null> }>;
-type ScanColumnData = ScanColumnDataItem[];
+type ScanColumnData<T extends object, C extends object> = Map<NormColumn<T, C>, ScanColumnDataItem>;
 
 function toScannedValue(src$: Observable<Value>) {
     return src$.pipe(
@@ -30,14 +30,14 @@ function toScannedValue(src$: Observable<Value>) {
 }
 
 export function toObservableColumnsData<T extends object, C extends object>(
-    src$: Observable<{ isTree: boolean; data: DisplayedData<T, C>; cols: NormColumn<T>[] }>,
-): Observable<Map<DisplayedDataItem<T, C>, ScanColumnData>> {
+    src$: Observable<{ isTree: boolean; data: DisplayedData<T, C>; cols: NormColumn<T, C>[] }>,
+): Observable<Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>> {
     return src$.pipe(
         scan(
             (acc, { isTree, data, cols }) => {
                 const isColsNotChanged = acc.cols === cols;
                 return {
-                    res: new Map<TreeInlineDataItem<T, C> | T, ScanColumnData>(
+                    res: new Map<TreeInlineDataItem<T, C> | T, ScanColumnData<T, C>>(
                         isTree
                             ? (data as TreeInlineData<T, C>).map((d, idx) => [
                                   d,
@@ -45,26 +45,37 @@ export function toObservableColumnsData<T extends object, C extends object>(
                                   d === acc.data[idx] &&
                                   // This is not the last value, because we need to calculate isNextChild
                                   idx !== acc.data.length - 1
-                                      ? (acc.res.get(d) as ScanColumnData)
-                                      : cols.map((c) => ({
-                                            value: (d.child && c.child
-                                                ? c.child(d.child, idx)
-                                                : d.value
-                                                  ? c.cell(d.value, idx)
-                                                  : of<Value>({ value: '' })
-                                            ).pipe(toScannedValue),
-                                            isChild: !d.value,
-                                            isNextChild: !(data as TreeInlineData<T, C>)[idx + 1]
-                                                ?.value,
-                                        })),
+                                      ? (acc.res.get(d) as ScanColumnData<T, C>)
+                                      : new Map(
+                                            cols.map((c) => [
+                                                c,
+                                                {
+                                                    value: (d.child && c.child
+                                                        ? c.child(d.child, idx)
+                                                        : d.value
+                                                          ? c.cell(d.value, idx)
+                                                          : of<Value>({ value: '' })
+                                                    ).pipe(toScannedValue),
+                                                    isChild: !d.value,
+                                                    isNextChild: !(data as TreeInlineData<T, C>)[
+                                                        idx + 1
+                                                    ]?.value,
+                                                },
+                                            ]),
+                                        ),
                               ])
                             : (data as T[]).map((d, idx) => [
                                   d,
                                   isColsNotChanged && d === acc.data[idx]
-                                      ? (acc.res.get(d) as ScanColumnData)
-                                      : cols.map((c) => ({
-                                            value: c.cell(d, idx).pipe(toScannedValue),
-                                        })),
+                                      ? (acc.res.get(d) as ScanColumnData<T, C>)
+                                      : new Map(
+                                            cols.map((c) => [
+                                                c,
+                                                {
+                                                    value: c.cell(d, idx).pipe(toScannedValue),
+                                                },
+                                            ]),
+                                        ),
                               ]),
                     ),
                     data,
@@ -73,8 +84,8 @@ export function toObservableColumnsData<T extends object, C extends object>(
             },
             { data: [], cols: [], res: new Map() } as {
                 data: DisplayedData<T, C>;
-                cols: NormColumn<T>[];
-                res: Map<DisplayedDataItem<T, C>, ScanColumnData>;
+                cols: NormColumn<T, C>[];
+                res: Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>;
             },
         ),
         map(({ res }) => res),
@@ -82,7 +93,7 @@ export function toObservableColumnsData<T extends object, C extends object>(
 }
 
 export function toColumnsData<T extends object, C extends object>(
-    src$: Observable<Map<DisplayedDataItem<T, C>, ScanColumnData>>,
+    src$: Observable<Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>>,
 ): Observable<Map<DisplayedDataItem<T, C>, ColumnData>> {
     return src$.pipe(
         switchMap((columnsData) => {
@@ -91,7 +102,11 @@ export function toColumnsData<T extends object, C extends object>(
             }
             return combineLatest(
                 Array.from(columnsData.values()).map((v) =>
-                    combineLatest(v.map((cell) => timer(0).pipe(switchMap(() => cell.value)))),
+                    combineLatest(
+                        Array.from(v.values()).map((cell) =>
+                            timer(0).pipe(switchMap(() => cell.value)),
+                        ),
+                    ),
                 ),
             ).pipe(
                 map(
@@ -99,7 +114,10 @@ export function toColumnsData<T extends object, C extends object>(
                         new Map(
                             Array.from(columnsData.entries()).map(([k, v], idx) => [
                                 k,
-                                v.map((cell, colIdx) => ({ ...cell, value: res[idx][colIdx] })),
+                                Array.from(v.values()).map((cell, colIdx) => ({
+                                    ...cell,
+                                    value: res[idx][colIdx],
+                                })),
                             ]),
                         ),
                 ),
