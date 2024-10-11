@@ -2,9 +2,9 @@
 
 <div class="wrapper">
     <v-table-info-bar
+        [(filter)]="filter"
         [count]="(dataSource.data$ | async)?.length"
         [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
-        [filter]="(filter$ | async) ?? ''"
         [filteredCount]="count$ | async"
         [hasInputs]="!!tableInputsContent?.nativeElement"
         [hasMore]="hasMore()"
@@ -16,7 +16,6 @@
         [size]="size()"
         [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
-        (filterChange)="filter$.next($event)"
         (load)="load()"
         (preload)="preload()"
     >
@@ -78,6 +77,7 @@
                             <v-value
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
                                 [highlight]="filter$ | async"
+                                [lazyValue]="cell?.lazyValue"
                                 [value]="cell?.value | async"
                                 inline
                             ></v-value>

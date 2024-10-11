@@ -3,7 +3,7 @@ import { shareReplay, map } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
 import { Value } from '../../../../value';
-import { NormColumn } from '../../../types';
+import { CellFnArgs, Fn, NormColumn } from '../../../types';
 import { TreeInlineDataItem, TreeInlineData } from '../tree-data';
 
 export type DisplayedDataItem<T extends object, C extends object> = TreeInlineDataItem<T, C> | T;
@@ -19,6 +19,13 @@ export type ColumnData = ColumnDataItem[];
 
 type ScanColumnDataItem = Overwrite<ColumnDataItem, { value: Observable<Value | null> }>;
 type ScanColumnData<T extends object, C extends object> = Map<NormColumn<T, C>, ScanColumnDataItem>;
+
+function getValue<T extends object>(
+    cellFn: Fn<Observable<Value>, CellFnArgs<T>> | undefined,
+    ...[value, idx]: CellFnArgs<T>
+) {
+    return cellFn ? cellFn(value, idx).pipe(toScannedValue) : of(null);
+}
 
 function toScannedValue(src$: Observable<Value>) {
     return src$.pipe(
@@ -50,12 +57,13 @@ export function toObservableColumnsData<T extends object, C extends object>(
                                             cols.map((c) => [
                                                 c,
                                                 {
-                                                    value: (d.child && c.child
-                                                        ? c.child(d.child, idx)
-                                                        : d.value
-                                                          ? c.cell(d.value, idx)
-                                                          : of<Value>({ value: '' })
-                                                    ).pipe(toScannedValue),
+                                                    value:
+                                                        d.child && c.child
+                                                            ? getValue(c.child, d.child, idx)
+                                                            : d.value
+                                                              ? getValue(c.cell, d.value, idx)
+                                                              : of({ value: '' }),
+                                                    // TODO add support of lazyValue
                                                     isChild: !d.value,
                                                     isNextChild: !(data as TreeInlineData<T, C>)[
                                                         idx + 1
@@ -72,7 +80,10 @@ export function toObservableColumnsData<T extends object, C extends object>(
                                             cols.map((c) => [
                                                 c,
                                                 {
-                                                    value: c.cell(d, idx).pipe(toScannedValue),
+                                                    value: getValue(c.cell, d, idx),
+                                                    lazyValue: c.lazyCell
+                                                        ? c.lazyCell(d, idx).pipe(toScannedValue)
+                                                        : undefined,
                                                 },
                                             ]),
                                         ),

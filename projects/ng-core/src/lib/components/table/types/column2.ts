@@ -4,11 +4,11 @@ import startCase from 'lodash-es/startCase';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
+import { Async, PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
 import { Value } from '../../value';
 
-type Fn<R, P extends Array<unknown> = []> = (...args: P) => R;
-type PossiblyFn<R, P extends Array<unknown> = []> = Fn<R, P> | R;
+export type Fn<R, P extends Array<unknown> = []> = (...args: P) => R;
+export type PossiblyFn<R, P extends Array<unknown> = []> = Fn<R, P> | R;
 
 export type CellFnArgs<T extends object> = [data: T, index: number];
 
@@ -21,9 +21,13 @@ export type CellValue = 'string' | Value;
 
 export interface Column2<T extends object, C extends object = object> extends ColumnParams {
     field: string;
+
     header?: PossiblyAsync<Partial<Value> | string>;
+
     cell?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<T>>;
+    lazyCell?: PossiblyFn<Async<CellValue>, CellFnArgs<T>>;
     child?: PossiblyFn<PossiblyAsync<CellValue>, CellFnArgs<C>>;
+
     hidden?: PossiblyAsync<boolean>;
     sort?: PossiblyAsync<boolean>;
 }
@@ -53,14 +57,15 @@ export function normalizeCell<T extends object, C extends object>(
 export class NormColumn<T extends object, C extends object = object> {
     field!: string;
     header!: Observable<Value>;
-    cell!: Fn<Observable<Value>, CellFnArgs<T>>;
+    cell?: Fn<Observable<Value>, CellFnArgs<T>>;
+    lazyCell?: Fn<Observable<Value>, CellFnArgs<T>>;
     child?: Fn<Observable<Value>, CellFnArgs<C>>;
     hidden!: Observable<boolean>;
     sort!: Observable<boolean | null>;
     params!: ColumnParams;
 
     constructor(
-        { field, header, cell, child, hidden, sort, ...params }: Column2<T, C>,
+        { field, header, cell, child, hidden, sort, lazyCell, ...params }: Column2<T, C>,
         commonParams: ColumnParams = {},
     ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());
@@ -72,7 +77,12 @@ export class NormColumn<T extends object, C extends object = object> {
                     : { value: value ?? defaultHeaderValue },
             ),
         );
-        this.cell = normalizeCell(this.field, cell, !!child);
+        if (cell) {
+            this.cell = normalizeCell(this.field, cell, !!child);
+        }
+        if (lazyCell) {
+            this.lazyCell = normalizeCell(this.field, lazyCell, !!child);
+        }
         if (child) {
             this.child = normalizeCell(this.field, child);
         }

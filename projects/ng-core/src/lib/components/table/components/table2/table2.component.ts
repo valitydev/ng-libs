@@ -15,6 +15,7 @@ import {
     OnInit,
     ViewChild,
     ContentChild,
+    model,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -63,7 +64,7 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
 import { TreeData, TreeInlineData } from './tree-data';
-import { filterSort, columnsDataToFilterSearchData } from './utils/filter-sort';
+import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
 import { toObservableColumnsData, toColumnsData } from './utils/to-columns-data';
 
 export const TABLE_WRAPPER_STYLE = `
@@ -73,6 +74,8 @@ export const TABLE_WRAPPER_STYLE = `
     margin: -8px;
     height: 100%;
 `;
+
+const DEBOUNCE_TIME_MS = 500;
 
 @Component({
     standalone: true,
@@ -116,10 +119,15 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     noDownload = input(false, { transform: booleanAttribute });
 
     // Filter
-    filter = input('', { transform: (v: string | Nil) => (v || '').trim() });
-    filterChange = output<string>();
-    filter$ = modelToSubject(this.filter, this.filterChange);
+    filter = model('');
+    filter$ = toObservable(this.filter).pipe(
+        map((v) => (v || '').trim()),
+        distinctUntilChanged(),
+        debounceTime(DEBOUNCE_TIME_MS),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     standaloneFilter = input(false, { transform: booleanAttribute });
+    externalFilter = input(false, { transform: booleanAttribute });
     displayedData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
 
     // Select
@@ -223,22 +231,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((data) => {
                 this.dataSource.setTreeData(data);
             });
-        const filter$ = this.filter$.pipe(
-            map((filter) => filter?.trim?.() ?? ''),
-            distinctUntilChanged(),
-            debounceTime(500),
-            share(),
-        );
-        toObservable(this.filter, { injector: this.injector })
-            .pipe(takeUntilDestroyed(this.dr))
-            .subscribe((filter) => {
-                this.filter$.next(filter);
-            });
-        filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
-            this.filterChange.emit(filter);
-        });
         combineLatest([
-            filter$,
+            this.filter$,
             this.sort$,
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
@@ -246,20 +240,26 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             ),
             this.dataSource.isTreeData$,
             toObservable(this.normColumns, { injector: this.injector }),
+            toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
-                map(([search, sort, source, data, isTreeData, columns]) =>
-                    filterSort({ search, sort, source, data, isTreeData, columns }),
-                ),
+                map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
+                    if (isTreeData) {
+                        return source;
+                    }
+                    const filteredData =
+                        !isExternalFilter && search ? filterData(data, search) : source.slice();
+                    return sortData(filteredData, data, columns, sort);
+                }),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
             });
-        filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
+        this.filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
             this.sortChange.emit(DEFAULT_SORT);
         });
-        merge(filter$, this.sort$)
+        merge(this.filter$, this.sort$)
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
                 this.reset();
