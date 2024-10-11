@@ -77,7 +77,7 @@ export class NormColumn<T extends object, C extends object = object> {
                     : { value: value ?? defaultHeaderValue },
             ),
         );
-        if (cell) {
+        if (cell || !lazyCell) {
             this.cell = normalizeCell(this.field, cell, !!child);
         }
         if (lazyCell) {

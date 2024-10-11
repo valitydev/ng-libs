@@ -22,7 +22,7 @@ export function createColumn<P, A extends object>(
             field,
             ...columnObject,
             ...column,
-            cell: (...cellArgs) => {
+            cell: (...cellArgs: CellFnArgs<T>) => {
                 const cellValue$ = getPossiblyAsyncObservable(getCellParams(...cellArgs)).pipe(
                     switchMap((cellParams) =>
                         getPossiblyAsyncObservable(

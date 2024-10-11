@@ -78,6 +78,7 @@
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
                                 [highlight]="filter$ | async"
                                 [lazyValue]="cell?.lazyValue"
+                                [lazyVisible]="rowIndex < 3"
                                 [value]="cell?.value | async"
                                 inline
                             ></v-value>

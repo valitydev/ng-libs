@@ -3,7 +3,7 @@
         <mat-icon>sync</mat-icon>
     </button>
 } @else {
-    @if (resValue$ | async; as v) {
+    @if (value$ | async; as v) {
         @if (v.template) {
             <ng-container *ngTemplateOutlet="v.template; context: {}"></ng-container>
         } @else {
@@ -33,14 +33,14 @@
                         <v-menu-value [value]="v"></v-menu-value>
                     }
                     @default {
-                        @let renderedValue = renderedValue$ | async;
+                        @let valueText = valueText$ | async;
                         @if (inProgress$ | async) {
-                            <v-content-loading [hiddenText]="renderedValue"></v-content-loading>
-                        } @else if (renderedValue) {
+                            <v-content-loading [hiddenText]="valueText"></v-content-loading>
+                        } @else if (valueText) {
                             <span
                                 [ngClass]="{ value__click: v.click, value__link: v.link }"
                                 [vHighlightSearch]="highlight"
-                                [vHighlightText]="renderedValue"
+                                [vHighlightText]="valueText"
                                 vHighlight
                                 (click)="click($event)"
                             ></span>
