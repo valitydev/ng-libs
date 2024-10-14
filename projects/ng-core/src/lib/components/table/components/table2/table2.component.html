@@ -5,7 +5,7 @@
         [(filter)]="filter"
         [count]="(dataSource.data$ | async)?.length"
         [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
-        [filteredCount]="count$ | async"
+        [filteredCount]="displayedCount$ | async"
         [hasInputs]="!!tableInputsContent?.nativeElement"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
@@ -23,7 +23,10 @@
         <v-table-inputs><ng-content select="v-table-inputs"></ng-content></v-table-inputs>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
-        <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
+        <v-no-records
+            [noRecords]="!(displayedCount$ | async)"
+            [progress]="progress()"
+        ></v-no-records>
         <table
             #matTable
             [dataSource]="dataSource"

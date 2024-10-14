@@ -36,6 +36,7 @@ import {
     first,
     merge,
     tap,
+    defer,
 } from 'rxjs';
 import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
 
@@ -128,7 +129,22 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     standaloneFilter = input(false, { transform: booleanAttribute });
     externalFilter = input(false, { transform: booleanAttribute });
-    displayedData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
+    filteredSortData$ = new BehaviorSubject<T[] | TreeInlineData<T, C> | null>(null);
+    displayedData$ = combineLatest([
+        defer(() => this.dataSource.data$),
+        this.filteredSortData$,
+        defer(() => this.columnsDataProgress$),
+    ]).pipe(
+        map(([data, filteredSortData, columnsDataProgress]) =>
+            filteredSortData && !columnsDataProgress ? filteredSortData : data,
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    displayedCount$ = this.displayedData$.pipe(
+        map((data) => data?.length || 0),
+        distinctUntilChanged(),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
@@ -173,29 +189,18 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([
-        this.filter$,
-        this.displayedData$,
-        this.dataSource.data$,
-        this.columnsDataProgress$,
-    ]).pipe(
-        map(([filter, filtered, source, columnsDataProgress]) =>
-            filter && !columnsDataProgress ? filtered?.length : source?.length,
-        ),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
         this.dataSource.data$,
-        this.displayedData$,
+        this.displayedCount$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
     ]).pipe(
         map(
-            ([hasMore, data, filteredData, size]) =>
-                (hasMore && filteredData.length === data.length) || filteredData.length > size,
+            ([hasMore, data, displayedCount, size]) =>
+                (hasMore && displayedCount === data.length) || displayedCount > size,
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -328,7 +333,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
-        this.displayedData$.next(filtered);
+        this.filteredSortData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;
     }
