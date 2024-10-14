@@ -6,8 +6,6 @@ import {
     Injector,
     ChangeDetectionStrategy,
     Input,
-    Output,
-    EventEmitter,
     input,
     model,
 } from '@angular/core';
@@ -15,18 +13,18 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
 import { combineLatest, switchMap, of, isObservable, Observable } from 'rxjs';
 import { map, shareReplay, first, filter } from 'rxjs/operators';
 
 import { HighlightDirective } from '../../directives';
+import { Nil } from '../../utils';
 import { ContentLoadingComponent } from '../content-loading';
 import { TagModule } from '../tag';
 
 import { MenuValueComponent } from './components/menu-value.component';
 import { Value } from './types/value';
 import { valueToString } from './utils/value-to-string';
-import { Router } from '@angular/router';
-import { Nil } from '../../utils';
 
 @Component({
     selector: 'v-value',

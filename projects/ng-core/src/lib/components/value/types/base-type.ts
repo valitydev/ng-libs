@@ -1,7 +1,7 @@
 import { TemplateRef } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Color } from '../../../styles';
-import { Router } from '@angular/router';
 
 export type BaseValue<V = unknown> = {
     value?: V;

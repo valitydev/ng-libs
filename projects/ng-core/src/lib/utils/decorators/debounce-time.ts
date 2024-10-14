@@ -1,5 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function DebounceTime(ms: number = 500) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function (target: object, propertyKey: PropertyKey, descriptor: PropertyDescriptor) {
         let timer: number | null = null;
         const method = descriptor.value;
 
@@ -8,6 +9,7 @@ export function DebounceTime(ms: number = 500) {
                 window.clearTimeout(timer);
             }
             timer = window.setTimeout(() => {
+                // eslint-disable-next-line prefer-rest-params
                 method.apply(this, arguments);
                 timer = null;
             }, ms);

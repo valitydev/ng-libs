@@ -12,7 +12,7 @@
         [noDownload]="noDownload()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
-        [selectedCount]="(selected$ | async)?.length"
+        [selectedCount]="rowSelected()?.length"
         [size]="size()"
         [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
@@ -34,15 +34,14 @@
             [matSortDirection]="sort().direction"
             mat-table
             matSort
-            (matSortChange)="this.sortChange.emit($event)"
+            (matSortChange)="sort.set($event)"
         >
             @if (rowSelectable()) {
                 <v-select-column
-                    [data]="$any(displayedData$ | async) ?? []"
+                    [(selected)]="rowSelected"
+                    [data]="displayedData$ | async"
                     [name]="columnDefs.select"
                     [progress]="progress()"
-                    [selected]="$any(selected$ | async) ?? []"
-                    (selectedChange)="rowSelectedChange.emit($event)"
                 ></v-select-column>
             }
             @for (col of displayedNormColumns$ | async; track col; let colIndex = $index) {

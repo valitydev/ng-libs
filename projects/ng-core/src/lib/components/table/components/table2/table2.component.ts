@@ -32,7 +32,6 @@ import {
     forkJoin,
     BehaviorSubject,
     debounceTime,
-    share,
     first,
     merge,
     tap,
@@ -45,14 +44,12 @@ import {
     createCsv,
     arrayAttribute,
     ArrayAttributeTransform,
-    Nil,
 } from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
-import { modelToSubject } from '../../utils/model-to-subject';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -64,9 +61,14 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
-import { TreeData, TreeInlineData } from './tree-data';
+import { TreeData } from './tree-data';
 import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
-import { toObservableColumnsData, toColumnsData, DisplayedDataItem } from './utils/to-columns-data';
+import {
+    toObservableColumnsData,
+    toColumnsData,
+    DisplayedDataItem,
+    DisplayedData,
+} from './utils/to-columns-data';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -130,7 +132,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     standaloneFilter = input(false, { transform: booleanAttribute });
     externalFilter = input(false, { transform: booleanAttribute });
-    filteredSortData$ = new BehaviorSubject<T[] | TreeInlineData<T, C> | null>(null);
+    filteredSortData$ = new BehaviorSubject<DisplayedData<T, C> | null>(null);
     displayedData$ = combineLatest([
         defer(() => this.dataSource.data$),
         this.filteredSortData$,
@@ -149,14 +151,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
-    rowSelected = input<T[] | TreeInlineData<T, C>>([]);
-    rowSelectedChange = output<T[] | TreeInlineData<T, C>>();
-    selected$ = modelToSubject(this.rowSelected, this.rowSelectedChange);
+    rowSelected = model<DisplayedData<T, C>>([]);
 
     // Sort
-    sort = input<Sort>(DEFAULT_SORT);
-    sortChange = output<Sort>();
-    sort$ = modelToSubject(this.sort, this.sortChange);
+    sort = model<Sort>(DEFAULT_SORT);
     @ViewChild(MatSort) sortComponent!: MatSort;
 
     update = output<UpdateOptions>();
@@ -246,7 +244,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         });
         combineLatest([
             this.filter$,
-            this.sort$,
+            toObservable(this.sort, { injector: this.injector }),
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
                 this.columnsData$.pipe(columnsDataToFilterSearchData),
@@ -271,9 +269,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 this.updateSortFilter(filtered);
             });
         this.filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
-            this.sortChange.emit(DEFAULT_SORT);
+            this.sort.set(DEFAULT_SORT);
         });
-        merge(this.filter$, this.sort$)
+        merge(this.filter$, toObservable(this.sort, { injector: this.injector }))
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
                 this.reset();
@@ -341,7 +339,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         this.reset();
     }
 
-    private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
+    private updateSortFilter(filtered: DisplayedData<T, C>) {
         this.filteredSortData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;

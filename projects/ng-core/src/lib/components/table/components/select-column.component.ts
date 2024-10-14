@@ -8,8 +8,8 @@ import {
     OnInit,
     OnDestroy,
     OnChanges,
-    output,
     ChangeDetectionStrategy,
+    model,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -17,7 +17,7 @@ import { MatTableModule } from '@angular/material/table';
 import { combineLatest } from 'rxjs';
 import { startWith, map, shareReplay } from 'rxjs/operators';
 
-import { ComponentChanges } from '../../../utils';
+import { arrayAttribute, ArrayAttributeTransform, ComponentChanges } from '../../../utils';
 
 import { BaseColumnComponent } from './base-column.component';
 
@@ -66,10 +66,10 @@ export class SelectColumnComponent<T>
     extends BaseColumnComponent
     implements OnInit, OnDestroy, OnChanges
 {
-    selected = input<T[]>([]);
-    selectedChange = output<T[]>();
-
-    data = input<T[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selected = model<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data = input<T[], ArrayAttributeTransform<any>>([], { transform: arrayAttribute });
     progress = input<boolean | number | null | undefined>(false);
     /**
      * @deprecated
@@ -92,7 +92,7 @@ export class SelectColumnComponent<T>
     override ngOnInit() {
         super.ngOnInit();
         this.selection.changed.pipe(takeUntilDestroyed(this.dr)).subscribe(() => {
-            this.selectedChange.emit(this.selection.selected);
+            this.selected.set(this.selection.selected);
         });
     }
 
