@@ -19,6 +19,10 @@ export type ColumnData = ColumnDataItem[];
 
 type ScanColumnDataItem = Overwrite<ColumnDataItem, { value: Observable<Value | null> }>;
 type ScanColumnData<T extends object, C extends object> = Map<NormColumn<T, C>, ScanColumnDataItem>;
+type ColumnDataMap<T extends object, C extends object> = Map<
+    DisplayedDataItem<T, C>,
+    ScanColumnData<T, C>
+>;
 
 function getValue<T extends object>(
     cellFn: Fn<Observable<Value>, CellFnArgs<T>> | undefined,
@@ -38,7 +42,7 @@ function toScannedValue(src$: Observable<Value>) {
 
 export function toObservableColumnsData<T extends object, C extends object>(
     src$: Observable<{ isTree: boolean; data: DisplayedData<T, C>; cols: NormColumn<T, C>[] }>,
-): Observable<Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>> {
+): Observable<ColumnDataMap<T, C>> {
     return src$.pipe(
         scan(
             (acc, { isTree, data, cols }) => {
@@ -96,7 +100,7 @@ export function toObservableColumnsData<T extends object, C extends object>(
             { data: [], cols: [], res: new Map() } as {
                 data: DisplayedData<T, C>;
                 cols: NormColumn<T, C>[];
-                res: Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>;
+                res: ColumnDataMap<T, C>;
             },
         ),
         map(({ res }) => res),
@@ -104,7 +108,7 @@ export function toObservableColumnsData<T extends object, C extends object>(
 }
 
 export function toColumnsData<T extends object, C extends object>(
-    src$: Observable<Map<DisplayedDataItem<T, C>, ScanColumnData<T, C>>>,
+    src$: Observable<ColumnDataMap<T, C>>,
 ): Observable<Map<DisplayedDataItem<T, C>, ColumnData>> {
     return src$.pipe(
         switchMap((columnsData) => {
