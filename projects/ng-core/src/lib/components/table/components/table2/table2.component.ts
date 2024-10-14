@@ -66,7 +66,7 @@ import { TableProgressBarComponent } from '../table-progress-bar.component';
 import { COLUMN_DEFS } from './consts';
 import { TreeData, TreeInlineData } from './tree-data';
 import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
-import { toObservableColumnsData, toColumnsData } from './utils/to-columns-data';
+import { toObservableColumnsData, toColumnsData, DisplayedDataItem } from './utils/to-columns-data';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -77,6 +77,7 @@ export const TABLE_WRAPPER_STYLE = `
 `;
 
 const DEBOUNCE_TIME_MS = 500;
+const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
 @Component({
     standalone: true,
@@ -161,6 +162,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
+    loadedLazyItems = new WeakMap<DisplayedDataItem<T, C>, boolean>();
+
     dataSource = new TableDataSource<T, C>();
     normColumns = computed<NormColumn<T, C>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
@@ -236,6 +239,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((data) => {
                 this.dataSource.setTreeData(data);
             });
+        this.dataSource.data$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
+            for (const item of data.slice(0, DEFAULT_LOADED_LAZY_ROWS_COUNT)) {
+                this.loadedLazyItems.set(item, true);
+            }
+        });
         combineLatest([
             this.filter$,
             this.sort$,
@@ -253,9 +261,10 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         return source;
                     }
                     const filteredData =
-                        !isExternalFilter && search ? filterData(data, search) : source.slice();
+                        !isExternalFilter && search ? filterData(data, search) : source;
                     return sortData(filteredData, data, columns, sort);
                 }),
+                distinctUntilChanged(),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {

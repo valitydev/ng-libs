@@ -15,3 +15,4 @@ export * from './import';
 export * from './file';
 export * from './csv';
 export * from './transform-attribute';
+export * from './decorators';
