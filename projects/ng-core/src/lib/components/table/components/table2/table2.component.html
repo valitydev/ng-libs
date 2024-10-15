@@ -60,7 +60,7 @@
                 >
                     <th
                         *matHeaderCellDef
-                        [disabled]="(col.sort | async) === false || hasMore()"
+                        [disabled]="(col.sort | async) === false || hasMore() || progress()"
                         [mat-sort-header]="col.field"
                         [ngClass]="columnClasses"
                         mat-header-cell

@@ -268,9 +268,14 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
             });
-        this.filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
-            this.sort.set(DEFAULT_SORT);
-        });
+        merge(
+            this.filter$.pipe(filter(Boolean)),
+            toObservable(this.hasMore, { injector: this.injector }).pipe(filter(Boolean)),
+        )
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe(() => {
+                this.sort.set(DEFAULT_SORT);
+            });
         merge(this.filter$, toObservable(this.sort, { injector: this.injector }))
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
