@@ -30,7 +30,9 @@ import { BaseColumnComponent } from './base-column.component';
             <th *matHeaderCellDef [class]="columnClasses" mat-header-cell>
                 <mat-checkbox
                     [checked]="selection.hasValue() && (isAllSelected$ | async)"
-                    [disabled]="!!progress() || (filtered() && !(isAllSelected$ | async))"
+                    [disabled]="
+                        !!progress() || !data()?.length || (filtered() && !(isAllSelected$ | async))
+                    "
                     [indeterminate]="selection.hasValue() && !(isAllSelected$ | async)"
                     (change)="$event ? toggleAllRows() : null"
                 >
