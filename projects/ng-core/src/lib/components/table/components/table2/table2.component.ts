@@ -16,6 +16,7 @@ import {
     ViewChild,
     ContentChild,
     model,
+    ChangeDetectorRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -69,6 +70,7 @@ import {
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
+import { isEqual } from 'lodash-es';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -78,7 +80,9 @@ export const TABLE_WRAPPER_STYLE = `
     height: 100%;
 `;
 
+const SHORT_DEBOUNCE_TIME_MS = 300;
 const DEBOUNCE_TIME_MS = 500;
+const LONG_DEBOUNCE_TIME_MS = 1000;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
 @Component({
@@ -138,13 +142,14 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         this.filteredSortData$,
         defer(() => this.columnsDataProgress$),
     ]).pipe(
-        map(([data, filteredSortData, columnsDataProgress]) =>
-            filteredSortData && !columnsDataProgress ? filteredSortData : data,
+        map(
+            ([data, filteredSortData, columnsDataProgress]) =>
+                (filteredSortData && !columnsDataProgress ? filteredSortData : data) || [],
         ),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
     displayedCount$ = this.displayedData$.pipe(
-        map((data) => data?.length || 0),
+        map((data) => data.length),
         distinctUntilChanged(),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
@@ -198,11 +203,18 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
+        this.displayedNormColumns$,
+        toObservable(this.progress),
     ]).pipe(
         map(
-            ([hasMore, data, displayedCount, size]) =>
-                (hasMore && displayedCount === data.length) || displayedCount > size,
+            ([hasMore, data, displayedCount, size, displayedNormColumns, progress]) =>
+                ((hasMore && displayedCount !== 0 && displayedCount === data.length) ||
+                    displayedCount > size) &&
+                displayedNormColumns?.length &&
+                !progress,
         ),
+        distinctUntilChanged(),
+        debounceTime(LONG_DEBOUNCE_TIME_MS),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -224,6 +236,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
+        private cdr: ChangeDetectorRef,
     ) {}
 
     ngOnInit() {
@@ -237,11 +250,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((data) => {
                 this.dataSource.setTreeData(data);
             });
-        this.dataSource.data$.pipe(takeUntilDestroyed(this.dr)).subscribe((data) => {
-            for (const item of data.slice(0, DEFAULT_LOADED_LAZY_ROWS_COUNT)) {
-                this.loadedLazyItems.set(item, true);
-            }
-        });
         combineLatest([
             this.filter$,
             toObservable(this.sort, { injector: this.injector }),
@@ -254,6 +262,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
+                debounceTime(SHORT_DEBOUNCE_TIME_MS),
                 map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
                     if (isTreeData) {
                         return source;
@@ -262,11 +271,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         !isExternalFilter && search ? filterData(data, search) : source;
                     return sortData(filteredData, data, columns, sort);
                 }),
-                distinctUntilChanged(),
+                distinctUntilChanged(isEqual),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
+                this.updateLoadedLazyItems(filtered);
+                this.cdr.markForCheck();
             });
         merge(
             this.filter$.pipe(filter(Boolean)),
@@ -360,5 +371,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     private refreshTable() {
         // eslint-disable-next-line no-self-assign
         this.dataSource.data = this.dataSource.data;
+    }
+
+    private updateLoadedLazyItems(items: DisplayedData<T, C>) {
+        const lazyLoadedItems = items.slice(0, DEFAULT_LOADED_LAZY_ROWS_COUNT);
+        for (const item of lazyLoadedItems) {
+            this.loadedLazyItems.set(item, true);
+        }
     }
 }
