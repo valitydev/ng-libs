@@ -38,7 +38,15 @@ import {
     tap,
     defer,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
+import {
+    shareReplay,
+    map,
+    distinctUntilChanged,
+    delay,
+    filter,
+    startWith,
+    share,
+} from 'rxjs/operators';
 
 import {
     downloadFile,
@@ -70,7 +78,6 @@ import {
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
-import { isEqual } from 'lodash-es';
 
 export const TABLE_WRAPPER_STYLE = `
     display: block;
@@ -82,7 +89,6 @@ export const TABLE_WRAPPER_STYLE = `
 
 const SHORT_DEBOUNCE_TIME_MS = 300;
 const DEBOUNCE_TIME_MS = 500;
-const LONG_DEBOUNCE_TIME_MS = 1000;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
 @Component({
@@ -139,7 +145,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     filteredSortData$ = new BehaviorSubject<DisplayedData<T, C> | null>(null);
     displayedData$ = combineLatest([
         defer(() => this.dataSource.data$),
-        this.filteredSortData$,
+        this.filteredSortData$.pipe(distinctUntilChanged()),
         defer(() => this.columnsDataProgress$),
     ]).pipe(
         map(
@@ -197,24 +203,19 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        this.dataSource.data$,
+        this.dataSource.data$.pipe(map((d) => d?.length)),
         this.displayedCount$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
-        this.displayedNormColumns$,
-        toObservable(this.progress),
     ]).pipe(
         map(
-            ([hasMore, data, displayedCount, size, displayedNormColumns, progress]) =>
-                ((hasMore && displayedCount !== 0 && displayedCount === data.length) ||
-                    displayedCount > size) &&
-                displayedNormColumns?.length &&
-                !progress,
+            ([hasMore, dataCount, displayedDataCount, size]) =>
+                (hasMore && displayedDataCount !== 0 && displayedDataCount >= dataCount) ||
+                displayedDataCount > size,
         ),
         distinctUntilChanged(),
-        debounceTime(LONG_DEBOUNCE_TIME_MS),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -240,6 +241,11 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     ) {}
 
     ngOnInit() {
+        const sort$ = toObservable(this.sort, { injector: this.injector }).pipe(
+            distinctUntilChanged(),
+            share(),
+        );
+
         toObservable(this.data, { injector: this.injector })
             .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
             .subscribe((data) => {
@@ -252,7 +258,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             });
         combineLatest([
             this.filter$,
-            toObservable(this.sort, { injector: this.injector }),
+            sort$,
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
                 this.columnsData$.pipe(columnsDataToFilterSearchData),
@@ -262,6 +268,9 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
+                tap(() => {
+                    this.filteredSortData$.next(null);
+                }),
                 debounceTime(SHORT_DEBOUNCE_TIME_MS),
                 map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
                     if (isTreeData) {
@@ -271,7 +280,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         !isExternalFilter && search ? filterData(data, search) : source;
                     return sortData(filteredData, data, columns, sort);
                 }),
-                distinctUntilChanged(isEqual),
+                // distinctUntilChanged(isEqual),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
@@ -287,7 +296,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe(() => {
                 this.sort.set(DEFAULT_SORT);
             });
-        merge(this.filter$, toObservable(this.sort, { injector: this.injector }))
+        merge(this.filter$, sort$)
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
                 this.reset();

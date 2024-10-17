@@ -98,7 +98,11 @@
             <tr
                 *matFooterRowDef="(hasAutoShowMore$ | async) ? (displayedColumns$ | async) : []"
                 [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) }"
-                [vInfinityScroll]="!progress()"
+                [vInfinityScroll]="
+                    !progress() &&
+                    !(columnsDataProgress$ | async) &&
+                    (filteredSortData$ | async)?.length
+                "
                 mat-row
                 (vInfinityScrollMore)="showMore()"
             ></tr>
