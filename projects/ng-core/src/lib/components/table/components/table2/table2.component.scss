@@ -46,6 +46,10 @@
     }
 }
 
+::ng-deep .mat-mdc-footer-cell {
+    border-bottom: 1px solid;
+}
+
 .row__hidden {
     display: none;
 }

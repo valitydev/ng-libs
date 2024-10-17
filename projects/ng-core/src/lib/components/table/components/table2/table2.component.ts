@@ -79,14 +79,6 @@ import {
     DisplayedData,
 } from './utils/to-columns-data';
 
-export const TABLE_WRAPPER_STYLE = `
-    display: block;
-    overflow: auto;
-    padding: 8px;
-    margin: -8px;
-    height: 100%;
-`;
-
 const SHORT_DEBOUNCE_TIME_MS = 300;
 const DEBOUNCE_TIME_MS = 500;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
@@ -118,7 +110,6 @@ const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
         TableInputsComponent,
         MatButton,
     ],
-    host: { style: TABLE_WRAPPER_STYLE },
 })
 export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
