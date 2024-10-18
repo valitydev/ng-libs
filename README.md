@@ -5,6 +5,7 @@
     -   [Prettier Config](/projects/prettier-config)
     -   [ESLint Config](/projects/eslint-config)
     -   [CSpell Config](/projects/cspell-config)
+-   [Docs](/projects/ng-libs-doc)
 
 ## 💻 Development with locally built/runnable library
 
