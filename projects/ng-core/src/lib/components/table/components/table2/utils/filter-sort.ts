@@ -56,7 +56,7 @@ function getWeight(
     return 0;
 }
 
-function filterData<T extends object, C extends object>(
+export function filterData<T extends object, C extends object>(
     data: FilterSearchData<T, C>,
     search: string,
 ) {
@@ -80,7 +80,7 @@ function filterData<T extends object, C extends object>(
         .map((v) => v.value);
 }
 
-function sortData<T extends object, C extends object>(
+export function sortData<T extends object, C extends object>(
     source: DisplayedData<T, C>,
     data: FilterSearchData<T, C>,
     columns: NormColumn<T, C>[],
@@ -90,33 +90,13 @@ function sortData<T extends object, C extends object>(
         return source;
     }
     const colIdx = columns.findIndex((c) => c.field === sort.active);
-    const sortedData = source.sort((a, b) =>
-        compareDifferentTypes(
-            (data.get(a)?.byColumns ?? [])[colIdx]?.[0],
-            (data.get(b)?.byColumns ?? [])[colIdx]?.[0],
-        ),
-    );
+    const sortedData = source
+        .slice()
+        .sort((a, b) =>
+            compareDifferentTypes(
+                (data.get(a)?.byColumns ?? [])[colIdx]?.[0],
+                (data.get(b)?.byColumns ?? [])[colIdx]?.[0],
+            ),
+        );
     return sort.direction === 'desc' ? sortedData.reverse() : sortedData;
-}
-
-export function filterSort<T extends object, C extends object>({
-    search,
-    sort,
-    source,
-    data,
-    isTreeData,
-    columns,
-}: {
-    search: string;
-    sort: Sort;
-    source: DisplayedData<T, C>;
-    data: FilterSearchData<T, C>;
-    isTreeData: boolean;
-    columns: NormColumn<T, C>[];
-}) {
-    if (isTreeData) {
-        return source;
-    }
-    const filteredData = search ? filterData(data, search) : source.slice();
-    return sortData(filteredData, data, columns, sort);
 }

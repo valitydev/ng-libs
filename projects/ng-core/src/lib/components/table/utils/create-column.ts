@@ -10,19 +10,20 @@ import { createUniqueColumnDef } from './create-unique-column-def';
 
 export function createColumn<P, A extends object>(
     createCell: (cellParams: P, ...args: CellFnArgs<A>) => PossiblyAsync<Value>,
-    columnObject: Partial<Omit<Column2<object>, 'cell'>> = {},
+    columnObject: Partial<Column2<A>> = {},
 ) {
     return <T extends A>(
         getCellParams: (...args: CellFnArgs<T>) => PossiblyAsync<P>,
-        column: Partial<Column2<T>> = {},
+        { isLazyCell, ...column }: Partial<Column2<T>> & { isLazyCell?: boolean } = {},
     ): Column2<T> => {
         const injector = inject(Injector);
         const field = column?.field ?? createUniqueColumnDef(column?.header);
+        const cellKey = isLazyCell ? 'lazyCell' : 'cell';
         return {
             field,
             ...columnObject,
             ...column,
-            cell: (...cellArgs) => {
+            [cellKey]: (...cellArgs: CellFnArgs<T>) => {
                 const cellValue$ = getPossiblyAsyncObservable(getCellParams(...cellArgs)).pipe(
                     switchMap((cellParams) =>
                         getPossiblyAsyncObservable(
@@ -32,10 +33,10 @@ export function createColumn<P, A extends object>(
                         ),
                     ),
                 );
-                if (column.cell) {
+                if (column[cellKey]) {
                     const columnCellValue$ = normalizeCell(
                         field,
-                        column.cell,
+                        column[cellKey],
                         !!column?.child,
                     )(...cellArgs);
                     return combineLatest([cellValue$, columnCellValue$]).pipe(

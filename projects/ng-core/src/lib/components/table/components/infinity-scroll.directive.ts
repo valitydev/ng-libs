@@ -17,8 +17,7 @@ import { createIntersectionObserver } from '../utils/create-intersection-observe
     standalone: true,
 })
 export class InfinityScrollDirective implements OnInit {
-    vInfinityScroll = input(true, { transform: booleanAttribute });
-    vInfinityScrollProgress = input(false, { transform: booleanAttribute });
+    vInfinityScroll = input(false, { transform: booleanAttribute });
     vInfinityScrollMore = output();
 
     constructor(
@@ -29,7 +28,7 @@ export class InfinityScrollDirective implements OnInit {
     ngOnInit() {
         createIntersectionObserver(this.elementRef.nativeElement)
             .pipe(
-                filter(() => !this.vInfinityScrollProgress()),
+                filter(() => this.vInfinityScroll()),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe(() => {

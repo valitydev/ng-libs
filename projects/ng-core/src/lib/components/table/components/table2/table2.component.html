@@ -2,21 +2,20 @@
 
 <div class="wrapper">
     <v-table-info-bar
+        [(filter)]="filter"
         [count]="(dataSource.data$ | async)?.length"
         [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
-        [filter]="(filter$ | async) ?? ''"
-        [filteredCount]="count$ | async"
+        [filteredCount]="displayedCount$ | async"
         [hasInputs]="!!tableInputsContent?.nativeElement"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [noDownload]="noDownload()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
-        [selectedCount]="(selected$ | async)?.length"
+        [selectedCount]="rowSelected()?.length"
         [size]="size()"
         [standaloneFilter]="standaloneFilter()"
         (downloadCsv)="downloadCsv()"
-        (filterChange)="filter$.next($event)"
         (load)="load()"
         (preload)="preload()"
     >
@@ -24,7 +23,10 @@
         <v-table-inputs><ng-content select="v-table-inputs"></ng-content></v-table-inputs>
     </v-table-info-bar>
     <mat-card #scrollViewport class="card">
-        <v-no-records [noRecords]="!(count$ | async)" [progress]="progress()"></v-no-records>
+        <v-no-records
+            [noRecords]="!(displayedCount$ | async)"
+            [progress]="progress()"
+        ></v-no-records>
         <table
             #matTable
             [dataSource]="dataSource"
@@ -32,15 +34,14 @@
             [matSortDirection]="sort().direction"
             mat-table
             matSort
-            (matSortChange)="this.sortChange.emit($event)"
+            (matSortChange)="sort.set($event)"
         >
             @if (rowSelectable()) {
                 <v-select-column
-                    [data]="$any(displayedData$ | async) ?? []"
+                    [(selected)]="rowSelected"
+                    [data]="displayedData$ | async"
                     [name]="columnDefs.select"
                     [progress]="progress()"
-                    [selected]="$any(selected$ | async) ?? []"
-                    (selectedChange)="rowSelectedChange.emit($event)"
                 ></v-select-column>
             }
             @for (col of displayedNormColumns$ | async; track col; let colIndex = $index) {
@@ -59,7 +60,7 @@
                 >
                     <th
                         *matHeaderCellDef
-                        [disabled]="(col.sort | async) === false || hasMore()"
+                        [disabled]="(col.sort | async) === false || hasMore() || progress()"
                         [mat-sort-header]="col.field"
                         [ngClass]="columnClasses"
                         mat-header-cell
@@ -68,7 +69,7 @@
                     </th>
 
                     <ng-template let-element let-rowIndex="index" matCellDef>
-                        @let cell = columnsData?.get?.(element)?.[colIndex];
+                        @let cell = columnsData?.get?.(element)?.get(col);
                         <td
                             [ngClass]="columnClasses"
                             [ngStyle]="col?.params?.style"
@@ -78,8 +79,11 @@
                             <v-value
                                 [emptySymbol]="!(cell?.isChild && !col?.child)"
                                 [highlight]="filter$ | async"
+                                [lazyValue]="cell?.lazyValue"
+                                [lazyVisible]="loadedLazyItems.has(element)"
                                 [value]="cell?.value | async"
                                 inline
+                                (lazyVisibleChange)="loadedLazyItems.set(element, true)"
                             ></v-value>
                         </td>
                     </ng-template>
@@ -94,9 +98,12 @@
             <tr
                 *matFooterRowDef="(hasAutoShowMore$ | async) ? (displayedColumns$ | async) : []"
                 [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) }"
-                [vInfinityScrollProgress]="progress()"
+                [vInfinityScroll]="
+                    !progress() &&
+                    !(columnsDataProgress$ | async) &&
+                    (filteredSortData$ | async)?.length
+                "
                 mat-row
-                vInfinityScroll
                 (vInfinityScrollMore)="showMore()"
             ></tr>
         </table>

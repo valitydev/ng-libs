@@ -15,6 +15,8 @@ import {
     OnInit,
     ViewChild,
     ContentChild,
+    model,
+    ChangeDetectorRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -31,20 +33,32 @@ import {
     forkJoin,
     BehaviorSubject,
     debounceTime,
-    share,
     first,
     merge,
     tap,
+    defer,
 } from 'rxjs';
-import { shareReplay, map, distinctUntilChanged, delay, filter, startWith } from 'rxjs/operators';
+import {
+    shareReplay,
+    map,
+    distinctUntilChanged,
+    delay,
+    filter,
+    startWith,
+    share,
+} from 'rxjs/operators';
 
-import { downloadFile, createCsv } from '../../../../utils';
+import {
+    downloadFile,
+    createCsv,
+    arrayAttribute,
+    ArrayAttributeTransform,
+} from '../../../../utils';
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn } from '../../types';
-import { modelToSubject } from '../../utils/model-to-subject';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -56,17 +70,18 @@ import { TableInputsComponent } from '../table-inputs.component';
 import { TableProgressBarComponent } from '../table-progress-bar.component';
 
 import { COLUMN_DEFS } from './consts';
-import { TreeData, TreeInlineData } from './tree-data';
-import { filterSort, columnsDataToFilterSearchData } from './utils/filter-sort';
-import { toObservableColumnsData, toColumnsData } from './utils/to-columns-data';
+import { TreeData } from './tree-data';
+import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
+import {
+    toObservableColumnsData,
+    toColumnsData,
+    DisplayedDataItem,
+    DisplayedData,
+} from './utils/to-columns-data';
 
-export const TABLE_WRAPPER_STYLE = `
-    display: block;
-    overflow: auto;
-    padding: 8px;
-    margin: -8px;
-    height: 100%;
-`;
+const SHORT_DEBOUNCE_TIME_MS = 300;
+const DEBOUNCE_TIME_MS = 500;
+const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
 @Component({
     standalone: true,
@@ -95,12 +110,13 @@ export const TABLE_WRAPPER_STYLE = `
         TableInputsComponent,
         MatButton,
     ],
-    host: { style: TABLE_WRAPPER_STYLE },
 })
 export class Table2Component<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
     treeData = input<TreeData<T, C>>();
-    columns = input<Column2<T>[]>([]);
+    columns = input<Column2<T, C>[], ArrayAttributeTransform<Column2<T, C>>>([], {
+        transform: arrayAttribute,
+    });
     progress = input(false, { transform: Boolean });
     hasMore = input(false, { transform: booleanAttribute });
     size = input(25, { transform: numberAttribute });
@@ -108,29 +124,48 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     noDownload = input(false, { transform: booleanAttribute });
 
     // Filter
-    filter = input('', { transform: (v: string | null | undefined) => (v || '').trim() });
-    filterChange = output<string>();
-    filter$ = modelToSubject(this.filter, this.filterChange);
+    filter = model('');
+    filter$ = toObservable(this.filter).pipe(
+        map((v) => (v || '').trim()),
+        distinctUntilChanged(),
+        debounceTime(DEBOUNCE_TIME_MS),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
     standaloneFilter = input(false, { transform: booleanAttribute });
-    displayedData$ = new BehaviorSubject<T[] | TreeInlineData<T, C>>([]);
+    externalFilter = input(false, { transform: booleanAttribute });
+    filteredSortData$ = new BehaviorSubject<DisplayedData<T, C> | null>(null);
+    displayedData$ = combineLatest([
+        defer(() => this.dataSource.data$),
+        this.filteredSortData$.pipe(distinctUntilChanged()),
+        defer(() => this.columnsDataProgress$),
+    ]).pipe(
+        map(
+            ([data, filteredSortData, columnsDataProgress]) =>
+                (filteredSortData && !columnsDataProgress ? filteredSortData : data) || [],
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    displayedCount$ = this.displayedData$.pipe(
+        map((data) => data.length),
+        distinctUntilChanged(),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
     // Select
     rowSelectable = input(false, { transform: booleanAttribute });
-    rowSelected = input<T[] | TreeInlineData<T, C>>([]);
-    rowSelectedChange = output<T[] | TreeInlineData<T, C>>();
-    selected$ = modelToSubject(this.rowSelected, this.rowSelectedChange);
+    rowSelected = model<DisplayedData<T, C>>([]);
 
     // Sort
-    sort = input<Sort>(DEFAULT_SORT);
-    sortChange = output<Sort>();
-    sort$ = modelToSubject(this.sort, this.sortChange);
+    sort = model<Sort>(DEFAULT_SORT);
     @ViewChild(MatSort) sortComponent!: MatSort;
 
     update = output<UpdateOptions>();
     more = output<UpdateOptions>();
 
+    loadedLazyItems = new WeakMap<DisplayedDataItem<T, C>, boolean>();
+
     dataSource = new TableDataSource<T, C>();
-    normColumns = computed<NormColumn<T>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    normColumns = computed<NormColumn<T, C>[]>(() => this.columns().map((c) => new NormColumn(c)));
     displayedNormColumns$ = toObservable(this.normColumns).pipe(
         switchMap((cols) =>
             combineLatest(cols.map((c) => c.hidden)).pipe(
@@ -157,30 +192,21 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     );
     isPreload = signal(false);
     loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
-    count$ = combineLatest([
-        this.filter$,
-        this.displayedData$,
-        this.dataSource.data$,
-        this.columnsDataProgress$,
-    ]).pipe(
-        map(([filter, filtered, source, columnsDataProgress]) =>
-            filter && !columnsDataProgress ? filtered?.length : source?.length,
-        ),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-    );
     hasAutoShowMore$ = combineLatest([
         toObservable(this.hasMore),
-        this.dataSource.data$,
-        this.displayedData$,
+        this.dataSource.data$.pipe(map((d) => d?.length)),
+        this.displayedCount$,
         this.dataSource.paginator.page.pipe(
             startWith(null),
             map(() => this.dataSource.paginator.pageSize),
         ),
     ]).pipe(
         map(
-            ([hasMore, data, filteredData, size]) =>
-                (hasMore && filteredData.length === data.length) || filteredData.length > size,
+            ([hasMore, dataCount, displayedDataCount, size]) =>
+                (hasMore && displayedDataCount !== 0 && displayedDataCount >= dataCount) ||
+                displayedDataCount > size,
         ),
+        distinctUntilChanged(),
         shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -202,9 +228,15 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     constructor(
         private dr: DestroyRef,
         private injector: Injector,
+        private cdr: ChangeDetectorRef,
     ) {}
 
     ngOnInit() {
+        const sort$ = toObservable(this.sort, { injector: this.injector }).pipe(
+            distinctUntilChanged(),
+            share(),
+        );
+
         toObservable(this.data, { injector: this.injector })
             .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
             .subscribe((data) => {
@@ -215,43 +247,47 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((data) => {
                 this.dataSource.setTreeData(data);
             });
-        const filter$ = this.filter$.pipe(
-            map((filter) => filter?.trim?.() ?? ''),
-            distinctUntilChanged(),
-            debounceTime(500),
-            share(),
-        );
-        toObservable(this.filter, { injector: this.injector })
-            .pipe(takeUntilDestroyed(this.dr))
-            .subscribe((filter) => {
-                this.filter$.next(filter);
-            });
-        filter$.pipe(takeUntilDestroyed(this.dr)).subscribe((filter) => {
-            this.filterChange.emit(filter);
-        });
         combineLatest([
-            filter$,
-            this.sort$,
+            this.filter$,
+            sort$,
             this.dataSource.data$,
             runInInjectionContext(this.injector, () =>
                 this.columnsData$.pipe(columnsDataToFilterSearchData),
             ),
             this.dataSource.isTreeData$,
             toObservable(this.normColumns, { injector: this.injector }),
+            toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
-                map(([search, sort, source, data, isTreeData, columns]) =>
-                    filterSort({ search, sort, source, data, isTreeData, columns }),
-                ),
+                tap(() => {
+                    this.filteredSortData$.next(null);
+                }),
+                debounceTime(SHORT_DEBOUNCE_TIME_MS),
+                map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
+                    if (isTreeData) {
+                        return source;
+                    }
+                    const filteredData =
+                        !isExternalFilter && search ? filterData(data, search) : source;
+                    return sortData(filteredData, data, columns, sort);
+                }),
+                // distinctUntilChanged(isEqual),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
                 this.updateSortFilter(filtered);
+                this.updateLoadedLazyItems(filtered);
+                this.cdr.markForCheck();
             });
-        filter$.pipe(filter(Boolean), takeUntilDestroyed(this.dr)).subscribe(() => {
-            this.sortChange.emit(DEFAULT_SORT);
-        });
-        merge(filter$, this.sort$)
+        merge(
+            this.filter$.pipe(filter(Boolean)),
+            toObservable(this.hasMore, { injector: this.injector }).pipe(filter(Boolean)),
+        )
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe(() => {
+                this.sort.set(DEFAULT_SORT);
+            });
+        merge(this.filter$, sort$)
             .pipe(takeUntilDestroyed(this.dr))
             .subscribe(() => {
                 this.reset();
@@ -319,8 +355,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
         this.reset();
     }
 
-    private updateSortFilter(filtered: TreeInlineData<T, C> | T[]) {
-        this.displayedData$.next(filtered);
+    private updateSortFilter(filtered: DisplayedData<T, C>) {
+        this.filteredSortData$.next(filtered);
         this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
         this.dataSource.sort = this.sortComponent;
     }
@@ -335,5 +371,12 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     private refreshTable() {
         // eslint-disable-next-line no-self-assign
         this.dataSource.data = this.dataSource.data;
+    }
+
+    private updateLoadedLazyItems(items: DisplayedData<T, C>) {
+        const lazyLoadedItems = items.slice(0, DEFAULT_LOADED_LAZY_ROWS_COUNT);
+        for (const item of lazyLoadedItems) {
+            this.loadedLazyItems.set(item, true);
+        }
     }
 }

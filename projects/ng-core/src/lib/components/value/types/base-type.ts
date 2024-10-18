@@ -1,4 +1,5 @@
 import { TemplateRef } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Color } from '../../../styles';
 
@@ -10,7 +11,7 @@ export type BaseValue<V = unknown> = {
     color?: Color;
 
     click?: (event: MouseEvent) => void;
-    link?: (event: MouseEvent) => void;
+    link?: (event: MouseEvent) => string | Parameters<Router['navigate']>;
 
     template?: TemplateRef<unknown>;
 
