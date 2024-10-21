@@ -79,8 +79,8 @@ import {
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
+import { isEqual } from 'lodash-es';
 
-const SHORT_DEBOUNCE_TIME_MS = 300;
 const DEBOUNCE_TIME_MS = 500;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
@@ -265,7 +265,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                 tap(() => {
                     this.filteredSortData$.next(null);
                 }),
-                debounceTime(SHORT_DEBOUNCE_TIME_MS),
                 map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
                     if (isTreeData) {
                         return source;
@@ -274,7 +273,13 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                         !isExternalFilter && search ? filterData(data, search) : source;
                     return sortData(filteredData, data, columns, sort);
                 }),
-                // distinctUntilChanged(isEqual),
+                distinctUntilChanged((prev, curr) => {
+                    const equal = isEqual(prev, curr);
+                    if (equal) {
+                        this.filteredSortData$.next(curr);
+                    }
+                    return equal;
+                }),
                 takeUntilDestroyed(this.dr),
             )
             .subscribe((filtered) => {
