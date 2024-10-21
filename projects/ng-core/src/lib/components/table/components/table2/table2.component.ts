@@ -23,7 +23,7 @@ import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
-import { MatTableModule, MatTable } from '@angular/material/table';
+import { MatTableModule, MatTable, MatRow } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
     combineLatest,
@@ -226,6 +226,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
     @ViewChild('matTable', { static: false }) table!: MatTable<T>;
     @ContentChild(TableInputsComponent, { read: ElementRef }) tableInputsContent!: ElementRef;
+    @ViewChild(MatRow, { static: false }) tableRow!: ElementRef;
 
     constructor(
         private dr: DestroyRef,

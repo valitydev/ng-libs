@@ -97,14 +97,14 @@
             <tr *matHeaderRowDef="displayedColumns$ | async; sticky: true" mat-header-row></tr>
             <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
             <tr
-                *matFooterRowDef="(hasAutoShowMore$ | async) ? (displayedColumns$ | async) : []"
-                [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) }"
+                *matFooterRowDef="displayedColumns$ | async"
+                [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) || !tableRow }"
                 [vInfinityScroll]="
                     !progress() &&
                     !(columnsDataProgress$ | async) &&
                     (filteredSortData$ | async)?.length
                 "
-                mat-row
+                mat-footer-row
                 (vInfinityScrollMore)="showMore()"
             ></tr>
         </table>
