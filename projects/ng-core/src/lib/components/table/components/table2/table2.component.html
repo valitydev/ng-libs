@@ -7,6 +7,7 @@
         [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
         [filteredCount]="displayedCount$ | async"
         [hasInputs]="!!tableInputsContent?.nativeElement"
+        [hasLoad]="update$.observed"
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [noDownload]="noDownload()"

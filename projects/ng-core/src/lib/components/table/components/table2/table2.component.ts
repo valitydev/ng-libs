@@ -18,7 +18,7 @@ import {
     model,
     ChangeDetectorRef,
 } from '@angular/core';
-import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toObservable, takeUntilDestroyed, outputFromObservable } from '@angular/core/rxjs-interop';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
@@ -37,6 +37,7 @@ import {
     merge,
     tap,
     defer,
+    Subject,
 } from 'rxjs';
 import {
     shareReplay,
@@ -159,7 +160,8 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     sort = model<Sort>(DEFAULT_SORT);
     @ViewChild(MatSort) sortComponent!: MatSort;
 
-    update = output<UpdateOptions>();
+    update$ = new Subject<UpdateOptions>();
+    update = outputFromObservable(this.update$);
     more = output<UpdateOptions>();
 
     loadedLazyItems = new WeakMap<DisplayedDataItem<T, C>, boolean>();
@@ -351,7 +353,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     }
 
     private reload() {
-        this.update.emit({ size: this.loadSize() });
+        this.update$.next({ size: this.loadSize() });
         this.reset();
     }
 

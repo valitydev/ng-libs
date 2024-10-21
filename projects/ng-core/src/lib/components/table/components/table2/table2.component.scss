@@ -3,8 +3,9 @@
 }
 
 .wrapper {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: max-content;
     gap: 24px;
     height: 100%;
 
@@ -45,10 +46,6 @@
     &__sticky-end {
         border-left: 1px solid;
     }
-}
-
-::ng-deep .mat-mdc-footer-cell {
-    border-bottom: 1px solid;
 }
 
 .row__hidden {
