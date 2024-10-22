@@ -59,7 +59,7 @@ import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
 import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
-import { Column2, UpdateOptions, NormColumn } from '../../types';
+import { Column2, UpdateOptions, NormColumn, DragDrop } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
 import { InfinityScrollDirective } from '../infinity-scroll.directive';
@@ -79,6 +79,7 @@ import {
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 
 const DEBOUNCE_TIME_MS = 500;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
@@ -109,6 +110,8 @@ const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
         MatSortModule,
         TableInputsComponent,
         MatButton,
+        CdkDrag,
+        CdkDropList,
     ],
 })
 export class Table2Component<T extends object, C extends object> implements OnInit {
@@ -158,6 +161,18 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     // Sort
     sort = model<Sort>(DEFAULT_SORT);
     @ViewChild(MatSort) sortComponent!: MatSort;
+
+    // Drag & drop
+    rowDragDrop = input(false, {
+        transform: (v: boolean | string[]) => {
+            if (Array.isArray(v)) {
+                return v;
+            }
+            return booleanAttribute(v);
+        },
+    });
+    rowDropped = output<DragDrop<DisplayedDataItem<T, C>>>();
+    dragDisabled = true;
 
     update$ = new Subject<UpdateOptions>();
     update = outputFromObservable(this.update$);
@@ -214,11 +229,21 @@ export class Table2Component<T extends object, C extends object> implements OnIn
     displayedColumns$ = combineLatest([
         this.displayedNormColumns$,
         toObservable(this.rowSelectable),
+        toObservable(this.sort),
+        toObservable(this.rowDragDrop),
     ]).pipe(
-        map(([normColumns, rowSelectable]) => [
+        map(([normColumns, rowSelectable, sort, rowDragDrop]) => [
+            ...((
+                Array.isArray(rowDragDrop)
+                    ? sort?.direction && rowDragDrop.includes(sort?.active)
+                    : rowDragDrop
+            )
+                ? [this.columnDefs.drag]
+                : []),
             ...(rowSelectable ? [this.columnDefs.select] : []),
             ...normColumns.map((c) => c.field),
         ]),
+        shareReplay({ refCount: true, bufferSize: 1 }),
     );
     columnDefs = COLUMN_DEFS;
 
@@ -332,6 +357,36 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             .subscribe((csvData) => {
                 downloadFile(csvData, 'csv');
             });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    drop(event: CdkDragDrop<any>) {
+        this.dragDisabled = true;
+        this.filteredSortData$.pipe(filter(Boolean), first()).subscribe((data) => {
+            const item = event.item.data;
+            const { previousIndex, currentIndex } = event;
+            const previousData = data;
+            const currentData = previousData.slice();
+            let currentDataIndex = 0;
+            if (previousIndex > currentIndex) {
+                currentData.splice(previousIndex, 1);
+                currentData.splice(currentIndex, 0, event.item.data);
+                currentDataIndex = currentIndex;
+            } else {
+                currentData.splice(currentIndex, 0, event.item.data);
+                currentData.splice(previousIndex, 1);
+                currentDataIndex = currentIndex - 1;
+            }
+            this.rowDropped.emit({
+                previousIndex,
+                currentIndex,
+                item,
+                previousData,
+                currentData,
+                currentDataIndex,
+                sort: this?.sortComponent,
+            });
+        });
     }
 
     private generateCsvData(): Observable<string> {

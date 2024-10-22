@@ -30,13 +30,28 @@
         ></v-no-records>
         <table
             #matTable
+            [cdkDropListDisabled]="dragDisabled"
             [dataSource]="dataSource"
             [matSortActive]="(columnsDataProgress$ | async) || progress() ? '' : sort().active"
             [matSortDirection]="sort().direction"
+            cdkDropList
+            cdkDropListData="dataSource"
             mat-table
             matSort
+            (cdkDropListDropped)="drop($event)"
             (matSortChange)="sort.set($event)"
         >
+            <ng-container [matColumnDef]="columnDefs.drag" [sticky]="true">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let row; let index = index" mat-cell>
+                    <div class="position">
+                        <mat-icon class="dragCursor" (mousedown)="dragDisabled = false"
+                            >reorder</mat-icon
+                        >
+                        <!-- <span>{{ index + 1 }}</span>-->
+                    </div>
+                </td>
+            </ng-container>
             @if (rowSelectable()) {
                 <v-select-column
                     [(selected)]="rowSelected"
@@ -95,7 +110,12 @@
             }
 
             <tr *matHeaderRowDef="displayedColumns$ | async; sticky: true" mat-header-row></tr>
-            <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
+            <tr
+                *matRowDef="let row; columns: displayedColumns$ | async"
+                [cdkDragData]="row"
+                cdkDrag
+                mat-row
+            ></tr>
             <tr
                 *matFooterRowDef="displayedColumns$ | async"
                 [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) || !tableRow }"
