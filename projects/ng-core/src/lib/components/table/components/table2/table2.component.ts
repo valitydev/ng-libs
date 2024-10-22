@@ -79,7 +79,6 @@ import {
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
-import { isEqual } from 'lodash-es';
 
 const DEBOUNCE_TIME_MS = 500;
 const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
@@ -262,9 +261,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
             toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
-                tap(() => {
-                    this.filteredSortData$.next(null);
-                }),
                 map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
                     if (isTreeData) {
                         return source;
@@ -272,13 +268,6 @@ export class Table2Component<T extends object, C extends object> implements OnIn
                     const filteredData =
                         !isExternalFilter && search ? filterData(data, search) : source;
                     return sortData(filteredData, data, columns, sort);
-                }),
-                distinctUntilChanged((prev, curr) => {
-                    const equal = isEqual(prev, curr);
-                    if (equal) {
-                        this.filteredSortData$.next(curr);
-                    }
-                    return equal;
                 }),
                 takeUntilDestroyed(this.dr),
             )
