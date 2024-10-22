@@ -99,11 +99,7 @@
             <tr
                 *matFooterRowDef="displayedColumns$ | async"
                 [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) || !tableRow }"
-                [vInfinityScroll]="
-                    !progress() &&
-                    !(columnsDataProgress$ | async) &&
-                    (filteredSortData$ | async)?.length
-                "
+                [vInfinityScroll]="!progress()"
                 mat-footer-row
                 (vInfinityScrollMore)="showMore()"
             ></tr>
