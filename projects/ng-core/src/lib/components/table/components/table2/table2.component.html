@@ -98,10 +98,7 @@
             <tr *matRowDef="let row; columns: displayedColumns$ | async" mat-row></tr>
             <tr
                 *matFooterRowDef="displayedColumns$ | async"
-                [ngClass]="{
-                    row__hidden:
-                        !(hasAutoShowMore$ | async) || !tableRow || (columnsDataProgress$ | async),
-                }"
+                [ngClass]="{ row__hidden: !(hasAutoShowMore$ | async) || !tableRow }"
                 [vInfinityScroll]="
                     !progress() &&
                     !(columnsDataProgress$ | async) &&
