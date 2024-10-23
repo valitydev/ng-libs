@@ -19,7 +19,7 @@ interface ColumnParams {
 
 export type CellValue = 'string' | Value;
 
-export interface Column2<T extends object, C extends object = object> extends ColumnParams {
+export interface Column<T extends object, C extends object = object> extends ColumnParams {
     field: string;
 
     header?: PossiblyAsync<Partial<Value> | string>;
@@ -38,7 +38,7 @@ export function normalizePossiblyFn<R, P extends Array<unknown>>(fn: PossiblyFn<
 
 export function normalizeCell<T extends object, C extends object>(
     field: string,
-    cell: Column2<T, C>['cell'],
+    cell: Column<T, C>['cell'],
     hasChild: boolean = false,
 ): Fn<Observable<Value>, CellFnArgs<T>> {
     const cellFn = normalizePossiblyFn(cell);
@@ -65,7 +65,7 @@ export class NormColumn<T extends object, C extends object = object> {
     params!: ColumnParams;
 
     constructor(
-        { field, header, cell, child, hidden, sort, lazyCell, ...params }: Column2<T, C>,
+        { field, header, cell, child, hidden, sort, lazyCell, ...params }: Column<T, C>,
         commonParams: ColumnParams = {},
     ) {
         this.field = field ?? (typeof header === 'string' ? header : Math.random());

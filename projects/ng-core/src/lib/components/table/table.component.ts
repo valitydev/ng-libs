@@ -68,7 +68,7 @@ import {
     COLUMN_DEFS,
 } from './consts';
 import { TreeData } from './tree-data';
-import { Column2, UpdateOptions, NormColumn, DragDrop } from './types';
+import { Column, UpdateOptions, NormColumn, DragDrop } from './types';
 import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
 import { TableDataSource } from './utils/table-data-source';
 import { tableToCsvObject } from './utils/table-to-csv-object';
@@ -111,7 +111,7 @@ import {
 export class TableComponent<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
     treeData = input<TreeData<T, C>>();
-    columns = input<Column2<T, C>[], ArrayAttributeTransform<Column2<T, C>>>([], {
+    columns = input<Column<T, C>[], ArrayAttributeTransform<Column<T, C>>>([], {
         transform: arrayAttribute,
     });
     progress = input(false, { transform: Boolean });
