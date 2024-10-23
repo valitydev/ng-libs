@@ -28,7 +28,7 @@ import { ScoreColumnComponent } from './components/score-column.component';
 import { SelectColumnComponent } from './components/select-column.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableInputsComponent } from './components/table-inputs.component';
-import { Table2Component } from './components/table2';
+import { Table2Component } from './table2.component';
 
 @NgModule({
     imports: [

@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -49,37 +50,34 @@ import {
     share,
 } from 'rxjs/operators';
 
-import {
-    downloadFile,
-    createCsv,
-    arrayAttribute,
-    ArrayAttributeTransform,
-} from '../../../../utils';
-import { ContentLoadingComponent } from '../../../content-loading';
-import { ProgressModule } from '../../../progress';
-import { ValueComponent, ValueListComponent } from '../../../value';
-import { DEBOUNCE_TIME_MS, DEFAULT_LOADED_LAZY_ROWS_COUNT, DEFAULT_SORT } from '../../consts';
-import { Column2, UpdateOptions, NormColumn, DragDrop } from '../../types';
-import { TableDataSource } from '../../utils/table-data-source';
-import { tableToCsvObject } from '../../utils/table-to-csv-object';
-import { InfinityScrollDirective } from '../infinity-scroll.directive';
-import { NoRecordsComponent } from '../no-records.component';
-import { SelectColumnComponent } from '../select-column.component';
-import { ShowMoreButtonComponent } from '../show-more-button/show-more-button.component';
-import { TableInfoBarComponent } from '../table-info-bar/table-info-bar.component';
-import { TableInputsComponent } from '../table-inputs.component';
-import { TableProgressBarComponent } from '../table-progress-bar.component';
+import { downloadFile, createCsv, arrayAttribute, ArrayAttributeTransform } from '../../utils';
+import { ContentLoadingComponent } from '../content-loading';
+import { ProgressModule } from '../progress';
+import { ValueComponent, ValueListComponent } from '../value';
 
-import { COLUMN_DEFS } from './consts';
+import { InfinityScrollDirective } from './components/infinity-scroll.directive';
+import { NoRecordsComponent } from './components/no-records.component';
+import { SelectColumnComponent } from './components/select-column.component';
+import { TableInfoBarComponent } from './components/table-info-bar/table-info-bar.component';
+import { TableInputsComponent } from './components/table-inputs.component';
+import { TableProgressBarComponent } from './components/table-progress-bar.component';
+import {
+    DEBOUNCE_TIME_MS,
+    DEFAULT_LOADED_LAZY_ROWS_COUNT,
+    DEFAULT_SORT,
+    COLUMN_DEFS,
+} from './consts';
 import { TreeData } from './tree-data';
+import { Column2, UpdateOptions, NormColumn, DragDrop } from './types';
 import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
+import { TableDataSource } from './utils/table-data-source';
+import { tableToCsvObject } from './utils/table-to-csv-object';
 import {
     toObservableColumnsData,
     toColumnsData,
     DisplayedDataItem,
     DisplayedData,
 } from './utils/to-columns-data';
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 
 @Component({
     standalone: true,
@@ -95,7 +93,6 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
         TableProgressBarComponent,
         NoRecordsComponent,
         TableInfoBarComponent,
-        ShowMoreButtonComponent,
         ContentLoadingComponent,
         MatIcon,
         MatTooltip,

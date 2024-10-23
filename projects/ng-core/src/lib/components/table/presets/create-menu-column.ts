@@ -1,5 +1,6 @@
 import { MenuValue } from '../../value/components/menu-value.component';
 // TODO: hack
+// eslint-disable-next-line
 import { Column2 } from '../types/column2';
 import { createColumn } from '../utils/create-column';
 
