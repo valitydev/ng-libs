@@ -2,7 +2,9 @@ import { OmitByValueExact } from 'utility-types';
 
 import { Color } from '../../../styles';
 
-import { BaseColumn, ColumnFn, FormatterFn } from './base-column';
+interface BaseColumn<T> {}
+type ColumnFn<T, P> = any;
+type FormatterFn<T> = any;
 
 export type TypedColumn<
     T extends object,

@@ -1,5 +1,4 @@
 export * from './table.module';
-export * from './utils/create-columns-objects';
 export * from './utils/correct-priorities';
 export * from './utils/create-column';
 export * from './utils/cached-head-map';
