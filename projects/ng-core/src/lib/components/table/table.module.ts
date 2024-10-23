@@ -31,7 +31,6 @@ import { TableActionsComponent } from './components/table-actions.component';
 import { TableCellComponent } from './components/table-cell/table-cell.component';
 import { TableInputsComponent } from './components/table-inputs.component';
 import { Table2Component } from './components/table2';
-import { TableComponent } from './table.component';
 
 @NgModule({
     imports: [
@@ -65,7 +64,7 @@ import { TableComponent } from './table.component';
         ShowMoreButtonComponent,
         TableInputsComponent,
     ],
-    declarations: [TableComponent, TableActionsComponent, TableCellComponent],
-    exports: [TableComponent, TableActionsComponent, TableInputsComponent, Table2Component],
+    declarations: [TableActionsComponent, TableCellComponent],
+    exports: [TableActionsComponent, TableInputsComponent, Table2Component],
 })
 export class TableModule {}
