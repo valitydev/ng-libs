@@ -26,9 +26,7 @@ import { TagModule } from '../tag';
 
 import { ScoreColumnComponent } from './components/score-column.component';
 import { SelectColumnComponent } from './components/select-column.component';
-import { ShowMoreButtonComponent } from './components/show-more-button/show-more-button.component';
 import { TableActionsComponent } from './components/table-actions.component';
-import { TableCellComponent } from './components/table-cell/table-cell.component';
 import { TableInputsComponent } from './components/table-inputs.component';
 import { Table2Component } from './components/table2';
 
@@ -61,10 +59,9 @@ import { Table2Component } from './components/table2';
         ScoreColumnComponent,
         MtxTooltip,
         Table2Component,
-        ShowMoreButtonComponent,
         TableInputsComponent,
     ],
-    declarations: [TableActionsComponent, TableCellComponent],
+    declarations: [TableActionsComponent],
     exports: [TableActionsComponent, TableInputsComponent, Table2Component],
 })
 export class TableModule {}
