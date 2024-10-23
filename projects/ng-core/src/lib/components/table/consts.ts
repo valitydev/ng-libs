@@ -1,6 +1,5 @@
 import { Sort, MatSort } from '@angular/material/sort';
 
-export const COMPLETE_MISMATCH_SCORE = 1;
 export const DEFAULT_SORT: Sort = { active: '', direction: '' };
-export const DEFAULT_DEBOUNCE_TIME_MS = 250;
-export const sortDataByDefault: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
+export const DEBOUNCE_TIME_MS = 500;
+export const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;

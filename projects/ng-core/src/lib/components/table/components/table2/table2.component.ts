@@ -58,7 +58,7 @@ import {
 import { ContentLoadingComponent } from '../../../content-loading';
 import { ProgressModule } from '../../../progress';
 import { ValueComponent, ValueListComponent } from '../../../value';
-import { sortDataByDefault, DEFAULT_SORT } from '../../consts';
+import { DEBOUNCE_TIME_MS, DEFAULT_LOADED_LAZY_ROWS_COUNT, DEFAULT_SORT } from '../../consts';
 import { Column2, UpdateOptions, NormColumn, DragDrop } from '../../types';
 import { TableDataSource } from '../../utils/table-data-source';
 import { tableToCsvObject } from '../../utils/table-to-csv-object';
@@ -80,9 +80,6 @@ import {
     DisplayedData,
 } from './utils/to-columns-data';
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-
-const DEBOUNCE_TIME_MS = 500;
-const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
 
 @Component({
     standalone: true,
@@ -409,7 +406,7 @@ export class Table2Component<T extends object, C extends object> implements OnIn
 
     private updateSortFilter(filtered: DisplayedData<T, C>) {
         this.filteredSortData$.next(filtered);
-        this.dataSource.sortData = filtered ? () => filtered : sortDataByDefault;
+        this.dataSource.sortData = () => filtered;
         this.dataSource.sort = this.sortComponent;
     }
 
