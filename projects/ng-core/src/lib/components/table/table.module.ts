@@ -28,7 +28,7 @@ import { ScoreColumnComponent } from './components/score-column.component';
 import { SelectColumnComponent } from './components/select-column.component';
 import { TableActionsComponent } from './components/table-actions.component';
 import { TableInputsComponent } from './components/table-inputs.component';
-import { Table2Component } from './table2.component';
+import { TableComponent } from './table.component';
 
 @NgModule({
     imports: [
@@ -58,10 +58,10 @@ import { Table2Component } from './table2.component';
         SelectColumnComponent,
         ScoreColumnComponent,
         MtxTooltip,
-        Table2Component,
+        TableComponent,
         TableInputsComponent,
     ],
     declarations: [TableActionsComponent],
-    exports: [TableActionsComponent, TableInputsComponent, Table2Component],
+    exports: [TableActionsComponent, TableInputsComponent, TableComponent],
 })
 export class TableModule {}

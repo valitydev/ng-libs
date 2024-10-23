@@ -81,9 +81,9 @@ import {
 
 @Component({
     standalone: true,
-    selector: 'v-table2',
-    templateUrl: './table2.component.html',
-    styleUrls: ['./table2.component.scss'],
+    selector: 'v-table',
+    templateUrl: './table.component.html',
+    styleUrls: ['./table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         CommonModule,
@@ -108,7 +108,7 @@ import {
         CdkDropList,
     ],
 })
-export class Table2Component<T extends object, C extends object> implements OnInit {
+export class TableComponent<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
     treeData = input<TreeData<T, C>>();
     columns = input<Column2<T, C>[], ArrayAttributeTransform<Column2<T, C>>>([], {
