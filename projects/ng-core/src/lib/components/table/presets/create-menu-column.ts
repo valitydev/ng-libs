@@ -1,5 +1,6 @@
 import { MenuValue } from '../../value/components/menu-value.component';
-import { TypedColumns } from '../types';
+// TODO: hack
+import { Column2 } from '../types/column2';
 import { createColumn } from '../utils/create-column';
 
 export const createMenuColumn = createColumn(

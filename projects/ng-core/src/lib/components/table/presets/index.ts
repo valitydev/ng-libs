@@ -1,1 +1,1 @@
-export * from './create-operation-column';
+export * from './create-menu-column';
