@@ -408,7 +408,7 @@ export class TableComponent<T extends object, C extends object> implements OnIni
     }
 
     private reset() {
-        this.scrollViewport?.nativeElement?.scrollTo?.(0, 0);
+        (this.scrollViewport?.nativeElement as HTMLElement)?.scrollTo?.({ top: 0 });
         this.dataSource.paginator.reload();
         this.refreshTable();
     }
