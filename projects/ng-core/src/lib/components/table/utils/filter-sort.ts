@@ -3,12 +3,12 @@ import { Sort } from '@angular/material/sort';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { compareDifferentTypes } from '../../../../../utils';
-import { valueToString } from '../../../../value/utils/value-to-string';
-import { NormColumn } from '../../../types';
-import { normalizeString } from '../../../utils/normalize-string';
+import { compareDifferentTypes } from '../../../utils';
+import { valueToString } from '../../value/utils/value-to-string';
+import { NormColumn } from '../types';
+import { DisplayedData, DisplayedDataItem, ColumnData } from '../utils/to-columns-data';
 
-import { DisplayedData, DisplayedDataItem, ColumnData } from './to-columns-data';
+import { normalizeString } from './normalize-string';
 
 export type FilterSearchData<T extends object, C extends object> = Map<
     DisplayedDataItem<T, C>,

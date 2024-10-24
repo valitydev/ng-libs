@@ -1,10 +1,11 @@
+import { isEqual } from 'lodash-es';
 import { Observable, scan, of, switchMap, combineLatest, timer } from 'rxjs';
-import { shareReplay, map } from 'rxjs/operators';
+import { shareReplay, map, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Overwrite } from 'utility-types';
 
-import { Value } from '../../../../value';
-import { CellFnArgs, Fn, NormColumn } from '../../../types';
+import { Value } from '../../value';
 import { TreeInlineDataItem, TreeInlineData } from '../tree-data';
+import { CellFnArgs, Fn, NormColumn } from '../types';
 
 export type DisplayedDataItem<T extends object, C extends object> = TreeInlineDataItem<T, C> | T;
 export type DisplayedData<T extends object, C extends object> = TreeInlineData<T, C> | T[];
@@ -119,11 +120,15 @@ export function toColumnsData<T extends object, C extends object>(
                 Array.from(columnsData.values()).map((v) =>
                     combineLatest(
                         Array.from(v.values()).map((cell) =>
-                            timer(0).pipe(switchMap(() => cell.value)),
+                            timer(0).pipe(
+                                switchMap(() => cell.value),
+                                distinctUntilChanged(isEqual),
+                            ),
                         ),
-                    ),
+                    ).pipe(debounceTime(0)),
                 ),
             ).pipe(
+                debounceTime(0),
                 map(
                     (res) =>
                         new Map(

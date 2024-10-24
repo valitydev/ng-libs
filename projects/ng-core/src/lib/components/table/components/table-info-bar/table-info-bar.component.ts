@@ -39,6 +39,7 @@ import { TagModule } from '../../../tag';
 export class TableInfoBarComponent implements OnInit {
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
+    hasLoad = input(false, { transform: booleanAttribute });
     isPreload = input(false, { transform: booleanAttribute });
     noDownload = input(false, { transform: booleanAttribute });
     dataProgress = input(false, { transform: booleanAttribute });

@@ -10,7 +10,7 @@ import {
     TreeData,
     TreeInlineDataItem,
     treeDataItemToInlineDataItem,
-} from '../components/table2/tree-data';
+} from '../tree-data';
 
 import { cachedHeadMap } from './cached-head-map';
 

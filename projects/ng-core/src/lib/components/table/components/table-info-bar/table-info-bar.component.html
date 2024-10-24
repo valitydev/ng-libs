@@ -26,28 +26,36 @@
                 </v-tag>
             </div>
             <div class="details">
-                <button
-                    [disabled]="progress()"
-                    mat-icon-button
-                    matTooltip="Reload {{ size() }} elements"
-                    (click)="load.emit()"
-                >
-                    <mat-icon>refresh</mat-icon>
-                </button>
-                <button
-                    [disabled]="progress() || !hasMore()"
-                    mat-icon-button
-                    matTooltip="Preload {{ preloadSize() }}{{
-                        isPreload() && hasMore() ? ' more' : ''
-                    }} elements"
-                    (click)="preload.emit()"
-                >
-                    <mat-icon>
-                        {{
-                            hasMore() ? (isPreload() ? 'downloading' : 'download') : 'download_done'
-                        }}
-                    </mat-icon>
-                </button>
+                @if (hasLoad()) {
+                    <button
+                        [disabled]="progress()"
+                        mat-icon-button
+                        matTooltip="Reload {{ size() }} elements"
+                        (click)="load.emit()"
+                    >
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                }
+                @if (hasLoad() || hasMore()) {
+                    <button
+                        [disabled]="progress() || !hasMore()"
+                        mat-icon-button
+                        matTooltip="Preload {{ preloadSize() }}{{
+                            isPreload() && hasMore() ? ' more' : ''
+                        }} elements"
+                        (click)="preload.emit()"
+                    >
+                        <mat-icon>
+                            {{
+                                hasMore()
+                                    ? isPreload()
+                                        ? 'downloading'
+                                        : 'download'
+                                    : 'download_done'
+                            }}
+                        </mat-icon>
+                    </button>
+                }
                 @if (!noDownload()) {
                     <button
                         [disabled]="progress() || !count()"

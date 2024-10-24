@@ -4,18 +4,18 @@ import { map } from 'rxjs/operators';
 
 import { PossiblyAsync, getPossiblyAsyncObservable } from '../../../utils';
 import { Value } from '../../value';
-import { Column2, CellFnArgs, normalizeCell } from '../types';
+import { Column, CellFnArgs, normalizeCell } from '../types';
 
 import { createUniqueColumnDef } from './create-unique-column-def';
 
 export function createColumn<P, A extends object>(
     createCell: (cellParams: P, ...args: CellFnArgs<A>) => PossiblyAsync<Value>,
-    columnObject: Partial<Column2<A>> = {},
+    columnObject: Partial<Column<A>> = {},
 ) {
     return <T extends A>(
         getCellParams: (...args: CellFnArgs<T>) => PossiblyAsync<P>,
-        { isLazyCell, ...column }: Partial<Column2<T>> & { isLazyCell?: boolean } = {},
-    ): Column2<T> => {
+        { isLazyCell, ...column }: Partial<Column<T>> & { isLazyCell?: boolean } = {},
+    ): Column<T> => {
         const injector = inject(Injector);
         const field = column?.field ?? createUniqueColumnDef(column?.header);
         const cellKey = isLazyCell ? 'lazyCell' : 'cell';

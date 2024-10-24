@@ -1,6 +1,11 @@
-import { Sort, MatSort } from '@angular/material/sort';
+import { Sort } from '@angular/material/sort';
 
-export const COMPLETE_MISMATCH_SCORE = 1;
+import { createUniqueColumnDef } from './utils/create-unique-column-def';
+
 export const DEFAULT_SORT: Sort = { active: '', direction: '' };
-export const DEFAULT_DEBOUNCE_TIME_MS = 250;
-export const sortDataByDefault: <T>(data: T[], sort: MatSort) => T[] = (data) => data;
+export const DEBOUNCE_TIME_MS = 500;
+export const DEFAULT_LOADED_LAZY_ROWS_COUNT = 3;
+export const COLUMN_DEFS = {
+    select: createUniqueColumnDef('select'),
+    drag: createUniqueColumnDef('drag'),
+};

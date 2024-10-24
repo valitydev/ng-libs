@@ -1,506 +1,428 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
 import {
-    AfterViewInit,
     ChangeDetectionStrategy,
     Component,
-    ContentChild,
-    DestroyRef,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnInit,
-    Output,
-    ViewChild,
-    numberAttribute,
-    booleanAttribute,
-    OnDestroy,
     input,
+    computed,
+    DestroyRef,
+    booleanAttribute,
+    numberAttribute,
+    signal,
+    output,
     Injector,
+    ElementRef,
+    runInInjectionContext,
+    OnInit,
+    ViewChild,
+    ContentChild,
+    model,
+    ChangeDetectorRef,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormControl } from '@angular/forms';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatTableDataSource, MatTable } from '@angular/material/table';
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import Fuse from 'fuse.js';
+import { toObservable, takeUntilDestroyed, outputFromObservable } from '@angular/core/rxjs-interop';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIcon } from '@angular/material/icon';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
+import { MatTableModule, MatTable, MatRow } from '@angular/material/table';
+import { MatTooltip } from '@angular/material/tooltip';
 import {
     combineLatest,
-    map,
-    of,
-    take,
-    debounceTime,
+    Observable,
     switchMap,
+    take,
     forkJoin,
     BehaviorSubject,
+    debounceTime,
+    first,
+    merge,
     tap,
-    Observable,
-    catchError,
+    defer,
+    Subject,
 } from 'rxjs';
-import { distinctUntilChanged, startWith } from 'rxjs/operators';
-
-import { QueryParamsService, QueryParamsNamespace } from '../../services';
-import { Progressable } from '../../types/progressable';
 import {
-    compareDifferentTypes,
-    ComponentChanges,
-    select,
-    getPossiblyAsyncObservable,
-} from '../../utils';
+    shareReplay,
+    map,
+    distinctUntilChanged,
+    delay,
+    filter,
+    startWith,
+    share,
+} from 'rxjs/operators';
 
-import { TableActionsComponent } from './components/table-actions.component';
+import { downloadFile, createCsv, arrayAttribute, ArrayAttributeTransform } from '../../utils';
+import { ContentLoadingComponent } from '../content-loading';
+import { ProgressModule } from '../progress';
+import { ValueComponent, ValueListComponent } from '../value';
+
+import { InfinityScrollDirective } from './components/infinity-scroll.directive';
+import { NoRecordsComponent } from './components/no-records.component';
+import { SelectColumnComponent } from './components/select-column.component';
+import { TableInfoBarComponent } from './components/table-info-bar/table-info-bar.component';
 import { TableInputsComponent } from './components/table-inputs.component';
+import { TableProgressBarComponent } from './components/table-progress-bar.component';
 import {
-    DEFAULT_DEBOUNCE_TIME_MS,
+    DEBOUNCE_TIME_MS,
+    DEFAULT_LOADED_LAZY_ROWS_COUNT,
     DEFAULT_SORT,
-    COMPLETE_MISMATCH_SCORE,
-    sortDataByDefault,
+    COLUMN_DEFS,
 } from './consts';
-import { Column, ColumnObject, UpdateOptions, DragDrop } from './types';
-import { createColumnsObjects } from './utils/create-columns-objects';
-import { createUniqueColumnDef } from './utils/create-unique-column-def';
-import { OnePageTableDataSourcePaginator } from './utils/one-page-table-data-source-paginator';
+import { TreeData } from './tree-data';
+import { Column, UpdateOptions, NormColumn, DragDrop } from './types';
+import { columnsDataToFilterSearchData, filterData, sortData } from './utils/filter-sort';
+import { TableDataSource } from './utils/table-data-source';
+import { tableToCsvObject } from './utils/table-to-csv-object';
+import {
+    toObservableColumnsData,
+    toColumnsData,
+    DisplayedDataItem,
+    DisplayedData,
+} from './utils/to-columns-data';
 
 @Component({
+    standalone: true,
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [
+        CommonModule,
+        MatTableModule,
+        MatCardModule,
+        ValueComponent,
+        TableProgressBarComponent,
+        NoRecordsComponent,
+        TableInfoBarComponent,
+        ContentLoadingComponent,
+        MatIcon,
+        MatTooltip,
+        MatIconButton,
+        InfinityScrollDirective,
+        ValueListComponent,
+        SelectColumnComponent,
+        ProgressModule,
+        MatSortModule,
+        TableInputsComponent,
+        MatButton,
+        CdkDrag,
+        CdkDropList,
+    ],
 })
-export class TableComponent<T extends object>
-    implements OnInit, Progressable, OnChanges, AfterViewInit, OnDestroy
-{
-    data = input<T[]>([]);
-
-    @Input() columns!: Column<T>[];
-    @Input() cellTemplate: Record<ColumnObject<T>['field'], ColumnObject<T>['cellTemplate']> = {};
-    @Input() progress?: boolean | number | null = false;
-    @Input() preloadedLazyRowsCount = 3;
-
-    @Input({ transform: numberAttribute }) size: number = 25;
-    @Input() preloadSize: number = 1000;
-    @Input() name?: string;
-
-    @Input({ transform: booleanAttribute }) hasMore: boolean = false;
-    @Output() update = new EventEmitter<UpdateOptions>();
-    @Output() more = new EventEmitter<UpdateOptions>();
-
-    // Actions
-    @Input({ transform: booleanAttribute }) noActions: boolean = false;
-    @ContentChild(TableActionsComponent) actions!: TableActionsComponent;
-    @ContentChild(TableInputsComponent) inputs!: TableInputsComponent;
-
-    // Sort
-    @Input() sort: Sort = DEFAULT_SORT;
-    @Output() sortChange = new EventEmitter<Sort>();
-    @Input({ transform: booleanAttribute }) sortOnFront: boolean = false;
-    @ViewChild(MatSort) sortComponent!: MatSort;
-
-    // Select
-    @Input({ transform: booleanAttribute }) rowSelectable: boolean = false;
-    @Input() rowSelected!: T[];
-    @Output() rowSelectedChange = new EventEmitter<T[]>();
-    selectColumnDef = createUniqueColumnDef('select');
-    selected: T[] = [];
+export class TableComponent<T extends object, C extends object> implements OnInit {
+    data = input<T[]>();
+    treeData = input<TreeData<T, C>>();
+    columns = input<Column<T, C>[], ArrayAttributeTransform<Column<T, C>>>([], {
+        transform: arrayAttribute,
+    });
+    progress = input(false, { transform: Boolean });
+    hasMore = input(false, { transform: booleanAttribute });
+    size = input(25, { transform: numberAttribute });
+    maxSize = input(1000, { transform: numberAttribute });
+    noDownload = input(false, { transform: booleanAttribute });
 
     // Filter
-    @Input({ transform: booleanAttribute }) noFilter: boolean = false;
-    @Input({ transform: booleanAttribute }) standaloneFilter: boolean = false;
+    filter = model('');
+    filter$ = toObservable(this.filter).pipe(
+        map((v) => (v || '').trim()),
+        distinctUntilChanged(),
+        debounceTime(DEBOUNCE_TIME_MS),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    standaloneFilter = input(false, { transform: booleanAttribute });
     externalFilter = input(false, { transform: booleanAttribute });
-    @Input() filter = '';
-    // TODO: filter by rendered column fields, it will be useful if you save the render in memory
-    @Input() filterByColumns?: string[];
-    @Output() filterChange = new EventEmitter<string>();
-    filterControl = new FormControl('');
-    exactFilterControl = new FormControl(1);
-    scores = new Map<T, { score: number }>();
-    filteredDataLength?: number;
-    filterProgress$ = new BehaviorSubject(false);
+    filteredSortData$ = new BehaviorSubject<DisplayedData<T, C> | null>(null);
+    displayedData$ = combineLatest([
+        defer(() => this.dataSource.data$),
+        this.filteredSortData$.pipe(distinctUntilChanged()),
+        defer(() => this.columnsDataProgress$),
+    ]).pipe(
+        map(
+            ([data, filteredSortData, columnsDataProgress]) =>
+                (filteredSortData && !columnsDataProgress ? filteredSortData : data) || [],
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    displayedCount$ = this.displayedData$.pipe(
+        map((data) => data.length),
+        distinctUntilChanged(),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
-    @Input({
+    // Select
+    rowSelectable = input(false, { transform: booleanAttribute });
+    rowSelected = model<DisplayedData<T, C>>([]);
+
+    // Sort
+    sort = model<Sort>(DEFAULT_SORT);
+    @ViewChild(MatSort) sortComponent!: MatSort;
+
+    // Drag & drop
+    rowDragDrop = input(false, {
         transform: (v: boolean | string[]) => {
             if (Array.isArray(v)) {
                 return v;
             }
             return booleanAttribute(v);
         },
-    })
-    rowDragDrop: boolean | string[] = false;
-    @Output() rowDropped = new EventEmitter<DragDrop<T>>();
+    });
+    rowDropped = output<DragDrop<DisplayedDataItem<T, C>>>();
     dragDisabled = true;
 
-    columnsObjects = new Map<ColumnObject<T>['field'], ColumnObject<T>>([]);
+    update$ = new Subject<UpdateOptions>();
+    update = outputFromObservable(this.update$);
+    more = output<UpdateOptions>();
 
-    isPreload = false;
+    loadedLazyItems = new WeakMap<DisplayedDataItem<T, C>, boolean>();
 
-    dataSource = new MatTableDataSource<T>();
+    dataSource = new TableDataSource<T, C>();
+    normColumns = computed<NormColumn<T, C>[]>(() => this.columns().map((c) => new NormColumn(c)));
+    displayedNormColumns$ = toObservable(this.normColumns).pipe(
+        switchMap((cols) =>
+            combineLatest(cols.map((c) => c.hidden)).pipe(
+                map((c) => cols.filter((_, idx) => !c[idx])),
+            ),
+        ),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    columnsData$$ = combineLatest({
+        isTree: this.dataSource.isTreeData$,
+        data: this.dataSource.data$,
+        cols: toObservable(this.normColumns),
+    }).pipe(toObservableColumnsData, shareReplay({ refCount: true, bufferSize: 1 }));
+    columnsDataProgress$ = new BehaviorSubject(false);
+    columnsData$ = this.columnsData$$.pipe(
+        tap(() => {
+            this.columnsDataProgress$.next(true);
+        }),
+        toColumnsData,
+        tap(() => {
+            this.columnsDataProgress$.next(false);
+        }),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    isPreload = signal(false);
+    loadSize = computed(() => (this.isPreload() ? this.maxSize() : this.size()));
+    hasAutoShowMore$ = combineLatest([
+        toObservable(this.hasMore),
+        this.dataSource.data$.pipe(map((d) => d?.length)),
+        this.displayedCount$,
+        this.dataSource.paginator.page.pipe(
+            startWith(null),
+            map(() => this.dataSource.paginator.pageSize),
+        ),
+    ]).pipe(
+        map(
+            ([hasMore, dataCount, displayedDataCount, size]) =>
+                (hasMore && displayedDataCount !== 0 && displayedDataCount >= dataCount) ||
+                displayedDataCount > size,
+        ),
+        distinctUntilChanged(),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
-    displayedColumns: string[] = [];
+    displayedColumns$ = combineLatest([
+        this.displayedNormColumns$,
+        toObservable(this.rowSelectable),
+        toObservable(this.sort),
+        toObservable(this.rowDragDrop),
+    ]).pipe(
+        map(([normColumns, rowSelectable, sort, rowDragDrop]) => [
+            ...((
+                Array.isArray(rowDragDrop)
+                    ? sort?.direction && rowDragDrop.includes(sort?.active)
+                    : rowDragDrop
+            )
+                ? [this.columnDefs.drag]
+                : []),
+            ...(rowSelectable ? [this.columnDefs.select] : []),
+            ...normColumns.map((c) => c.field),
+        ]),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+    );
+    columnDefs = COLUMN_DEFS;
 
-    scoreColumnDef = createUniqueColumnDef('score');
-    noRecordsColumnDef = createUniqueColumnDef('no-records');
-    dragColumnDef = createUniqueColumnDef('drag');
-
-    preloadedLazyCells = new Map<T, boolean>();
-
-    @ViewChild('table', { static: true }) table!: MatTable<T>;
-
-    get displayedPages() {
-        return this.paginator.displayedPages;
-    }
-
-    get currentSize() {
-        return this.isPreload ? this.preloadSize : this.size;
-    }
-
-    get hasShowMore() {
-        return (
-            this.hasMore ||
-            (this.filteredDataLength ?? this.data()?.length) > this.size * this.displayedPages
-        );
-    }
-
-    get isNoRecords() {
-        return !this.data()?.length || this.filteredDataLength === 0;
-    }
-
-    private paginator!: OnePageTableDataSourcePaginator;
-    private qp?: QueryParamsNamespace<{ filter: string; exact?: boolean }>;
+    @ViewChild('scrollViewport', { read: ElementRef }) scrollViewport!: ElementRef;
+    @ViewChild('matTable', { static: false }) table!: MatTable<T>;
+    @ContentChild(TableInputsComponent, { read: ElementRef }) tableInputsContent!: ElementRef;
+    @ViewChild(MatRow, { static: false }) tableRow!: ElementRef;
 
     constructor(
-        private destroyRef: DestroyRef,
-        private queryParamsService: QueryParamsService,
+        private dr: DestroyRef,
         private injector: Injector,
-    ) {
-        this.updatePaginator();
-    }
+        private cdr: ChangeDetectorRef,
+    ) {}
 
     ngOnInit() {
-        const startValue = this.filterControl.value;
-        const filter$ = this.filterControl.valueChanges.pipe(
-            ...((startValue ? [startWith(startValue)] : []) as []),
-            map((value) => (value || '').trim()),
+        const sort$ = toObservable(this.sort, { injector: this.injector }).pipe(
             distinctUntilChanged(),
-            debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
+            share(),
         );
-        filter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filter) => {
-            this.filterChange.emit(filter);
-            this.qp?.patch?.({ filter });
-        });
-        const exactFilter$ = this.exactFilterControl.valueChanges.pipe(
-            startWith(this.exactFilterControl.value),
-            map(Boolean),
-            distinctUntilChanged(),
-        );
-        exactFilter$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((exact) => {
-            this.qp?.patch?.({ exact });
-        });
+
+        toObservable(this.data, { injector: this.injector })
+            .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
+            .subscribe((data) => {
+                this.dataSource.setData(data);
+            });
+        toObservable(this.treeData, { injector: this.injector })
+            .pipe(filter(Boolean), takeUntilDestroyed(this.dr))
+            .subscribe((data) => {
+                this.dataSource.setTreeData(data);
+            });
         combineLatest([
-            filter$,
-            exactFilter$,
-            toObservable(this.data, { injector: this.injector }),
+            this.filter$,
+            sort$,
+            this.dataSource.data$,
+            runInInjectionContext(this.injector, () =>
+                this.columnsData$.pipe(columnsDataToFilterSearchData),
+            ),
+            this.dataSource.isTreeData$,
+            toObservable(this.normColumns, { injector: this.injector }),
             toObservable(this.externalFilter, { injector: this.injector }),
         ])
             .pipe(
-                tap(() => {
-                    this.filterProgress$.next(true);
-                    delete this.filteredDataLength;
-                }),
-                debounceTime(DEFAULT_DEBOUNCE_TIME_MS),
-                switchMap(([filter, exact]): Observable<[Map<T, { score: number }>, string]> => {
-                    if (!filter || this.externalFilter() || !this.data()?.length) {
-                        return of([new Map(), filter]);
+                map(([search, sort, source, data, isTreeData, columns, isExternalFilter]) => {
+                    if (isTreeData) {
+                        return source;
                     }
-                    const cols = this.filterByColumns
-                        ? this.filterByColumns.map(
-                              (c) => this.columnsObjects.get(c) as ColumnObject<T>,
-                          )
-                        : Array.from(this.columnsObjects.values());
-                    // TODO: Refactor
-                    return (
-                        cols.length
-                            ? forkJoin([
-                                  forkJoin(
-                                      this.data().map((sourceValue, index) =>
-                                          combineLatest(
-                                              cols.map((colDef) =>
-                                                  colDef.lazy
-                                                      ? of('')
-                                                      : getPossiblyAsyncObservable(
-                                                            select(
-                                                                sourceValue,
-                                                                colDef.formatter ?? colDef.field,
-                                                                '',
-                                                                [index, colDef] as never,
-                                                            ),
-                                                        ).pipe(catchError(() => of(''))),
-                                              ),
-                                          ).pipe(take(1)),
-                                      ),
-                                  ),
-                                  forkJoin(
-                                      this.data().map((sourceValue, index) =>
-                                          combineLatest(
-                                              cols.map((colDef) =>
-                                                  colDef.description && !colDef.lazy
-                                                      ? getPossiblyAsyncObservable(
-                                                            select(
-                                                                sourceValue,
-                                                                colDef.description,
-                                                                '',
-                                                                [index, colDef] as never,
-                                                            ),
-                                                        ).pipe(catchError(() => of('')))
-                                                      : of(''),
-                                              ),
-                                          ).pipe(take(1)),
-                                      ),
-                                  ),
-                              ])
-                            : of([[] as unknown[], [] as unknown[]])
-                    ).pipe(
-                        map(([formattedValues, formattedDescription]) => {
-                            const fuseData = this.data().map((item, idx) => ({
-                                // TODO: add weights
-                                value: JSON.stringify(item),
-                                formattedValue: JSON.stringify(formattedValues[idx]), // TODO: split columns
-                                formattedDescription: JSON.stringify(formattedDescription[idx]),
-                            }));
-                            const fuse = new Fuse(fuseData, {
-                                keys: Object.keys(fuseData[0]),
-                                includeScore: true,
-                                includeMatches: true,
-                                findAllMatches: true,
-                                ignoreLocation: true,
-                                threshold: exact ? 0 : 0.6,
-                            });
-                            const filterResult = fuse.search(filter);
-                            return [
-                                new Map(
-                                    filterResult.map(({ refIndex, score }) => [
-                                        this.data()[refIndex],
-                                        { score: score ?? COMPLETE_MISMATCH_SCORE },
-                                    ]),
-                                ),
-                                filter,
-                            ];
-                        }),
-                    );
+                    const filteredData =
+                        !isExternalFilter && search ? filterData(data, search) : source;
+                    return sortData(filteredData, data, columns, sort);
                 }),
-                takeUntilDestroyed(this.destroyRef),
+                takeUntilDestroyed(this.dr),
             )
-            .subscribe(([scores, filter]) => {
-                this.scores = scores;
-                this.sortChanged(
-                    filter && !this.externalFilter()
-                        ? { active: this.scoreColumnDef, direction: 'asc' }
-                        : this.sortComponent.active === this.scoreColumnDef
-                          ? DEFAULT_SORT
-                          : this.sort,
-                );
-                this.filterProgress$.next(false);
+            .subscribe((filtered) => {
+                this.updateSortFilter(filtered);
+                this.updateLoadedLazyItems(filtered);
+                this.cdr.markForCheck();
+            });
+        merge(
+            this.filter$.pipe(filter(Boolean)),
+            toObservable(this.hasMore, { injector: this.injector }).pipe(filter(Boolean)),
+        )
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe(() => {
+                this.sort.set(DEFAULT_SORT);
+            });
+        merge(this.filter$, sort$)
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe(() => {
+                this.reset();
+            });
+        // TODO: 2, 3 column is torn away from the previous one, fixed by calling update
+        this.dataSource.data$
+            .pipe(
+                filter((v) => !!v?.length),
+                first(),
+                delay(100),
+                takeUntilDestroyed(this.dr),
+            )
+            .subscribe(() => {
+                this.table.updateStickyColumnStyles();
             });
     }
 
-    ngAfterViewInit() {
-        this.dataSource.sort = this.sortComponent;
-        this.updateSort();
-    }
-
-    ngOnChanges(changes: ComponentChanges<TableComponent<T>>) {
-        if (changes.columns) {
-            this.updateColumns();
+    load() {
+        if (this.isPreload()) {
+            this.isPreload.set(false);
         }
-        if (changes.columns || changes.rowSelectable || changes.rowDragDrop) {
-            this.updateDisplayedColumns();
-        }
-        if (changes.data) {
-            this.dataSource.data = this.data();
-            this.preloadedLazyCells = new Map();
-        }
-        if (this.dataSource.sort && changes.sort) {
-            this.updateSort();
-        }
-        if (changes.size) {
-            this.updatePaginator();
-        }
-        if (changes.filter) {
-            this.filterControl.setValue(this.filter ?? '');
-        }
-        if (changes.name && this.name) {
-            if (this.qp) {
-                this.qp.destroy();
-            }
-            this.qp = this.queryParamsService.createNamespace(this.name);
-            const filter = this.qp.params?.filter ?? '';
-            if (filter) {
-                this.filterControl.patchValue(filter);
-            }
-            const exact = this.qp.params?.exact ?? this.exactFilterControl.value;
-            if (exact !== this.exactFilterControl.value) {
-                this.exactFilterControl.setValue(1);
-            }
-        }
-        if (changes.sortOnFront || changes.data) {
-            this.tryFrontSort();
-        }
-    }
-
-    ngOnDestroy() {
-        this.qp?.destroy?.();
-    }
-
-    updateColumns(columns: ColumnObject<T>[] = createColumnsObjects(this.columns)) {
-        this.columnsObjects = new Map((columns || []).map((c) => [c.field, c]));
-    }
-
-    load(isPreload = false) {
-        if (this.isPreload !== isPreload) {
-            this.isPreload = isPreload;
-        }
-        this.update.emit({ size: this.currentSize });
-        this.paginator.reload();
+        this.reload();
     }
 
     preload() {
-        if (this.isPreload && this.hasMore) {
-            this.more.emit({ size: this.currentSize });
-            return;
+        if (!this.isPreload()) {
+            this.isPreload.set(true);
+            this.reload();
+        } else if (this.hasMore()) {
+            this.more.emit({ size: this.loadSize() });
         }
-        this.load(true);
     }
 
     showMore() {
-        this.paginator.more();
-        if (this.hasMore && this.displayedPages * this.size > this.data()?.length) {
-            this.more.emit({ size: this.currentSize });
+        this.dataSource.paginator.more();
+        if (this.hasMore() && this.dataSource.paginator.pageSize > this.dataSource.data.length) {
+            this.more.emit({ size: this.loadSize() });
         }
+        this.refreshTable();
     }
 
-    sortChanged(sort: Sort) {
-        this.sortChange.emit(sort);
-        this.tryFrontSort(sort);
-        this.updateDisplayedColumns();
+    downloadCsv() {
+        this.generateCsvData()
+            .pipe(takeUntilDestroyed(this.dr))
+            .subscribe((csvData) => {
+                downloadFile(csvData, 'csv');
+            });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     drop(event: CdkDragDrop<any>) {
         this.dragDisabled = true;
-        const item = event.item.data;
-        const { previousIndex, currentIndex } = event;
-        const previousData = this.dataSource.sortData(this.data(), this.sortComponent);
-        const currentData = previousData.slice();
-        let currentDataIndex = 0;
-        if (previousIndex > currentIndex) {
-            currentData.splice(previousIndex, 1);
-            currentData.splice(currentIndex, 0, event.item.data);
-            currentDataIndex = currentIndex;
-        } else {
-            currentData.splice(currentIndex, 0, event.item.data);
-            currentData.splice(previousIndex, 1);
-            currentDataIndex = currentIndex - 1;
-        }
-        this.rowDropped.emit({
-            previousIndex,
-            currentIndex,
-            item,
-            previousData,
-            currentData,
-            currentDataIndex,
-            sort: this?.sortComponent,
+        this.filteredSortData$.pipe(filter(Boolean), first()).subscribe((data) => {
+            const item = event.item.data;
+            const { previousIndex, currentIndex } = event;
+            const previousData = data;
+            const currentData = previousData.slice();
+            let currentDataIndex = 0;
+            if (previousIndex > currentIndex) {
+                currentData.splice(previousIndex, 1);
+                currentData.splice(currentIndex, 0, event.item.data);
+                currentDataIndex = currentIndex;
+            } else {
+                currentData.splice(currentIndex, 0, event.item.data);
+                currentData.splice(previousIndex, 1);
+                currentDataIndex = currentIndex - 1;
+            }
+            this.rowDropped.emit({
+                previousIndex,
+                currentIndex,
+                item,
+                previousData,
+                currentData,
+                currentDataIndex,
+                sort: this?.sortComponent,
+            });
         });
     }
 
-    private tryFrontSort({ active, direction }: Partial<Sort> = this.sortComponent || {}) {
-        const data = this.data();
-        if (!data?.length || !active || !direction) {
-            this.updateDataSourceSort();
-            return;
-        }
-        if (active === this.scoreColumnDef && this.filterControl.value) {
-            let sortedData = data
-                .filter(
-                    (data) =>
-                        (this.scores.get(data)?.score ?? COMPLETE_MISMATCH_SCORE) <
-                        COMPLETE_MISMATCH_SCORE,
-                )
-                .sort(
-                    (a, b) =>
-                        (this.scores.get(a)?.score ?? COMPLETE_MISMATCH_SCORE) -
-                        (this.scores.get(b)?.score ?? COMPLETE_MISMATCH_SCORE),
-                );
-            if (direction === 'desc') {
-                sortedData = sortedData.reverse();
-            }
-            this.filteredDataLength = sortedData.length;
-            this.updateDataSourceSort(sortedData);
-            return;
-        }
-        if (!this.sortOnFront) {
-            this.updateDataSourceSort();
-            return;
-        }
-        if (this.filterControl.value) {
-            this.filterControl.setValue('');
-        }
-        const colDef = this.columnsObjects.get(active);
-        if (!colDef) {
-            this.updateDataSourceSort();
-            return;
-        }
-        combineLatest(
-            data.map((sourceValue, index) =>
-                getPossiblyAsyncObservable(
-                    select(sourceValue, colDef.formatter ?? colDef.field, '', [
-                        index,
-                        colDef,
-                    ] as never),
-                ).pipe(map((value) => ({ value, sourceValue }))),
+    private generateCsvData(): Observable<string> {
+        return combineLatest([
+            this.displayedNormColumns$.pipe(
+                switchMap((cols) => forkJoin(cols.map((c) => c.header.pipe(take(1))))),
             ),
-        )
-            .pipe(take(1), takeUntilDestroyed(this.destroyRef))
-            .subscribe((loadedData) => {
-                let sortedData = loadedData
-                    .sort((a, b) => compareDifferentTypes(a.value, b.value))
-                    .map((v) => v.sourceValue);
-                if (direction === 'desc') {
-                    sortedData = sortedData.reverse();
-                }
-                this.updateDataSourceSort(sortedData);
-            });
+            this.columnsData$.pipe(take(1)),
+        ]).pipe(
+            map(([cols, data]) =>
+                createCsv(runInInjectionContext(this.injector, () => tableToCsvObject(cols, data))),
+            ),
+        );
     }
 
-    private updateDataSourceSort(sortedData?: T[]) {
-        this.dataSource.sortData = sortedData ? () => sortedData : sortDataByDefault;
-        // TODO: hack for update
+    private reload() {
+        this.update$.next({ size: this.loadSize() });
+        this.reset();
+    }
+
+    private updateSortFilter(filtered: DisplayedData<T, C>) {
+        this.filteredSortData$.next(filtered);
+        this.dataSource.sortData = () => filtered;
         this.dataSource.sort = this.sortComponent;
     }
 
-    private updatePaginator() {
-        this.paginator = new OnePageTableDataSourcePaginator(this.size);
-        this.dataSource.paginator = this.paginator as never;
+    private reset() {
+        (this.scrollViewport?.nativeElement as HTMLElement)?.scrollTo?.({ top: 0 });
+        this.dataSource.paginator.reload();
+        this.refreshTable();
     }
 
-    private updateSort() {
-        this.sortComponent.active = this.sort.active;
-        this.sortComponent.direction = this.sort.direction;
-        this.tryFrontSort();
+    // TODO: Refresh table when pagination is updated
+    private refreshTable() {
+        // eslint-disable-next-line no-self-assign
+        this.dataSource.data = this.dataSource.data;
     }
 
-    private updateDisplayedColumns() {
-        this.displayedColumns = [
-            ...((
-                Array.isArray(this.rowDragDrop)
-                    ? (this.sortComponent?.direction ?? this.sort?.direction) &&
-                      this.rowDragDrop.includes(this.sortComponent?.active ?? this.sort?.active)
-                    : this.rowDragDrop
-            )
-                ? [this.dragColumnDef]
-                : []),
-            this.scoreColumnDef,
-            ...(this.rowSelectable ? [this.selectColumnDef] : []),
-            ...Array.from(this.columnsObjects.values())
-                .filter((c) => !c.hide)
-                .map((c) => c.field),
-        ];
+    private updateLoadedLazyItems(items: DisplayedData<T, C>) {
+        const lazyLoadedItems = items.slice(0, DEFAULT_LOADED_LAZY_ROWS_COUNT);
+        for (const item of lazyLoadedItems) {
+            this.loadedLazyItems.set(item, true);
+        }
     }
 }
