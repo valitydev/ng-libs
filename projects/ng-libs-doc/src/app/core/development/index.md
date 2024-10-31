@@ -1,5 +1,3 @@
-# {{ NgDocPage.title }}
-
 1. [Link](https://docs.npmjs.com/cli/commands/npm-link) the library
 
     ```sh

@@ -21,9 +21,9 @@ interface User {
 })
 export class DemoComponent {
     columns: Column<User>[] = [
-        'id',
-        { field: 'name', sortable: true },
-        { field: 'date', type: 'datetime' },
+        { field: 'id' },
+        { field: 'name' },
+        { field: 'date', cell: { type: 'datetime' } },
     ];
     data: User[] = [
         { id: 12, name: 'Max', date: new Date() },

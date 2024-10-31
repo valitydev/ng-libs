@@ -39,7 +39,7 @@ import { NormColumn } from '../../types';
     templateUrl: 'table-info-bar.component.html',
     styleUrl: 'table-info-bar.component.scss',
 })
-export class TableInfoBarComponent implements OnInit {
+export class TableInfoBarComponent<T extends object, C extends object> implements OnInit {
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     hasLoad = input(false, { transform: booleanAttribute });
@@ -47,7 +47,7 @@ export class TableInfoBarComponent implements OnInit {
     noDownload = input(false, { transform: booleanAttribute });
     noToolbar = input(false, { transform: booleanAttribute });
     dataProgress = input(false, { transform: booleanAttribute });
-    columns = input<NormColumn<object>[]>([]);
+    columns = input<NormColumn<T, C>[]>([]);
 
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });

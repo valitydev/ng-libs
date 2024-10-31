@@ -1,5 +1,3 @@
-# {{ NgDocPage.title }}
-
 ![NPM Version](https://img.shields.io/npm/v/prettier?logo=prettier&label=prettier)
 ![NPM Version](https://img.shields.io/npm/v/%40vality%2Fprettier-config?logo=npm&label=%40vality%2Fprettier-config)
 

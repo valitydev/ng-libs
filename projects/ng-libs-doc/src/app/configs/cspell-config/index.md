@@ -1,5 +1,3 @@
-# {{ NgDocPage.title }}
-
 ![NPM Version](https://img.shields.io/npm/v/cspell?logo=npm&label=cspell)
 ![NPM Version](https://img.shields.io/npm/v/%40vality%2Fcspell-config?logo=npm&label=%40vality%2Fcspell-config)
 
