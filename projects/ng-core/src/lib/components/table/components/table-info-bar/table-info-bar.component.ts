@@ -18,6 +18,9 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ActionsModule } from '../../../actions';
 import { InputFieldModule } from '../../../input-field';
 import { TagModule } from '../../../tag';
+import { DialogService } from '../../../dialog';
+import { CustomizeComponent } from '../customize/customize.component';
+import { NormColumn } from '../../types';
 
 @Component({
     selector: 'v-table-info-bar',
@@ -42,7 +45,9 @@ export class TableInfoBarComponent implements OnInit {
     hasLoad = input(false, { transform: booleanAttribute });
     isPreload = input(false, { transform: booleanAttribute });
     noDownload = input(false, { transform: booleanAttribute });
+    noToolbar = input(false, { transform: booleanAttribute });
     dataProgress = input(false, { transform: booleanAttribute });
+    columns = input<NormColumn<object>[]>([]);
 
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });
@@ -73,11 +78,18 @@ export class TableInfoBarComponent implements OnInit {
               : '0',
     );
 
-    constructor(private dr: DestroyRef) {}
+    constructor(
+        private dr: DestroyRef,
+        private dialogService: DialogService,
+    ) {}
 
     ngOnInit() {
         this.filterControl.valueChanges.pipe(takeUntilDestroyed(this.dr)).subscribe((v) => {
             this.filterChange.emit(v);
         });
+    }
+
+    tune() {
+        this.dialogService.open(CustomizeComponent, { columns: this.columns() });
     }
 }

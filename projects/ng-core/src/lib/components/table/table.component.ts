@@ -119,6 +119,7 @@ export class TableComponent<T extends object, C extends object> implements OnIni
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
     noDownload = input(false, { transform: booleanAttribute });
+    noToolbar = input(false, { transform: booleanAttribute });
 
     // Filter
     filter = model('');
