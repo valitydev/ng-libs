@@ -1,10 +1,9 @@
 import { NgDocConfiguration } from '@ng-doc/builder';
-
-import * as packageJson from '../../../package.json';
+import { CONFIG } from './config';
 
 const Config: NgDocConfiguration = {
     repoConfig: {
-        url: packageJson.repository.url,
+        url: CONFIG.repoUrl,
         mainBranch: 'master',
         releaseBranch: 'master',
     },
