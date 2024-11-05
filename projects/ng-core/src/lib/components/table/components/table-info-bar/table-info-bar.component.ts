@@ -9,33 +9,14 @@ import {
     computed,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { MatBadge } from '@angular/material/badge';
-import { MatIconButton, MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
+import { FormControl } from '@angular/forms';
 
-import { ActionsModule } from '../../../actions';
-import { InputFieldModule } from '../../../input-field';
-import { TagModule } from '../../../tag';
 import { DialogService } from '../../../dialog';
-import { CustomizeComponent } from '../customize/customize.component';
 import { NormColumn } from '../../types';
+import { CustomizeComponent } from '../customize/customize.component';
 
 @Component({
     selector: 'v-table-info-bar',
-    standalone: true,
-    imports: [
-        MatIcon,
-        MatIconButton,
-        MatTooltip,
-        TagModule,
-        MatBadge,
-        ActionsModule,
-        InputFieldModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-    ],
     templateUrl: 'table-info-bar.component.html',
     styleUrl: 'table-info-bar.component.scss',
 })

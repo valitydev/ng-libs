@@ -1,12 +1,13 @@
+import { Component } from '@angular/core';
+import { RouterModule, RouterOutlet } from '@angular/router';
 import {
     NgDocRootComponent,
     NgDocNavbarComponent,
     NgDocSidebarComponent,
     NgDocThemeToggleComponent,
 } from '@ng-doc/app';
-import { Component } from '@angular/core';
 import { NgDocButtonIconComponent, NgDocIconComponent } from '@ng-doc/ui-kit';
-import { RouterModule, RouterOutlet } from '@angular/router';
+
 import { CONFIG } from '../config';
 
 @Component({

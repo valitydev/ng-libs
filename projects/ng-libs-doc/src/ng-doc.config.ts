@@ -1,4 +1,5 @@
 import { NgDocConfiguration } from '@ng-doc/builder';
+
 import { CONFIG } from './config';
 
 const Config: NgDocConfiguration = {
