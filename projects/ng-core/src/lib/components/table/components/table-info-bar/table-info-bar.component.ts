@@ -11,9 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 
-import { DialogService } from '../../../dialog';
 import { NormColumn } from '../../types';
-import { CustomizeComponent } from '../customize/customize.component';
 
 @Component({
     selector: 'v-table-info-bar',
@@ -59,10 +57,7 @@ export class TableInfoBarComponent<T extends object, C extends object> implement
               : '0',
     );
 
-    constructor(
-        private dr: DestroyRef,
-        private dialogService: DialogService,
-    ) {}
+    constructor(private dr: DestroyRef) {}
 
     ngOnInit() {
         this.filterControl.valueChanges.pipe(takeUntilDestroyed(this.dr)).subscribe((v) => {
@@ -70,7 +65,7 @@ export class TableInfoBarComponent<T extends object, C extends object> implement
         });
     }
 
-    tune() {
-        this.dialogService.open(CustomizeComponent, { columns: this.columns() });
-    }
+    // tune() {
+    //     this.dialogService.open(CustomizeComponent, { columns: this.columns() });
+    // }
 }
