@@ -70,8 +70,15 @@
                                 "input": "ng-doc/ng-libs-doc/assets",
                                 "output": "assets/ng-doc"
                             },
-                            "projects/ng-libs-doc/src/favicon.ico",
-                            "projects/ng-libs-doc/src/assets"
+                            {
+                                "glob": "**/*",
+                                "input": "projects/ng-libs-doc/public"
+                            },
+                            {
+                                "glob": "**/*",
+                                "input": "node_modules/feather-icons/dist/icons",
+                                "output": "assets/icons"
+                            }
                         ],
                         "styles": [
                             "node_modules/@ng-doc/app/styles/global.css",
@@ -85,13 +92,13 @@
                             "budgets": [
                                 {
                                     "type": "initial",
-                                    "maximumWarning": "1.5mb",
-                                    "maximumError": "2mb"
+                                    "maximumWarning": "2MB",
+                                    "maximumError": "3MB"
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "2kb",
-                                    "maximumError": "4kb"
+                                    "maximumWarning": "2kB",
+                                    "maximumError": "4kB"
                                 }
                             ],
                             "outputHashing": "all"

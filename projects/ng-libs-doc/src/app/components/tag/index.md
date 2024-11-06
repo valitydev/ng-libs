@@ -1,5 +1,3 @@
-# {{ NgDocPage.title }}
-
 {{ NgDocActions.demo("DemoComponent") }}
 
 ## Theme Colors

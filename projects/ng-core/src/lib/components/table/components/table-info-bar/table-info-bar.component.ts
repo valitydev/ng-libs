@@ -9,40 +9,24 @@ import {
     computed,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { MatBadge } from '@angular/material/badge';
-import { MatIconButton, MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
+import { FormControl } from '@angular/forms';
 
-import { ActionsModule } from '../../../actions';
-import { InputFieldModule } from '../../../input-field';
-import { TagModule } from '../../../tag';
+import { NormColumn } from '../../types';
 
 @Component({
     selector: 'v-table-info-bar',
-    standalone: true,
-    imports: [
-        MatIcon,
-        MatIconButton,
-        MatTooltip,
-        TagModule,
-        MatBadge,
-        ActionsModule,
-        InputFieldModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-    ],
     templateUrl: 'table-info-bar.component.html',
     styleUrl: 'table-info-bar.component.scss',
 })
-export class TableInfoBarComponent implements OnInit {
+export class TableInfoBarComponent<T extends object, C extends object> implements OnInit {
     progress = input(false, { transform: booleanAttribute });
     hasMore = input(false, { transform: booleanAttribute });
     hasLoad = input(false, { transform: booleanAttribute });
     isPreload = input(false, { transform: booleanAttribute });
     noDownload = input(false, { transform: booleanAttribute });
+    noToolbar = input(false, { transform: booleanAttribute });
     dataProgress = input(false, { transform: booleanAttribute });
+    columns = input<NormColumn<T, C>[]>([]);
 
     size = input(0, { transform: numberAttribute });
     preloadSize = input(0, { transform: numberAttribute });
@@ -80,4 +64,8 @@ export class TableInfoBarComponent implements OnInit {
             this.filterChange.emit(v);
         });
     }
+
+    // tune() {
+    //     this.dialogService.open(CustomizeComponent, { columns: this.columns() });
+    // }
 }

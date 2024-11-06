@@ -3,6 +3,7 @@
 <div class="wrapper">
     <v-table-info-bar
         [(filter)]="filter"
+        [columns]="normColumns()"
         [count]="(dataSource.data$ | async)?.length"
         [dataProgress]="!!(columnsDataProgress$ | async) && !hasMore()"
         [filteredCount]="displayedCount$ | async"
@@ -11,6 +12,7 @@
         [hasMore]="hasMore()"
         [isPreload]="isPreload()"
         [noDownload]="noDownload()"
+        [noToolbar]="noToolbar()"
         [preloadSize]="maxSize()"
         [progress]="progress()"
         [selectedCount]="rowSelected()?.length"

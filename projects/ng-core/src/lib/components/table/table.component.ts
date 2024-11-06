@@ -1,5 +1,4 @@
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -20,12 +19,8 @@ import {
     ChangeDetectorRef,
 } from '@angular/core';
 import { toObservable, takeUntilDestroyed, outputFromObservable } from '@angular/core/rxjs-interop';
-import { MatIconButton, MatButton } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIcon } from '@angular/material/icon';
-import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
-import { MatTableModule, MatTable, MatRow } from '@angular/material/table';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatSort, Sort } from '@angular/material/sort';
+import { MatTable, MatRow } from '@angular/material/table';
 import {
     combineLatest,
     Observable,
@@ -51,16 +46,8 @@ import {
 } from 'rxjs/operators';
 
 import { downloadFile, createCsv, arrayAttribute, ArrayAttributeTransform } from '../../utils';
-import { ContentLoadingComponent } from '../content-loading';
-import { ProgressModule } from '../progress';
-import { ValueComponent, ValueListComponent } from '../value';
 
-import { InfinityScrollDirective } from './components/infinity-scroll.directive';
-import { NoRecordsComponent } from './components/no-records.component';
-import { SelectColumnComponent } from './components/select-column.component';
-import { TableInfoBarComponent } from './components/table-info-bar/table-info-bar.component';
 import { TableInputsComponent } from './components/table-inputs.component';
-import { TableProgressBarComponent } from './components/table-progress-bar.component';
 import {
     DEBOUNCE_TIME_MS,
     DEFAULT_LOADED_LAZY_ROWS_COUNT,
@@ -80,33 +67,10 @@ import {
 } from './utils/to-columns-data';
 
 @Component({
-    standalone: true,
     selector: 'v-table',
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        CommonModule,
-        MatTableModule,
-        MatCardModule,
-        ValueComponent,
-        TableProgressBarComponent,
-        NoRecordsComponent,
-        TableInfoBarComponent,
-        ContentLoadingComponent,
-        MatIcon,
-        MatTooltip,
-        MatIconButton,
-        InfinityScrollDirective,
-        ValueListComponent,
-        SelectColumnComponent,
-        ProgressModule,
-        MatSortModule,
-        TableInputsComponent,
-        MatButton,
-        CdkDrag,
-        CdkDropList,
-    ],
 })
 export class TableComponent<T extends object, C extends object> implements OnInit {
     data = input<T[]>();
@@ -119,6 +83,7 @@ export class TableComponent<T extends object, C extends object> implements OnIni
     size = input(25, { transform: numberAttribute });
     maxSize = input(1000, { transform: numberAttribute });
     noDownload = input(false, { transform: booleanAttribute });
+    noToolbar = input(false, { transform: booleanAttribute });
 
     // Filter
     filter = model('');

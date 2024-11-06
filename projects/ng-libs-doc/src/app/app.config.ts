@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptorsFromDi, withFetch } from '@angular/common/http';
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import {
@@ -15,12 +15,14 @@ import { NG_DOC_ROUTING, provideNgDocContext } from '@ng-doc/generated';
 
 import { ROUTES } from './app.routes';
 
-export const APP_CONFIG: ApplicationConfig = {
+export const appConfig: ApplicationConfig = {
     providers: [
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideRouter(ROUTES),
         provideAnimations(),
         provideHttpClient(withInterceptorsFromDi()),
         provideRouter(
-            [...ROUTES, ...NG_DOC_ROUTING],
+            NG_DOC_ROUTING,
             withInMemoryScrolling({
                 scrollPositionRestoration: 'enabled',
                 anchorScrolling: 'enabled',

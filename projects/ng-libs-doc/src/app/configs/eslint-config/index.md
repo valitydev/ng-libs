@@ -1,5 +1,3 @@
-# {{ NgDocPage.title }}
-
 ![NPM Version](https://img.shields.io/npm/v/eslint?logo=eslint&label=eslint)
 ![NPM Version](https://img.shields.io/npm/v/%40vality%2Feslint-config?logo=npm&label=%40vality%2Feslint-config)
 
