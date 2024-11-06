@@ -1,0 +1,1232 @@
+[
+  {
+    "title": "@vality/ng-core components",
+    "items": [
+      {
+        "route": "/api/classes/ng-core/components/DialogModule",
+        "type": "NgModule",
+        "name": "DialogModule"
+      },
+      {
+        "route": "/api/enums/ng-core/components/DialogResponseStatus",
+        "type": "Enum",
+        "name": "DialogResponseStatus"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/DialogResponse",
+        "type": "Interface",
+        "name": "DialogResponse"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DialogSuperclass",
+        "type": "Directive",
+        "name": "DialogSuperclass"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/DialogConfig",
+        "type": "TypeAlias",
+        "name": "DialogConfig"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DIALOG_CONFIG",
+        "type": "Variable",
+        "name": "DIALOG_CONFIG"
+      },
+      {
+        "route": "/api/variables/ng-core/components/BASE_CONFIG",
+        "type": "Variable",
+        "name": "BASE_CONFIG"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DEFAULT_DIALOG_CONFIG",
+        "type": "Variable",
+        "name": "DEFAULT_DIALOG_CONFIG"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DEFAULT_DIALOG_CONFIG_FULL_HEIGHT",
+        "type": "Variable",
+        "name": "DEFAULT_DIALOG_CONFIG_FULL_HEIGHT"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DialogComponent",
+        "type": "Component",
+        "name": "DialogComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DialogActionsComponent",
+        "type": "Component",
+        "name": "DialogActionsComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DialogService",
+        "type": "Injectable",
+        "name": "DialogService"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ActionsModule",
+        "type": "NgModule",
+        "name": "ActionsModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ActionsComponent",
+        "type": "Component",
+        "name": "ActionsComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableModule",
+        "type": "NgModule",
+        "name": "TableModule"
+      },
+      {
+        "route": "/api/functions/ng-core/components/correctPriorities",
+        "type": "Function",
+        "name": "correctPriorities"
+      },
+      {
+        "route": "/api/functions/ng-core/components/createColumn",
+        "type": "Function",
+        "name": "createColumn"
+      },
+      {
+        "route": "/api/functions/ng-core/components/cachedHeadMap",
+        "type": "Function",
+        "name": "cachedHeadMap"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableComponent",
+        "type": "Component",
+        "name": "TableComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableActionsComponent",
+        "type": "Component",
+        "name": "TableActionsComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableInputsComponent",
+        "type": "Component",
+        "name": "TableInputsComponent"
+      },
+      {
+        "route": "/api/functions/ng-core/components/normalizePossiblyFn",
+        "type": "Function",
+        "name": "normalizePossiblyFn"
+      },
+      {
+        "route": "/api/functions/ng-core/components/normalizeCell",
+        "type": "Function",
+        "name": "normalizeCell"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/Fn",
+        "type": "TypeAlias",
+        "name": "Fn"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/PossiblyFn",
+        "type": "TypeAlias",
+        "name": "PossiblyFn"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/CellFnArgs",
+        "type": "TypeAlias",
+        "name": "CellFnArgs"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/CellValue",
+        "type": "TypeAlias",
+        "name": "CellValue"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/Column",
+        "type": "Interface",
+        "name": "Column"
+      },
+      {
+        "route": "/api/classes/ng-core/components/NormColumn",
+        "type": "Class",
+        "name": "NormColumn"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/UpdateOptions",
+        "type": "TypeAlias",
+        "name": "UpdateOptions"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/DragDrop",
+        "type": "Interface",
+        "name": "DragDrop"
+      },
+      {
+        "route": "/api/variables/ng-core/components/createMenuColumn",
+        "type": "Variable",
+        "name": "createMenuColumn"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TreeDataItem",
+        "type": "TypeAlias",
+        "name": "TreeDataItem"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TreeData",
+        "type": "TypeAlias",
+        "name": "TreeData"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TreeInlineDataItem",
+        "type": "TypeAlias",
+        "name": "TreeInlineDataItem"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TreeInlineData",
+        "type": "TypeAlias",
+        "name": "TreeInlineData"
+      },
+      {
+        "route": "/api/functions/ng-core/components/treeDataItemToInlineDataItem",
+        "type": "Function",
+        "name": "treeDataItemToInlineDataItem"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ConfirmDialogModule",
+        "type": "NgModule",
+        "name": "ConfirmDialogModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ConfirmDialogComponent",
+        "type": "Component",
+        "name": "ConfirmDialogComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/FiltersComponent",
+        "type": "Component",
+        "name": "FiltersComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/MoreFiltersButtonComponent",
+        "type": "Component",
+        "name": "MoreFiltersButtonComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/OtherFiltersDirective",
+        "type": "Directive",
+        "name": "OtherFiltersDirective"
+      },
+      {
+        "route": "/api/classes/ng-core/components/MainFiltersDirective",
+        "type": "Directive",
+        "name": "MainFiltersDirective"
+      },
+      {
+        "route": "/api/classes/ng-core/components/FiltersModule",
+        "type": "NgModule",
+        "name": "FiltersModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DateRangeFieldModule",
+        "type": "NgModule",
+        "name": "DateRangeFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DateRangeFieldComponent",
+        "type": "Component",
+        "name": "DateRangeFieldComponent"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/DateRange",
+        "type": "Interface",
+        "name": "DateRange"
+      },
+      {
+        "route": "/api/functions/ng-core/components/isEqualDateRange",
+        "type": "Function",
+        "name": "isEqualDateRange"
+      },
+      {
+        "route": "/api/functions/ng-core/components/createDateRangeToToday",
+        "type": "Function",
+        "name": "createDateRangeToToday"
+      },
+      {
+        "route": "/api/classes/ng-core/components/NumberRangeFieldModule",
+        "type": "NgModule",
+        "name": "NumberRangeFieldModule"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/NumberRange",
+        "type": "TypeAlias",
+        "name": "NumberRange"
+      },
+      {
+        "route": "/api/classes/ng-core/components/NumberRangeFieldComponent",
+        "type": "Component",
+        "name": "NumberRangeFieldComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ListFieldModule",
+        "type": "NgModule",
+        "name": "ListFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ListFieldComponent",
+        "type": "Component",
+        "name": "ListFieldComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/InputFieldModule",
+        "type": "NgModule",
+        "name": "InputFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/InputFieldComponent",
+        "type": "Component",
+        "name": "InputFieldComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TagModule",
+        "type": "NgModule",
+        "name": "TagModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TagComponent",
+        "type": "Component",
+        "name": "TagComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ErrorPageModule",
+        "type": "NgModule",
+        "name": "ErrorPageModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ErrorPageComponent",
+        "type": "Component",
+        "name": "ErrorPageComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/SelectFieldModule",
+        "type": "NgModule",
+        "name": "SelectFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/SelectFieldComponent",
+        "type": "Component",
+        "name": "SelectFieldComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/AutocompleteFieldModule",
+        "type": "NgModule",
+        "name": "AutocompleteFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/AutocompleteFieldComponent",
+        "type": "Component",
+        "name": "AutocompleteFieldComponent"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/Option",
+        "type": "Interface",
+        "name": "Option"
+      },
+      {
+        "route": "/api/classes/ng-core/components/FileUploadModule",
+        "type": "NgModule",
+        "name": "FileUploadModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/FileUploadComponent",
+        "type": "Component",
+        "name": "FileUploadComponent"
+      },
+      {
+        "route": "/api/functions/ng-core/components/loadFileContent",
+        "type": "Function",
+        "name": "loadFileContent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DatetimeFieldComponent",
+        "type": "Component",
+        "name": "DatetimeFieldComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/DatetimeFieldModule",
+        "type": "NgModule",
+        "name": "DatetimeFieldModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/SwitchButtonModule",
+        "type": "NgModule",
+        "name": "SwitchButtonModule"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/State",
+        "type": "Interface",
+        "name": "State"
+      },
+      {
+        "route": "/api/classes/ng-core/components/SwitchButtonComponent",
+        "type": "Component",
+        "name": "SwitchButtonComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ValueComponent",
+        "type": "Component",
+        "name": "ValueComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ValueListComponent",
+        "type": "Component",
+        "name": "ValueListComponent"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/Value",
+        "type": "TypeAlias",
+        "name": "Value"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/Link",
+        "type": "Interface",
+        "name": "Link"
+      },
+      {
+        "route": "/api/classes/ng-core/components/NavComponent",
+        "type": "Component",
+        "name": "NavComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ContentLoadingComponent",
+        "type": "Component",
+        "name": "ContentLoadingComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ErrorPageRoutingModule",
+        "type": "NgModule",
+        "name": "ErrorPageRoutingModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ProgressModule",
+        "type": "NgModule",
+        "name": "ProgressModule"
+      },
+      {
+        "route": "/api/classes/ng-core/components/ProgressComponent",
+        "type": "Component",
+        "name": "ProgressComponent"
+      },
+      {
+        "route": "/api/functions/ng-core/components/getProgressByCount",
+        "type": "Function",
+        "name": "getProgressByCount"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DEFAULT_SORT",
+        "type": "Variable",
+        "name": "DEFAULT_SORT"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DEBOUNCE_TIME_MS",
+        "type": "Variable",
+        "name": "DEBOUNCE_TIME_MS"
+      },
+      {
+        "route": "/api/variables/ng-core/components/DEFAULT_LOADED_LAZY_ROWS_COUNT",
+        "type": "Variable",
+        "name": "DEFAULT_LOADED_LAZY_ROWS_COUNT"
+      },
+      {
+        "route": "/api/variables/ng-core/components/COLUMN_DEFS",
+        "type": "Variable",
+        "name": "COLUMN_DEFS"
+      },
+      {
+        "route": "/api/functions/ng-core/components/findOptionByValue",
+        "type": "Function",
+        "name": "findOptionByValue"
+      },
+      {
+        "route": "/api/functions/ng-core/components/getHintText",
+        "type": "Function",
+        "name": "getHintText"
+      },
+      {
+        "route": "/api/functions/ng-core/components/isSearchOption",
+        "type": "Function",
+        "name": "isSearchOption"
+      },
+      {
+        "route": "/api/functions/ng-core/components/searchOptions",
+        "type": "Function",
+        "name": "searchOptions"
+      },
+      {
+        "route": "/api/classes/ng-core/components/BaseColumnComponent",
+        "type": "Directive",
+        "name": "BaseColumnComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/InfinityScrollDirective",
+        "type": "Directive",
+        "name": "InfinityScrollDirective"
+      },
+      {
+        "route": "/api/classes/ng-core/components/NoRecordsComponent",
+        "type": "Component",
+        "name": "NoRecordsComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/SelectColumnComponent",
+        "type": "Component",
+        "name": "SelectColumnComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableProgressBarComponent",
+        "type": "Component",
+        "name": "TableProgressBarComponent"
+      },
+      {
+        "route": "/api/functions/ng-core/components/createIntersectionObserver",
+        "type": "Function",
+        "name": "createIntersectionObserver"
+      },
+      {
+        "route": "/api/functions/ng-core/components/createUniqueColumnDef",
+        "type": "Function",
+        "name": "createUniqueColumnDef"
+      },
+      {
+        "route": "/api/functions/ng-core/components/columnsDataToFilterSearchData",
+        "type": "Function",
+        "name": "columnsDataToFilterSearchData"
+      },
+      {
+        "route": "/api/functions/ng-core/components/filterData",
+        "type": "Function",
+        "name": "filterData"
+      },
+      {
+        "route": "/api/functions/ng-core/components/sortData",
+        "type": "Function",
+        "name": "sortData"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/FilterSearchData",
+        "type": "TypeAlias",
+        "name": "FilterSearchData"
+      },
+      {
+        "route": "/api/functions/ng-core/components/normalizeString",
+        "type": "Function",
+        "name": "normalizeString"
+      },
+      {
+        "route": "/api/variables/ng-core/components/SPACES",
+        "type": "Variable",
+        "name": "SPACES"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableDataSource",
+        "type": "Class",
+        "name": "TableDataSource"
+      },
+      {
+        "route": "/api/functions/ng-core/components/tableToCsvObject",
+        "type": "Function",
+        "name": "tableToCsvObject"
+      },
+      {
+        "route": "/api/functions/ng-core/components/toObservableColumnsData",
+        "type": "Function",
+        "name": "toObservableColumnsData"
+      },
+      {
+        "route": "/api/functions/ng-core/components/toColumnsData",
+        "type": "Function",
+        "name": "toColumnsData"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/DisplayedDataItem",
+        "type": "TypeAlias",
+        "name": "DisplayedDataItem"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/DisplayedData",
+        "type": "TypeAlias",
+        "name": "DisplayedData"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/ColumnDataItem",
+        "type": "TypeAlias",
+        "name": "ColumnDataItem"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/ColumnData",
+        "type": "TypeAlias",
+        "name": "ColumnData"
+      },
+      {
+        "route": "/api/interfaces/ng-core/components/MenuItem",
+        "type": "Interface",
+        "name": "MenuItem"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/MenuValue",
+        "type": "TypeAlias",
+        "name": "MenuValue"
+      },
+      {
+        "route": "/api/classes/ng-core/components/MenuValueComponent",
+        "type": "Component",
+        "name": "MenuValueComponent"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/BaseValue",
+        "type": "TypeAlias",
+        "name": "BaseValue"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TypedValue",
+        "type": "TypeAlias",
+        "name": "TypedValue"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/TypedParamsValue",
+        "type": "TypeAlias",
+        "name": "TypedParamsValue"
+      },
+      {
+        "route": "/api/functions/ng-core/components/currencyAmountValueToString",
+        "type": "Function",
+        "name": "currencyAmountValueToString"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/CurrencyAmountValue",
+        "type": "TypeAlias",
+        "name": "CurrencyAmountValue"
+      },
+      {
+        "route": "/api/functions/ng-core/components/datetimeValueToString",
+        "type": "Function",
+        "name": "datetimeValueToString"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/components/DatetimeValue",
+        "type": "TypeAlias",
+        "name": "DatetimeValue"
+      },
+      {
+        "route": "/api/functions/ng-core/components/unknownToString",
+        "type": "Function",
+        "name": "unknownToString"
+      },
+      {
+        "route": "/api/functions/ng-core/components/valueToString",
+        "type": "Function",
+        "name": "valueToString"
+      },
+      {
+        "route": "/api/classes/ng-core/components/FiltersDialogComponent",
+        "type": "Component",
+        "name": "FiltersDialogComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/CustomizeComponent",
+        "type": "Component",
+        "name": "CustomizeComponent"
+      },
+      {
+        "route": "/api/classes/ng-core/components/TableInfoBarComponent",
+        "type": "Component",
+        "name": "TableInfoBarComponent"
+      }
+    ]
+  },
+  {
+    "title": "@vality/ng-core services",
+    "items": [
+      {
+        "route": "/api/classes/ng-core/services/ConfigServiceSuperclass",
+        "type": "Injectable",
+        "name": "ConfigServiceSuperclass"
+      },
+      {
+        "route": "/api/classes/ng-core/services/LogModule",
+        "type": "NgModule",
+        "name": "LogModule"
+      },
+      {
+        "route": "/api/classes/ng-core/services/NotifyLogService",
+        "type": "Injectable",
+        "name": "NotifyLogService"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/Action",
+        "type": "Interface",
+        "name": "Action"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/FetchResult",
+        "type": "Interface",
+        "name": "FetchResult"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/FetchOptions",
+        "type": "Interface",
+        "name": "FetchOptions"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/LoadOptions",
+        "type": "Interface",
+        "name": "LoadOptions"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/Accumulator",
+        "type": "Interface",
+        "name": "Accumulator"
+      },
+      {
+        "route": "/api/classes/ng-core/services/FetchSuperclass",
+        "type": "Class",
+        "name": "FetchSuperclass"
+      },
+      {
+        "route": "/api/classes/ng-core/services/SingleFetchSuperclass",
+        "type": "Class",
+        "name": "SingleFetchSuperclass"
+      },
+      {
+        "route": "/api/interfaces/ng-core/services/QueryParamsNamespace",
+        "type": "Interface",
+        "name": "QueryParamsNamespace"
+      },
+      {
+        "route": "/api/classes/ng-core/services/QueryParamsService",
+        "type": "Injectable",
+        "name": "QueryParamsService"
+      },
+      {
+        "route": "/api/classes/ng-core/services/QueryParamsModule",
+        "type": "NgModule",
+        "name": "QueryParamsModule"
+      },
+      {
+        "route": "/api/variables/ng-core/services/DATE_QUERY_PARAMS_SERIALIZERS",
+        "type": "Variable",
+        "name": "DATE_QUERY_PARAMS_SERIALIZERS"
+      },
+      {
+        "route": "/api/variables/ng-core/services/QUERY_PARAMS_SERIALIZERS",
+        "type": "Variable",
+        "name": "QUERY_PARAMS_SERIALIZERS"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/services/Serializer",
+        "type": "TypeAlias",
+        "name": "Serializer"
+      },
+      {
+        "route": "/api/classes/ng-core/services/UrlService",
+        "type": "Injectable",
+        "name": "UrlService"
+      },
+      {
+        "route": "/api/variables/ng-core/services/DEFAULT_ERROR_NAME",
+        "type": "Variable",
+        "name": "DEFAULT_ERROR_NAME"
+      },
+      {
+        "route": "/api/classes/ng-core/services/LogError",
+        "type": "Class",
+        "name": "LogError"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/services/Operation",
+        "type": "TypeAlias",
+        "name": "Operation"
+      },
+      {
+        "route": "/api/functions/ng-core/services/deserializeQueryParam",
+        "type": "Function",
+        "name": "deserializeQueryParam"
+      },
+      {
+        "route": "/api/functions/ng-core/services/serializeQueryParam",
+        "type": "Function",
+        "name": "serializeQueryParam"
+      }
+    ]
+  },
+  {
+    "title": "@vality/ng-core pipes",
+    "items": [
+      {
+        "route": "/api/classes/ng-core/pipes/AmountCurrencyPipe",
+        "type": "Pipe",
+        "name": "AmountCurrencyPipe"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/EnumKeyValuesPipe",
+        "type": "Pipe",
+        "name": "EnumKeyValuesPipe"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/EnumKeyPipe",
+        "type": "Pipe",
+        "name": "EnumKeyPipe"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/EnumKeysPipe",
+        "type": "Pipe",
+        "name": "EnumKeysPipe"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/pipes/HumanizedDurationValue",
+        "type": "TypeAlias",
+        "name": "HumanizedDurationValue"
+      },
+      {
+        "route": "/api/interfaces/ng-core/pipes/HumanizedDurationConfig",
+        "type": "Interface",
+        "name": "HumanizedDurationConfig"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/HumanizedDurationPipe",
+        "type": "Pipe",
+        "name": "HumanizedDurationPipe"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/PipesModule",
+        "type": "NgModule",
+        "name": "PipesModule"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/InlineJsonPipe",
+        "type": "Pipe",
+        "name": "InlineJsonPipe"
+      },
+      {
+        "route": "/api/classes/ng-core/pipes/VSelectPipe",
+        "type": "Pipe",
+        "name": "VSelectPipe"
+      }
+    ]
+  },
+  {
+    "title": "@vality/ng-core utils",
+    "items": [
+      {
+        "route": "/api/functions/ng-core/utils/inlineJson",
+        "type": "Function",
+        "name": "inlineJson"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/splitBySeparators",
+        "type": "Function",
+        "name": "splitBySeparators"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/progressTo",
+        "type": "Function",
+        "name": "progressTo"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/inProgressFrom",
+        "type": "Function",
+        "name": "inProgressFrom"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/passError",
+        "type": "Function",
+        "name": "passError"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/forkJoinToResult",
+        "type": "Function",
+        "name": "forkJoinToResult"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/isResultsHasError",
+        "type": "Function",
+        "name": "isResultsHasError"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/splitResultsErrors",
+        "type": "Function",
+        "name": "splitResultsErrors"
+      },
+      {
+        "route": "/api/interfaces/ng-core/utils/ForkJoinResult",
+        "type": "Interface",
+        "name": "ForkJoinResult"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ForkJoinSucceededResult",
+        "type": "TypeAlias",
+        "name": "ForkJoinSucceededResult"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ForkJoinErrorResult",
+        "type": "TypeAlias",
+        "name": "ForkJoinErrorResult"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/switchCombineWith",
+        "type": "Function",
+        "name": "switchCombineWith"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ProjectInputs",
+        "type": "TypeAlias",
+        "name": "ProjectInputs"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/debounceTimeWithFirst",
+        "type": "Function",
+        "name": "debounceTimeWithFirst"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/handleError",
+        "type": "Function",
+        "name": "handleError"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/asyncStartWith",
+        "type": "Function",
+        "name": "asyncStartWith"
+      },
+      {
+        "route": "/api/interfaces/ng-core/utils/ComponentChange",
+        "type": "Interface",
+        "name": "ComponentChange"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ComponentChanges",
+        "type": "TypeAlias",
+        "name": "ComponentChanges"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getValueChanges",
+        "type": "Function",
+        "name": "getValueChanges"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/FormGroupSuperclass",
+        "type": "Directive",
+        "name": "FormGroupSuperclass"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/createControlProviders",
+        "type": "Variable",
+        "name": "createControlProviders"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getErrorsTree",
+        "type": "Function",
+        "name": "getErrorsTree"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/FormControlSuperclass",
+        "type": "Directive",
+        "name": "FormControlSuperclass"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/FormComponentSuperclass",
+        "type": "Directive",
+        "name": "FormComponentSuperclass"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getValidValueChanges",
+        "type": "Function",
+        "name": "getValidValueChanges"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/setDisabled",
+        "type": "Function",
+        "name": "setDisabled"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/hasControls",
+        "type": "Function",
+        "name": "hasControls"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getValue",
+        "type": "Function",
+        "name": "getValue"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/FormGroupByValue",
+        "type": "TypeAlias",
+        "name": "FormGroupByValue"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/createControls",
+        "type": "Function",
+        "name": "createControls"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getNoTimeZoneIsoString",
+        "type": "Function",
+        "name": "getNoTimeZoneIsoString"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/createDateFromNoTimeZoneString",
+        "type": "Function",
+        "name": "createDateFromNoTimeZoneString"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/getCurrencyExponent",
+        "type": "Variable",
+        "name": "getCurrencyExponent"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/toMajorByExponent",
+        "type": "Variable",
+        "name": "toMajorByExponent"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/toMajor",
+        "type": "Variable",
+        "name": "toMajor"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/toMinorByExponent",
+        "type": "Variable",
+        "name": "toMinorByExponent"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/toMinor",
+        "type": "Variable",
+        "name": "toMinor"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/formatCurrency",
+        "type": "Function",
+        "name": "formatCurrency"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/select",
+        "type": "Function",
+        "name": "select"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/SelectFn",
+        "type": "TypeAlias",
+        "name": "SelectFn"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/countProps",
+        "type": "Function",
+        "name": "countProps"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/countChanged",
+        "type": "Function",
+        "name": "countChanged"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getEnumEntries",
+        "type": "Function",
+        "name": "getEnumEntries"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getEnumKeyValues",
+        "type": "Function",
+        "name": "getEnumKeyValues"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getEnumKeys",
+        "type": "Function",
+        "name": "getEnumKeys"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getEnumValues",
+        "type": "Function",
+        "name": "getEnumValues"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getEnumKey",
+        "type": "Function",
+        "name": "getEnumKey"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/enumHasValue",
+        "type": "Function",
+        "name": "enumHasValue"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/UnionEnum",
+        "type": "TypeAlias",
+        "name": "UnionEnum"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/AsyncTransformParameters",
+        "type": "TypeAlias",
+        "name": "AsyncTransformParameters"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/AsyncTransform",
+        "type": "Injectable",
+        "name": "AsyncTransform"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/isAsync",
+        "type": "Function",
+        "name": "isAsync"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/Async",
+        "type": "TypeAlias",
+        "name": "Async"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/PossiblyAsync",
+        "type": "TypeAlias",
+        "name": "PossiblyAsync"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getPossiblyAsyncObservable",
+        "type": "Function",
+        "name": "getPossiblyAsyncObservable"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/clean",
+        "type": "Function",
+        "name": "clean"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/cleanPrimitiveProps",
+        "type": "Function",
+        "name": "cleanPrimitiveProps"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/isEmpty",
+        "type": "Function",
+        "name": "isEmpty"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/isEmptyPrimitive",
+        "type": "Function",
+        "name": "isEmptyPrimitive"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/Nil",
+        "type": "TypeAlias",
+        "name": "Nil"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/compareDifferentTypes",
+        "type": "Function",
+        "name": "compareDifferentTypes"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getImportValue",
+        "type": "Function",
+        "name": "getImportValue"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/downloadFile",
+        "type": "Function",
+        "name": "downloadFile"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/createCsv",
+        "type": "Function",
+        "name": "createCsv"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/arrayAttribute",
+        "type": "Function",
+        "name": "arrayAttribute"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ArrayAttributeTransform",
+        "type": "TypeAlias",
+        "name": "ArrayAttributeTransform"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/DebounceTime",
+        "type": "Function",
+        "name": "DebounceTime"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/attach",
+        "type": "Function",
+        "name": "attach"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/attachTo",
+        "type": "Function",
+        "name": "attachTo"
+      },
+      {
+        "route": "/api/functions/ng-core/utils/getObservable",
+        "type": "Function",
+        "name": "getObservable"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/ObservableOrFn",
+        "type": "TypeAlias",
+        "name": "ObservableOrFn"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/StringEnum",
+        "type": "TypeAlias",
+        "name": "StringEnum"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/utils/Enum",
+        "type": "TypeAlias",
+        "name": "Enum"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/AbstractControlSuperclass",
+        "type": "Directive",
+        "name": "AbstractControlSuperclass"
+      },
+      {
+        "route": "/api/classes/ng-core/utils/FormArraySuperclass",
+        "type": "Directive",
+        "name": "FormArraySuperclass"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/provideValidators",
+        "type": "Variable",
+        "name": "provideValidators"
+      },
+      {
+        "route": "/api/variables/ng-core/utils/provideValueAccessor",
+        "type": "Variable",
+        "name": "provideValueAccessor"
+      }
+    ]
+  },
+  {
+    "title": "@vality/ng-core types",
+    "items": [
+      {
+        "route": "/api/interfaces/ng-core/types/Progressable",
+        "type": "Interface",
+        "name": "Progressable"
+      }
+    ]
+  },
+  {
+    "title": "@vality/ng-core styles",
+    "items": [
+      {
+        "route": "/api/type-aliases/ng-core/styles/ThemePalette",
+        "type": "TypeAlias",
+        "name": "ThemePalette"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/styles/StatusPalette",
+        "type": "TypeAlias",
+        "name": "StatusPalette"
+      },
+      {
+        "route": "/api/type-aliases/ng-core/styles/Color",
+        "type": "TypeAlias",
+        "name": "Color"
+      }
+    ]
+  }
+]
