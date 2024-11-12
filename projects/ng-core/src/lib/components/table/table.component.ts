@@ -73,7 +73,7 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent<T extends object, C extends object> implements OnInit {
-    data = input<T[]>();
+    data = input<T[], ArrayAttributeTransform<T>>([], { transform: arrayAttribute });
     treeData = input<TreeData<T, C>>();
     columns = input<Column<T, C>[], ArrayAttributeTransform<Column<T, C>>>([], {
         transform: arrayAttribute,
