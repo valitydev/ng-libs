@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+
 import { Nil } from '../../../utils';
 
 export function loadFileContent(file: File | Nil, encoding = 'utf-8'): Observable<string> {
