@@ -32,7 +32,9 @@ export class HumanizedDurationPipe
         distinctUntilChanged(),
     );
 
-    transform(...params: AsyncTransformParameters) {
+    transform(
+        ...params: AsyncTransformParameters<HumanizedDurationValue, [HumanizedDurationConfig]>
+    ) {
         return super.asyncTransform(params);
     }
 }

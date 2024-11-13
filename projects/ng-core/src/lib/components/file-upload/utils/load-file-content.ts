@@ -1,9 +1,11 @@
 import { Observable } from 'rxjs';
 
-export function loadFileContent(file: File, encoding = 'utf-8'): Observable<string> {
+import { Nil } from '../../../utils';
+
+export function loadFileContent(file: File | Nil, encoding = 'utf-8'): Observable<string> {
     return new Observable((subscriber) => {
         if (!file) {
-            return file;
+            return undefined;
         }
         const read = new FileReader();
         read.readAsText(file, encoding);

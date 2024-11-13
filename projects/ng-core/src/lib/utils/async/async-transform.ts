@@ -6,7 +6,10 @@ import { map } from 'rxjs/operators';
 import { getPossiblyAsyncObservable } from './get-possibly-async-observable';
 import { PossiblyAsync } from './is-async';
 
-export type AsyncTransformParameters = never;
+export type AsyncTransformParameters<TValue = unknown, TParams extends unknown[] = []> = [
+    PossiblyAsync<TValue>,
+    ...TParams,
+];
 
 @Injectable()
 export abstract class AsyncTransform<
@@ -39,7 +42,7 @@ export abstract class AsyncTransform<
         this.asyncPipe.ngOnDestroy();
     }
 
-    protected asyncTransform(args: [PossiblyAsync<TValue>, ...TParams]): TResult | null {
+    protected asyncTransform(args: AsyncTransformParameters<TValue, TParams>): TResult | null {
         this.args$.next(args);
         return this.asyncPipe.transform(this.result$);
     }
