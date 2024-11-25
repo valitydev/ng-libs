@@ -47,6 +47,8 @@ jobs:
     env:
       SHORT_SHA: $(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
     steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/init
       - name: Publish Prettier Config
         working-directory: ./projects/prettier-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
