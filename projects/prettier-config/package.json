@@ -1,12 +1,12 @@
 {
   "name": "@vality/prettier-config",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "publishConfig": {
     "access": "public"
   },
   "main": "index.json",
   "peerDependencies": {
-    "prettier": "^3.1.1"
+    "prettier": "^3.3.3"
   },
   "dependencies": {
     "prettier-plugin-organize-attributes": "^1.0.0"
