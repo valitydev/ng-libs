@@ -1,6 +1,6 @@
 {
   "name": "@vality/cspell-config",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "publishConfig": {
     "access": "public"
   },
@@ -10,9 +10,9 @@
     }
   },
   "peerDependencies": {
-    "cspell": "^8.0.0"
+    "cspell": "^8.16.0"
   },
   "dependencies": {
-    "@cspell/dict-ru_ru": "^2.2.0"
+    "@cspell/dict-ru_ru": "^2.2.4"
   }
 }
