@@ -1,0 +1,11 @@
+name: Init
+description: Init
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+        cache: 'npm'
+    - run: npm ci
+      shell: bash

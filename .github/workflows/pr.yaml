@@ -15,8 +15,7 @@ jobs:
       SHORT_SHA: $(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
     steps:
       - uses: actions/checkout@v4
-      - uses: valitydev/action-frontend/setup@v1.0
-      - run: npm ci
+      - uses: ./.github/actions/init
       - name: Check
         run: npm run check
       - name: Test
