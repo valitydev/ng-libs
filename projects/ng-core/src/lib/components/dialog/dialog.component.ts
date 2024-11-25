@@ -33,6 +33,8 @@ export class DialogComponent implements Progressable {
 
     @Input({ transform: booleanAttribute }) fullSize: boolean = false;
 
+    // TODO rename
+    // eslint-disable-next-line @angular-eslint/no-output-native
     @Output() cancel = new EventEmitter<void>();
 
     cancelData = {
