@@ -11,13 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/init
-      - name: Build
-        run: npm run build
-      - name: Publish Angular Core
-        uses: valitydev/action-frontend/publish@v1.0
-        with:
-          npm-token: ${{ secrets.NPM_TOKEN }}
-          directory: ./projects/ng-core/dist
       - name: Publish ESLint Config
         uses: valitydev/action-frontend/publish@v1.0
         with:
@@ -33,6 +26,13 @@ jobs:
         with:
           npm-token: ${{ secrets.NPM_TOKEN }}
           directory: ./projects/prettier-config
+      - name: Build
+        run: npm run build
+      - name: Publish Angular Core
+        uses: valitydev/action-frontend/publish@v1.0
+        with:
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          directory: ./projects/ng-core/dist
       - name: Publish on GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
