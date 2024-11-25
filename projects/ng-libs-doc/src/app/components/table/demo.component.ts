@@ -8,7 +8,6 @@ interface User {
 }
 
 @Component({
-    standalone: true,
     template: `
         <v-table
             [columns]="columns"
