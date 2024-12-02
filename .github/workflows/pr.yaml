@@ -3,9 +3,8 @@ name: 'PR'
 on:
   pull_request:
     branches: ['*']
-#  TODO: builds not the last commit
-#  pull_request_target:
-#    types: ['labeled']
+  pull_request_target:
+    types: ['labeled']
 
 jobs:
   check:
@@ -23,26 +22,31 @@ jobs:
         run: npm run test:ci
       - name: Build
         run: npm run build
+      - name: Extract labels
+        id: labels
+        run: |
+          LABELS=$(github.context.payload.pull_request.labels)
+          echo "::set-output name=value::$LABELS"
       - name: Publish Angular Core
-        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish ng-core')
+        if: contains(steps.labels.outputs.value.*.name, 'publish') || contains(steps.labels.outputs.value.*.name, 'publish ng-core')
         working-directory: ./projects/ng-core/dist
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish ESLint Config
-        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish eslint-config')
+        if: contains(steps.labels.outputs.value.*.name, 'publish') || contains(steps.labels.outputs.value.*.name, 'publish eslint-config')
         working-directory: ./projects/eslint-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish CSpell Config
-        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish cspell-config')
+        if: contains(steps.labels.outputs.value.*.name, 'publish') || contains(steps.labels.outputs.value.*.name, 'publish cspell-config')
         working-directory: ./projects/cspell-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish Prettier Config
-        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish prettier-config')
+        if: contains(steps.labels.outputs.value.*.name, 'publish') || contains(steps.labels.outputs.value.*.name, 'publish prettier-config')
         working-directory: ./projects/prettier-config
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
