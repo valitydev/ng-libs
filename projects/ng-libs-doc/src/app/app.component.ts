@@ -12,7 +12,6 @@ import { CONFIG } from '../config';
 
 @Component({
     selector: 'app-root',
-    standalone: true,
     imports: [
         RouterOutlet,
         NgDocRootComponent,

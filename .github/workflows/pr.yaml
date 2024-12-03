@@ -15,20 +15,9 @@ jobs:
       SHORT_SHA: $(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
     steps:
       - uses: actions/checkout@v4
-      - uses: valitydev/action-frontend/setup@v1.0
-      - run: npm ci
+      - uses: ./.github/actions/init
       - name: Check
         run: npm run check
-      - name: Test
-        run: npm run test:ci
-      - name: Build
-        run: npm run build
-      - name: Publish Angular Core
-        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish ng-core')
-        working-directory: ./projects/ng-core/dist
-        run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish ESLint Config
         if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish eslint-config')
         working-directory: ./projects/eslint-config
@@ -44,6 +33,16 @@ jobs:
       - name: Publish Prettier Config
         if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish prettier-config')
         working-directory: ./projects/prettier-config
+        run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Test
+        run: npm run test:ci
+      - name: Build
+        run: npm run build
+      - name: Publish Angular Core
+        if: contains(github.event.pull_request.labels.*.name, 'publish') || contains(github.event.pull_request.labels.*.name, 'publish ng-core')
+        working-directory: ./projects/ng-core/dist
         run: npm version prerelease --preid pr-${{ github.event.number }}-${{ env.SHORT_SHA }} --no-git-tag-version && npm publish --tag pr
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

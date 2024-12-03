@@ -15,6 +15,7 @@ import { DialogResponseStatus } from './types/dialog-response-status';
     selector: 'v-dialog',
     templateUrl: 'dialog.component.html',
     styleUrls: ['dialog.component.scss'],
+    standalone: false,
 })
 export class DialogComponent implements Progressable {
     @HostBinding('class.v-dialog') hostClass: boolean = true;
@@ -32,6 +33,8 @@ export class DialogComponent implements Progressable {
 
     @Input({ transform: booleanAttribute }) fullSize: boolean = false;
 
+    // TODO rename
+    // eslint-disable-next-line @angular-eslint/no-output-native
     @Output() cancel = new EventEmitter<void>();
 
     cancelData = {

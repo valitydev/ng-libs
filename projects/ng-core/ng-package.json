@@ -10,7 +10,6 @@
         "dinero.js",
         "@ng-matero/*",
         "@angular/material-date-fns-adapter",
-        "fuse.js",
         "short-uuid",
         "papaparse"
     ]
