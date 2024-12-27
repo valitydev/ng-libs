@@ -1,4 +1,4 @@
-# Angular Libraries
+# Angular Libraries (deprecated, library moved to [Control Center Monorepo](https://github.com/valitydev/control-center))
 
 -   [Core](/projects/ng-core)
 -   Configs
